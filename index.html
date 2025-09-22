@@ -175,6 +175,8 @@
 const qs = s => document.querySelector(s);
 const show = id => document.querySelectorAll('.step').forEach(el=>el.classList.toggle('active', el.id===id));
 let firstUtility = null;
+// wire splash button to show signup
+qs('#goSignup')?.addEventListener('click', () => show('s1'));  
 
 const SUPPLIER = {
   supplierLegal:"SupplierCo Energy LLC",
