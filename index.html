@@ -3,170 +3,273 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>BillCapture · Demo</title>
+<title>RateHound – Demo</title>
 <style>
   :root{
-    --brand:#0a84ff;        /* change brand color */
-    --accent:#22c55e;       /* secondary accent */
-    --bg:#f6f7f9;           /* page background */
-    --card:#ffffff;         /* card background */
-    --text:#111111;         /* body text */
-    --muted:#6b7280;        /* muted text */
-    --border:#e5e7eb;       /* border color */
+    --brand:#134c07; /* RateHound dark green */
+    --ink:#111; 
+    --muted:#6b7280; 
+    --border:#e5e7eb; 
+    --card:#fff; 
+    --cta:#134c07; 
   }
-  *{box-sizing:border-box}
-  body{margin:0;background:var(--bg);font-family:system-ui,-apple-system,Arial;color:var(--text)}
-  a{text-decoration:none}
+  *{box-sizing:border-box} 
+  body{margin:0;font-family:system-ui,-apple-system,Arial;color:var(--ink);background:#f6f7f9}
   .wrap{max-width:420px;margin:0 auto;padding:16px}
-  .card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px;box-shadow:0 6px 18px rgba(0,0,0,.06)}
-  header{display:flex;align-items:center;gap:10px;margin-bottom:8px}
-  header img{width:28px;height:28px;border-radius:6px}
-  header h1{font-size:18px;margin:0}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:14px;box-shadow:0 6px 18px rgba(0,0,0,.06);padding:14px}
+  .btn{
+    display:inline-block;
+    padding:14px 20px;
+    border-radius:12px;
+    border:2px solid var(--cta);
+    background:#fff;
+    color:var(--cta);
+    cursor:pointer;
+    font-weight:600;
+    text-align:center;
+  }
+  .btn:hover{background:var(--cta);color:#fff}
+  .btn.ghost{
+    border:2px solid #6b7280;
+    background:#fff;
+    color:#6b7280;
+  }
+  .btn.ghost:hover{background:#6b7280;color:#fff}
+  .btn.flat{
+    border:2px solid var(--cta);
+    background:#fff;
+    color:var(--cta);
+  }
+  .btn.flat:hover{background:var(--cta);color:#fff}
+  .row{display:flex;gap:8px} 
+  .col{flex:1}
+  input,select{width:100%;padding:12px;border:1px solid var(--border);border-radius:10px}
   .muted{font-size:12px;color:var(--muted)}
   .step{display:none} .step.active{display:block}
-  label{font-weight:600;display:block;margin:8px 0}
-  input[type=file],input[type=text]{width:100%;padding:10px;border:1px solid var(--border);border-radius:8px}
-  img.preview{width:100%;border-radius:10px;margin-top:10px}
-  .btn{display:inline-block;padding:10px 14px;border-radius:10px;background:var(--brand);color:#fff;border:0;cursor:pointer}
-  .btn.secondary{background:#6b7280}
-  .btnbar{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+  .center{display:flex;align-items:center;justify-content:center;text-align:center}
+  .logo{width:180px;height:auto;display:block;margin:0 auto}
+  .full{min-height:100dvh}
+  .splash{background:var(--brand);color:#fff;display:flex;align-items:center;justify-content:center;text-align:center}
+  img.preview{width:100%;border-radius:12px;margin-top:10px}
   .grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-  .spinner{width:28px;height:28px;border:3px solid var(--border);border-top-color:var(--brand);border-radius:50%;animation:spin 1s linear infinite;margin:12px auto}
+  .spinner{width:28px;height:28px;border:3px solid var(--border);border-top-color:var(--cta);border-radius:50%;animation:spin 1s linear infinite;margin:12px auto}
   @keyframes spin{to{transform:rotate(360deg)}}
-  .docbox{border:1px solid var(--border);border-radius:10px;padding:12px;background:#fff}
-  .notice{margin-top:10px;padding:8px;border:1px dashed var(--border);border-radius:8px;background:#fafafa}
+  .stickyConsent{position:sticky;bottom:0;background:linear-gradient(#fff0,#fff 20%);padding-top:10px}
+  .docbox{border:1px solid var(--border);border-radius:12px;padding:12px;background:#fff;max-height:240px;overflow:auto}
+  header{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+  header img{width:28px;height:28px;border-radius:6px}
 </style>
 </head>
 <body>
+
+<!-- Splash screen -->
+<section id="s0" class="step active full splash" aria-label="Welcome">
+  <div class="wrap center" style="flex-direction:column;gap:32px">
+    <img class="logo" src="logo.png" alt="RateHound logo">
+    <button class="btn" id="goSignup" style="font-size:18px;width:80%">Fetch my savings!</button>
+  </div>
+</section>
+
 <div class="wrap">
-  <div class="card" role="application" aria-label="Bill capture demo">
-    <header>
-      <img src="logo.png" alt="Company logo" onerror="this.style.display='none'">
-      <h1>BillCapture · Demo</h1>
-    </header>
-    <p class="muted">Prototype for license review. Local only. No data is uploaded.</p>
+  <div class="card">
 
-    <!-- Step 1: Capture -->
-    <section id="s1" class="step active" aria-label="Capture bill">
-      <label for="file">Take or upload a bill photo</label>
-      <input id="file" type="file" accept="image/*" capture="environment">
-      <img id="preview" class="preview" style="display:none" alt="Bill preview">
-      <div class="btnbar">
-        <button id="scan" class="btn" disabled>Scan</button>
-      </div>
-      <div class="notice muted">Tip: open this page on your phone for the best experience.</div>
-    </section>
-
-    <!-- Step 2: “Scanning” -->
-    <section id="s2" class="step" aria-label="Scanning in progress">
-      <div class="spinner" role="status" aria-live="polite"></div>
-      <p style="text-align:center">Scanning bill…</p>
-    </section>
-
-    <!-- Step 3: Review extracted fields -->
-    <section id="s3" class="step" aria-label="Review fields">
-      <label>Review extracted fields</label>
+    <!-- Sign up -->
+    <section id="s1" class="step">
+      <h3>Sign up</h3>
       <div class="grid">
-        <input id="acct" placeholder="Account number" autocomplete="off">
-        <input id="date" placeholder="Billing date" autocomplete="off">
+        <input id="name" placeholder="Full name">
+        <input id="phone" placeholder="Phone">
       </div>
-      <input id="name" placeholder="Customer name" style="margin-top:8px" autocomplete="off">
-      <input id="total" placeholder="Total due" style="margin-top:8px" autocomplete="off">
-      <div class="btnbar">
-        <button id="toDoc" class="btn">Generate document</button>
-        <button id="back1" class="btn secondary">Back</button>
+      <input id="email" placeholder="Email" style="margin-top:8px">
+      <div style="height:8px"></div>
+      <div class="row">
+        <button class="btn" id="toUtility">Continue</button>
+        <button class="btn ghost" id="back0">Back</button>
+      </div>
+      <p class="muted">Demo only. No data is sent or stored.</p>
+    </section>
+
+    <!-- Utility choice -->
+    <section id="s2" class="step">
+      <h3>Which bill are we saving on?</h3>
+      <div class="row">
+        <button class="btn flat" data-ut="electric">Electric</button>
+        <button class="btn flat" data-ut="gas">Gas</button>
+      </div>
+      <p class="muted" style="margin-top:8px">You can do both. We’ll guide you one at a time.</p>
+    </section>
+
+    <!-- Upload -->
+    <section id="s3" class="step">
+      <h3 id="uploadTitle">Upload your bill</h3>
+      <input id="file" type="file" accept="image/*,application/pdf" capture="environment">
+      <img id="preview" class="preview" style="display:none" alt="Bill preview">
+      <div style="height:8px"></div>
+      <button class="btn" id="fetchBtn" disabled>Fetch!</button>
+      <button class="btn ghost" id="back2" style="margin-left:8px">Back</button>
+      <p class="muted">Tip: first page of your utility bill.</p>
+    </section>
+
+    <!-- Processing -->
+    <section id="s4" class="step">
+      <div class="spinner"></div>
+      <p class="center">Checking your current rate…</p>
+    </section>
+
+    <!-- Contract Summary -->
+    <section id="s5" class="step">
+      <header>
+        <img src="logo.png" alt="logo" onerror="this.style.display='none'"><h3 style="margin:0">Confirm supplier & authorize</h3>
+      </header>
+
+      <div id="topCard" style="border:1px solid var(--border);border-radius:12px;padding:12px;margin-bottom:10px">
+        <div style="font-weight:600">Plan: <span id="planName">SupplierCo • Saver 12</span></div>
+        <div>Price: <span id="price">7.09¢/kWh</span> <span id="rtype">(Fixed)</span> • Term: <span id="term">12 months</span> • ETF: <span id="etf">$0</span></div>
+        <div>Utility: <span id="edu">The Illuminating Company</span> handles delivery and emergencies</div>
+        <div class="muted">Est. savings vs utility: <span id="savings">18.7%</span></div>
+      </div>
+
+      <div class="docbox" id="summaryBox" tabindex="0">
+        <h4 style="margin:4px 0 8px">Contract Summary</h4>
+        <div id="summaryContent"></div>
+      </div>
+
+      <div class="stickyConsent">
+        <label><input type="checkbox" id="c1"> I received and read the Contract Summary above.</label>
+        <label><input type="checkbox" id="c2"> I am the account holder or authorized to change this account.</label>
+        <label><input type="checkbox" id="c3"> I authorize RateHound to act as my energy broker under the described conditions.</label>
+        <label><input type="checkbox" id="c4"> (Optional) I consent to calls/texts from Supplier and RateHound.</label>
+        <div class="row" style="margin-top:8px">
+          <button class="btn" id="confirm">Confirm & enroll</button>
+          <button class="btn ghost" id="emailCopy">Email/SMS me a copy</button>
+        </div>
+        <p class="muted" style="margin-top:6px">
+          This offer is sold and contracted by the supplier. RateHound may receive compensation.
+        </p>
       </div>
     </section>
 
-    <!-- Step 4: Doc preview -->
-    <section id="s4" class="step" aria-label="Document preview">
-      <label>Document preview</label>
-      <div id="doc" class="docbox"></div>
-      <div class="btnbar">
-        <button id="submit" class="btn">Submit</button>
-        <button id="back2" class="btn secondary">Back</button>
+    <!-- Receipt -->
+    <section id="s6" class="step">
+      <h3>Enrollment submitted</h3>
+      <p class="muted">A receipt would be sent by email/SMS in production.</p>
+      <div id="handoff" style="display:none;margin-top:10px;padding:12px;border:1px dashed var(--border);border-radius:12px">
+        <strong>Now let’s save on your gas bill!</strong><br>
+        <button class="btn flat" id="gasUpload">Upload bill</button>
+        <button class="btn ghost" id="gasLater" style="margin-left:8px">Remind me later</button>
       </div>
-      <p class="muted">In production this would save to Google Docs. This demo renders locally.</p>
+      <div style="height:8px"></div>
+      <button class="btn" id="restart">Done</button>
     </section>
 
-    <!-- Step 5: Confirmation -->
-    <section id="s5" class="step" aria-label="Confirmation">
-      <p><strong>Submitted.</strong> Your bill has been captured and the form filled.</p>
-      <div class="btnbar">
-        <button id="restart" class="btn">Restart</button>
-        <a class="btn secondary" href="#" id="print">Open printable preview</a>
-      </div>
-    </section>
   </div>
 </div>
 
 <script>
-const qs = s=>document.querySelector(s);
+const qs = s => document.querySelector(s);
 const show = id => document.querySelectorAll('.step').forEach(el=>el.classList.toggle('active', el.id===id));
+let firstUtility = null; 
 
-const file = qs('#file'), preview = qs('#preview'), scan = qs('#scan');
-let fileURL = null;
+const SUPPLIER = {
+  supplierLegal:"SupplierCo Energy LLC",
+  supplierPhone:"800-555-0100",
+  supplierSite:"supplier.example.com",
+  eduName:"The Illuminating Company",
+  eduEmerg:"1-888-544-4877",
+  rateType:"Fixed",
+  price:"7.09¢/kWh",
+  other:"None",
+  termMonths:12,
+  start:"Next bill",
+  end:"12 months from start",
+  renewal:"Auto-renew with notice",
+  rescission:"Cancel within 7 days of EDU notice by contacting your EDU.",
+  etf:"$0",
+  billing:"Utility consolidated",
+  frequency:"Monthly",
+  privacy:"Your account info is used to enroll and manage your contract.",
+  helpPUCO:"1-800-686-7826 • puco.ohio.gov"
+};
 
-file.addEventListener('change', e=>{
-  const f = e.target.files && e.target.files[0];
-  if(!f) return;
-  if (fileURL) URL.revokeObjectURL(fileURL);
-  fileURL = URL.createObjectURL(f);
-  preview.src = fileURL; preview.style.display = 'block';
-  scan.disabled = false;
-});
+function renderSummary(){
+  const s = SUPPLIER;
+  qs('#summaryContent').innerHTML = `
+  <div><b>Supplier</b><br>${s.supplierLegal} • ${s.supplierPhone} • ${s.supplierSite}</div><hr>
+  <div><b>Utility (EDU)</b><br>${s.eduName} • Emergencies/outages: ${s.eduEmerg}</div><hr>
+  <div><b>Price & fees</b>
+    <ul>
+      <li>Rate type: ${s.rateType}</li>
+      <li>Price: ${s.price}</li>
+      <li>Other supplier charges: ${s.other}</li>
+      <li>You still pay delivery charges to ${s.eduName}</li>
+    </ul></div><hr>
+  <div><b>Term & renewal</b>
+    <ul>
+      <li>Start: ${s.start} • End: ${s.end}</li>
+      <li>Renewal: ${s.renewal}</li>
+    </ul></div><hr>
+  <div><b>Cancellation</b>
+    <ul>
+      <li>${s.rescission}</li>
+      <li>Early termination fee: ${s.etf}</li>
+    </ul></div><hr>
+  <div><b>Billing</b>
+    <ul><li>Method: ${s.billing} • Frequency: ${s.frequency}</li></ul></div><hr>
+  <div><b>Privacy & data</b><br>${s.privacy}</div><hr>
+  <div><b>Help & complaints</b><br>Supplier: ${s.supplierPhone} • PUCO: ${s.helpPUCO}</div>
+  `;
+}
+renderSummary();
 
-scan.addEventListener('click', ()=>{
+qs('#goSignup').onclick = ()=> show('s1');
+qs('#back0').onclick   = ()=> show('s0');
+qs('#toUtility').onclick = ()=>{
+  if(!qs('#name').value || !qs('#email').value || !qs('#phone').value){ alert('Enter name, email, and phone.'); return; }
   show('s2');
-  setTimeout(()=>{ // simulate OCR results
-    qs('#acct').value = 'ACCT-' + Math.floor(100000+Math.random()*900000);
-    qs('#name').value = 'Sample Customer';
-    qs('#date').value = new Date().toLocaleDateString();
-    qs('#total').value = '$128.47';
+};
+
+document.querySelectorAll('#s2 .btn.flat').forEach(b=>{
+  b.onclick = ()=>{
+    firstUtility = b.dataset.ut; 
+    qs('#uploadTitle').textContent = `Upload your ${firstUtility} bill`;
     show('s3');
-  }, 1200);
+  };
 });
 
-qs('#back1').onclick = ()=> show('s1');
+const file = qs('#file'), preview = qs('#preview'), fetchBtn=qs('#fetchBtn');
+file.addEventListener('change', e=>{
+  const f = e.target.files?.[0]; if(!f) return;
+  if(f.type.startsWith('image/')){ preview.src = URL.createObjectURL(f); preview.style.display='block'; }
+  else { preview.style.display='none'; }
+  fetchBtn.disabled = false;
+});
+qs('#back2').onclick = ()=> show('s2');
 
-qs('#toDoc').onclick = ()=>{
-  const html = `
-    <h2 style="margin:0 0 8px">Bill Intake — Filled</h2>
-    <p><b>Account #:</b> ${esc(qs('#acct').value)}</p>
-    <p><b>Name:</b> ${esc(qs('#name').value)}</p>
-    <p><b>Date:</b> ${esc(qs('#date').value)}</p>
-    <p><b>Total due:</b> ${esc(qs('#total').value)}</p>
-    <hr><p style="font-size:12px;color:#666">Demo only. No storage.</p>`;
-  qs('#doc').innerHTML = html;
+fetchBtn.onclick = ()=>{
   show('s4');
+  setTimeout(()=> show('s5'), 1200);
 };
 
-qs('#back2').onclick = ()=> show('s3');
-
-qs('#submit').onclick = ()=>{
-  show('s5');
-  window.scrollTo({top:0,behavior:'smooth'});
+qs('#confirm').onclick = ()=>{
+  if(!qs('#c1').checked || !qs('#c2').checked){ alert('Please confirm the first two checkboxes.'); return; }
+  show('s6');
+  if(firstUtility==='electric'){
+    qs('#handoff').style.display='block';
+    qs('#gasUpload').onclick = ()=>{
+      firstUtility='gas';
+      qs('#uploadTitle').textContent = `Upload your gas bill`;
+      file.value=''; preview.style.display='none'; fetchBtn.disabled=true;
+      show('s3');
+      window.scrollTo({top:0,behavior:'smooth'});
+    };
+    qs('#gasLater').onclick = ()=> alert('We would remind the user later in production.');
+  } else {
+    qs('#handoff').style.display='none';
+  }
 };
 
-qs('#restart').onclick = ()=>{
-  if (fileURL) URL.revokeObjectURL(fileURL);
-  file.value = ''; preview.style.display='none'; scan.disabled=true;
-  show('s1');
-};
-
-qs('#print').onclick = (e)=>{
-  e.preventDefault();
-  const w = window.open('','_blank');
-  const doc = `
-    <html><head><title>Demo Document</title>
-    <meta name="viewport" content="width=device-width,initial-scale=1">
-    <style>body{font-family:system-ui,-apple-system,Arial;padding:20px}</style>
-    </head><body>${qs('#doc').innerHTML}</body></html>`;
-  w.document.write(doc);
-  w.document.close();
-};
-
-function esc(s){return String(s||'').replace(/[&<>"']/g, c=> ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]) ); }
+qs('#emailCopy').onclick = ()=> alert('In production we would email/SMS a copy of the Contract Summary.');
+qs('#restart').onclick = ()=> { location.reload(); };
 </script>
 </body>
 </html>
