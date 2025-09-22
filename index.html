@@ -175,66 +175,53 @@
 document.addEventListener('DOMContentLoaded', () => {
   const qs = s => document.querySelector(s);
   const show = id => document.querySelectorAll('.step')
-    .forEach(el => el.classList.toggle('active', el.id===id));
+    .forEach(el => el.classList.toggle('active', el.id === id));
 
   let firstUtility = null;
 
-  // wire splash button
-  const go = qs('#goSignup');
-  if (go) go.addEventListener('click', () => show('s1'));
+  // Splash → Sign up
+  const goBtn = qs('#goSignup');
+  if (goBtn) goBtn.addEventListener('click', () => {
+    show('s1');
+    window.scrollTo(0,0);
+  });
 
-  const SUPPLIER = {
-    supplierLegal:"SupplierCo Energy LLC",
-    supplierPhone:"800-555-0100",
-    supplierSite:"supplier.example.com",
-    eduName:"The Illuminating Company",
-    eduEmerg:"1-888-544-4877",
-    rateType:"Fixed",
-    price:"7.09¢/kWh",
-    other:"None",
-    termMonths:12,
-    start:"Next bill",
-    end:"12 months from start",
-    renewal:"Auto-renew with notice",
-    rescission:"Cancel within 7 days of EDU notice by contacting your EDU.",
-    etf:"$0",
-    billing:"Utility consolidated",
-    frequency:"Monthly",
-    privacy:"Your account info is used to enroll and manage your contract.",
-    helpPUCO:"1-800-686-7826 • puco.ohio.gov"
-  };
+  // Back from sign up → Splash
+  const back0 = qs('#back0');
+  if (back0) back0.addEventListener('click', () => {
+    show('s0');
+    window.scrollTo(0,0);
+  });
 
-  function renderSummary(){
-    const s = SUPPLIER;
-    qs('#summaryContent').innerHTML = `
-      <div><b>Supplier</b><br>${s.supplierLegal} • ${s.supplierPhone} • ${s.supplierSite}</div><hr>
-      <div><b>Utility (EDU)</b><br>${s.eduName} • Emergencies/outages: ${s.eduEmerg}</div><hr>
-      <div><b>Price & fees</b>
-        <ul>
-          <li>Rate type: ${s.rateType}</li>
-          <li>Price: ${s.price}</li>
-          <li>Other supplier charges: ${s.other}</li>
-          <li>You still pay delivery charges to ${s.eduName}</li>
-        </ul></div><hr>
-      <div><b>Term & renewal</b>
-        <ul>
-          <li>Start: ${s.start} • End: ${s.end}</li>
-          <li>Renewal: ${s.renewal}</li>
-        </ul></div><hr>
-      <div><b>Cancellation</b>
-        <ul>
-          <li>${s.rescission}</li>
-          <li>Early termination fee: ${s.etf}</li>
-        </ul></div><hr>
-      <div><b>Billing</b>
-        <ul><li>Method: ${s.billing} • Frequency: ${s.frequency}</li></ul></div><hr>
-      <div><b>Privacy & data</b><br>${s.privacy}</div><hr>
-      <div><b>Help & complaints</b><br>Supplier: ${s.supplierPhone} • PUCO: ${s.helpPUCO}</div>
-    `;
-    document.querySelectorAll('.supp').forEach(el=>el.textContent = s.supplierLegal);
-  }
-  renderSummary();
+  // Continue from sign up → Utility choice
+  const toUtility = qs('#toUtility');
+  if (toUtility) toUtility.addEventListener('click', () => {
+    show('s2');
+    window.scrollTo(0,0);
+  });
 
-  // TODO: keep your other button handlers here (utility choice, upload, confirm, restart, etc.)
+  // Utility choice → Upload
+  document.querySelectorAll('#s2 .btn.flat').forEach(b => {
+    b.addEventListener('click', () => {
+      firstUtility = b.dataset.ut;
+      const uploadTitle = qs('#uploadTitle');
+      if (uploadTitle) uploadTitle.textContent = `Upload your ${firstUtility} bill`;
+      show('s3');
+      window.scrollTo(0,0);
+    });
+  });
+
+  // Back from upload → Utility choice
+  const back2 = qs('#back2');
+  if (back2) back2.addEventListener('click', () => {
+    show('s2');
+    window.scrollTo(0,0);
+  });
+
+  // Restart → reload page
+  const restart = qs('#restart');
+  if (restart) restart.addEventListener('click', () => {
+    location.reload();
+  });
 });
 </script>
