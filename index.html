@@ -68,6 +68,19 @@
   display: block;
 }
 </head>
+
+document.addEventListener('DOMContentLoaded', () => {
+  const s0=document.querySelector('#s0');
+  const s1=document.querySelector('#s1');
+  const btn=document.querySelector('#goSignup');
+  if(!s0||!s1||!btn) return;
+  btn.addEventListener('click', () => {
+    s0.classList.remove('active'); s0.style.display='none';
+    s1.classList.add('active');   s1.style.display='block';
+    window.scrollTo(0,0);
+  });
+});
+
 <body>
 
 <!-- Splash -->
@@ -232,3 +245,5 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 });
 </script>
+  </body>
+</html>
