@@ -1,186 +1,268 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#134c07">
+<title>RateHound Demo</title>
+<style>
+  :root{
+    --brand:#134c07;              /* dark green */
+    --ink:#111;
+    --muted:#6b7280;
+    --border:#e5e7eb;
+    --card:#fff;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Arial;color:var(--ink);background:#fff;line-height:1.35}
 
-  <title>RateHound Demo</title>
+  /* layout */
+  .wrap{max-width:420px;margin:0 auto;padding:16px}
+  .full{min-height:100dvh}
+  .center{display:flex;align-items:center;justify-content:center;text-align:center}
 
-  <style>
-    :root {
-      --brand: #134c07;
-      --border: #ddd;
-    }
+  /* cards */
+  .card{background:var(--card);border:1px solid var(--border);border-radius:14px;box-shadow:0 6px 18px rgba(0,0,0,.06);padding:14px}
 
-    body {
-      margin: 0;
-      font-family: system-ui, sans-serif;
-      background: #fff;
-      color: #111;
-    }
+  /* buttons: white with green text */
+  .btn{
+    display:inline-block;width:100%;
+    padding:14px 20px;min-height:48px;
+    border-radius:12px;border:2px solid var(--brand);
+    background:#fff;color:var(--brand);
+    font-weight:600;text-align:center;cursor:pointer;
+  }
+  .btn:hover{background:var(--brand);color:#fff}
+  .btn.ghost{border:2px dashed var(--brand);background:transparent;color:var(--brand)}
+  .row{display:flex;gap:8px;flex-wrap:wrap}
+  @media (min-width:600px){ .btn{width:auto} }
 
-    .full {
-      min-height: 100dvh;
-    }
+  /* inputs */
+  input,select{width:100%;padding:12px;min-height:44px;border:1px solid var(--border);border-radius:10px}
+  input::placeholder{color:#9ca3af}
 
-    .splash {
-      background: var(--brand);
-      color: #fff;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      text-align: center;
-    }
+  /* informative text */
+  .muted{font-size:12px;color:var(--muted)}
 
-    .wrap {
-      max-width: 420px;
-      margin: 0 auto;
-      padding: 16px;
-    }
+  /* splash */
+  .splash{background:var(--brand);color:#fff}
+  .logo{width:180px;height:auto;display:block;margin:0 auto 24px}
 
-    .btn {
-      display: block;
-      width: 100%;
-      padding: 14px 20px;
-      font-size: 16px;
-      border-radius: 12px;
-      cursor: pointer;
-      margin: 8px 0;
-    }
-    .btn.wide { width: 100%; }
-    .btn.flat { background: #fff; color: var(--brand); border: 2px solid var(--brand); }
-    .btn.ghost { background: transparent; color: var(--brand); border: 2px dashed var(--brand); }
-    .btn:not(.ghost):not(.flat) { background: #fff; color: var(--brand); border: 2px solid var(--brand); }
+  /* step visibility */
+  .step{display:none}
+  .step.active{display:block}
 
-    .muted { color: #666; font-size: 14px; }
-    .center { text-align: center; }
+  /* spinner */
+  .spinner{width:32px;height:32px;border:3px solid #e5e7eb;border-top-color:var(--brand);border-radius:50%;animation:spin 1s linear infinite;margin:24px auto}
+  @keyframes spin{to{transform:rotate(360deg)}}
 
-    /* Step visibility */
-    .step { display: none; }
-    .step.active { display: block; }
+  /* consent box */
+  .docbox{border:1px solid var(--border);border-radius:12px;padding:12px;background:#fff;max-height:260px;overflow:auto}
+  .sticky{position:sticky;bottom:0;background:linear-gradient(#fff0,#fff 20%);padding-top:10px}
 
-    .spinner {
-      border: 4px solid #f3f3f3;
-      border-top: 4px solid var(--brand);
-      border-radius: 50%;
-      width: 40px;
-      height: 40px;
-      animation: spin 1s linear infinite;
-      margin: 40px auto;
-    }
-    @keyframes spin { 100% { transform: rotate(360deg); } }
-  </style>
+  /* focus */
+  :focus-visible{outline:3px solid var(--brand);outline-offset:2px;border-radius:10px}
+</style>
 </head>
 <body>
 
-  <!-- Splash -->
-  <section id="s0" class="step active full splash" aria-label="Welcome">
-    <div class="wrap">
-      <img class="logo" src="logo.png" alt="RateHound logo" style="width:160px;height:auto;margin-bottom:24px">
-      <button class="btn wide" id="goSignup">Fetch my savings!</button>
-      <p class="muted" style="color:#fff">Demo only. No data is sent or stored.</p>
-    </div>
-  </section>
+<!-- Splash -->
+<section id="s0" class="step active full splash">
+  <div class="wrap center" style="flex-direction:column;gap:28px">
+    <img class="logo" src="logo.png" alt="RateHound logo">
+    <button class="btn" id="goSignup">Fetch my savings!</button>
+    <p class="muted" style="color:#fff">Demo only. No data is sent or stored.</p>
+  </div>
+</section>
 
-  <!-- Sign up -->
-  <section id="s1" class="step" aria-label="Sign up">
-    <div class="wrap">
+<div class="wrap">
+  <div class="card" role="application" aria-label="RateHound demo flow">
+
+    <!-- Sign up -->
+    <section id="s1" class="step" aria-label="Sign up">
       <h3>Sign up</h3>
-      <input id="name" placeholder="Full name" style="width:100%;padding:10px;margin:6px 0">
-      <input id="phone" placeholder="Phone" style="width:100%;padding:10px;margin:6px 0">
-      <input id="email" placeholder="Email" type="email" style="width:100%;padding:10px;margin:6px 0">
-      <button class="btn wide" id="toUtility">Continue</button>
-      <button class="btn ghost" id="back0">Back</button>
-    </div>
-  </section>
-
-  <!-- Utility choice -->
-  <section id="s2" class="step" aria-label="Choose utility">
-    <div class="wrap">
-      <h3>Which bill are we saving on?</h3>
-      <button class="btn flat wide" data-ut="electric">Electric</button>
-      <button class="btn flat wide" data-ut="gas">Gas</button>
-      <p class="muted">You can do both. We’ll guide you one at a time.</p>
-    </div>
-  </section>
-
-  <!-- Upload -->
-  <section id="s3" class="step" aria-label="Upload bill">
-    <div class="wrap">
-      <h3 id="uploadTitle">Upload your bill</h3>
-      <input id="file" type="file" accept="image/*,application/pdf" capture="environment">
       <div class="row">
-        <button class="btn wide" id="fetchBtn">Fetch!</button>
+        <input id="name" placeholder="Full name" autocomplete="name" inputmode="text" aria-required="true">
+      </div>
+      <div class="row">
+        <input id="phone" placeholder="Phone" autocomplete="tel" inputmode="tel" aria-required="true">
+      </div>
+      <div class="row">
+        <input id="email" placeholder="Email" type="email" autocomplete="email" aria-required="true">
+      </div>
+      <div class="row" style="margin-top:8px">
+        <button class="btn" id="toUtility">Continue</button>
+        <button class="btn ghost" id="back0">Back</button>
+      </div>
+      <p class="muted">Demo only. No data is sent or stored.</p>
+    </section>
+
+    <!-- Utility choice -->
+    <section id="s2" class="step" aria-label="Choose utility">
+      <h3>Which bill are we saving on?</h3>
+      <div class="row">
+        <button class="btn" data-ut="electric" aria-label="Electric bill">Electric</button>
+        <button class="btn" data-ut="gas" aria-label="Gas bill">Gas</button>
+      </div>
+      <p class="muted" style="margin-top:8px">You can do both. We’ll guide you one at a time.</p>
+    </section>
+
+    <!-- Upload -->
+    <section id="s3" class="step" aria-label="Upload bill">
+      <h3 id="uploadTitle">Upload your bill</h3>
+      <input id="file" type="file" accept="image/*,application/pdf" capture="environment" aria-label="Upload bill image or PDF">
+      <div class="row" style="margin-top:8px">
+        <button class="btn" id="fetchBtn" disabled>Fetch!</button>
         <button class="btn ghost" id="back2">Back</button>
       </div>
       <p class="muted">Tip: first page of your utility bill.</p>
-    </div>
-  </section>
+    </section>
 
-  <!-- Processing -->
-  <section id="s4" class="step" aria-live="polite">
-    <div class="spinner"></div>
-    <p class="center">Checking your current rate…</p>
-  </section>
+    <!-- Processing -->
+    <section id="s4" class="step" aria-live="polite" aria-busy="true">
+      <div class="spinner" role="status" aria-label="Processing"></div>
+      <p class="center">Checking your current rate…</p>
+    </section>
 
-  <!-- Contract Summary -->
-  <section id="s5" class="step" aria-label="Confirm supplier & authorize">
-    <div class="wrap">
-      <h3>Confirm supplier & authorize</h3>
-      <p class="muted">Here’s where your contract summary would appear.</p>
-      <button class="btn wide" id="confirm">Confirm & enroll</button>
-    </div>
-  </section>
+    <!-- Contract Summary (demo) -->
+    <section id="s5" class="step" aria-label="Confirm supplier & authorize">
+      <h3 style="display:flex;align-items:center;gap:8px;margin:0 0 8px">
+        <img src="logo.png" alt="" style="width:28px;height:28px;border-radius:6px">Confirm supplier & authorize
+      </h3>
 
-  <!-- Receipt -->
-  <section id="s6" class="step" aria-label="Enrollment submitted">
-    <div class="wrap">
+      <div style="border:1px solid var(--border);border-radius:12px;padding:12px;margin-bottom:10px">
+        <div style="font-weight:600">Plan: <span id="planName">SupplierCo • Saver 12</span></div>
+        <div>Price: <span id="price">7.09¢/kWh</span> <span id="rtype">(Fixed)</span> • Term: <span id="term">12 months</span> • ETF: <span id="etf">$0</span></div>
+        <div>Utility: <span id="edu">The Illuminating Company</span> handles delivery and emergencies</div>
+        <div class="muted">Est. savings vs utility: <span id="savings">18.7%</span></div>
+      </div>
+
+      <div class="docbox" id="summaryBox" tabindex="0" aria-label="Contract Summary (scrollable)">
+        <h4 style="margin:4px 0 8px">Contract Summary</h4>
+        <div id="summaryContent"></div>
+      </div>
+
+      <div class="sticky">
+        <label><input type="checkbox" id="c1"> I received and read the Contract Summary above and agree to enroll with <span class="supp">SupplierCo</span>.</label><br>
+        <label><input type="checkbox" id="c2"> I am the account holder or authorized to change this account.</label><br>
+        <label><input type="checkbox" id="c3"> I authorize RateHound to act as my energy broker under the described conditions.</label><br>
+        <label><input type="checkbox" id="c4"> (Optional) I consent to calls/texts from Supplier and RateHound.</label>
+        <div class="row" style="margin-top:8px">
+          <button class="btn" id="confirm">Confirm & enroll</button>
+          <button class="btn ghost" id="emailCopy">Email/SMS me a copy</button>
+        </div>
+        <p class="muted" style="margin-top:6px">
+          This offer is sold and contracted by the supplier. RateHound may receive compensation.
+        </p>
+      </div>
+    </section>
+
+    <!-- Receipt -->
+    <section id="s6" class="step" aria-label="Enrollment submitted">
       <h3>Enrollment submitted</h3>
       <p class="muted">A receipt would be sent by email/SMS in production.</p>
-      <button class="btn wide" id="restart">Done</button>
-    </div>
-  </section>
+      <div id="handoff" style="display:none;margin-top:10px;padding:12px;border:1px dashed var(--border);border-radius:12px">
+        <strong>Now let’s save on your gas bill!</strong><br>
+        <div class="row" style="margin-top:8px">
+          <button class="btn" id="gasUpload">Upload bill</button>
+          <button class="btn ghost" id="gasLater">Remind me later</button>
+        </div>
+      </div>
+      <div style="height:8px"></div>
+      <button class="btn" id="restart">Done</button>
+    </section>
 
-  <!-- Navigation script -->
-  <script>
-  document.addEventListener('DOMContentLoaded', () => {
-    const qs = s => document.querySelector(s);
-    const show = id => document.querySelectorAll('.step')
-      .forEach(el => el.classList.toggle('active', el.id === id));
+  </div>
+</div>
 
-    // Splash → Sign up
-    qs('#goSignup')?.addEventListener('click', () => show('s1'));
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const qs = s => document.querySelector(s);
+  const show = id => document.querySelectorAll('.step')
+    .forEach(el => el.classList.toggle('active', el.id === id));
 
-    // Back from sign up → Splash
-    qs('#back0')?.addEventListener('click', () => show('s0'));
+  // demo supplier data → populates Contract Summary
+  const SUPPLIER = {
+    supplierLegal:"SupplierCo Energy LLC",
+    supplierPhone:"800-555-0100",
+    supplierSite:"supplier.example.com",
+    eduName:"The Illuminating Company",
+    eduEmerg:"1-888-544-4877",
+    rateType:"Fixed",
+    price:"7.09¢/kWh",
+    other:"None",
+    start:"Next bill",
+    end:"12 months from start",
+    renewal:"Auto-renew with notice",
+    rescission:"Cancel within 7 days of EDU notice by contacting your EDU.",
+    etf:"$0",
+    billing:"Utility consolidated",
+    frequency:"Monthly",
+    helpPUCO:"1-800-686-7826 • puco.ohio.gov"
+  };
+  (function renderSummary(){
+    const s=SUPPLIER;
+    qs('#summaryContent').innerHTML = `
+      <div><b>Supplier</b><br>${s.supplierLegal} • ${s.supplierPhone} • ${s.supplierSite}</div><hr>
+      <div><b>Utility (EDU)</b><br>${s.eduName} • Emergencies/outages: ${s.eduEmerg}</div><hr>
+      <div><b>Price & fees</b>
+        <ul>
+          <li>Rate type: ${s.rateType}</li>
+          <li>Price: ${s.price}</li>
+          <li>Other supplier charges: ${s.other}</li>
+          <li>You still pay delivery charges to ${s.eduName}</li>
+        </ul></div><hr>
+      <div><b>Term & renewal</b>
+        <ul>
+          <li>Start: ${s.start} • End: ${s.end}</li>
+          <li>Renewal: ${s.renewal}</li>
+        </ul></div><hr>
+      <div><b>Cancellation</b>
+        <ul>
+          <li>${s.rescission}</li>
+          <li>Early termination fee: ${s.etf}</li>
+        </ul></div><hr>
+      <div><b>Billing</b>
+        <ul><li>Method: ${s.billing} • Frequency: ${s.frequency}</li></ul></div><hr>
+      <div><b>Help & complaints</b><br>Supplier: ${s.supplierPhone} • PUCO: ${s.helpPUCO}</div>`;
+    document.querySelectorAll('.supp').forEach(el=>el.textContent=s.supplierLegal);
+  })();
 
-    // Continue from sign up → Utility choice
-    qs('#toUtility')?.addEventListener('click', () => show('s2'));
+  // flow
+  qs('#goSignup')?.addEventListener('click', ()=> show('s1'));
+  qs('#back0')?.addEventListener('click', ()=> show('s0'));
+  qs('#toUtility')?.addEventListener('click', ()=> show('s2'));
 
-    // Utility choice → Upload
-    document.querySelectorAll('#s2 .btn.flat').forEach(b => {
-      b.addEventListener('click', () => {
-        const uploadTitle = qs('#uploadTitle');
-        if (uploadTitle) uploadTitle.textContent = `Upload your ${b.dataset.ut} bill`;
-        show('s3');
-      });
+  document.querySelectorAll('#s2 [data-ut]').forEach(b=>{
+    b.addEventListener('click', ()=>{
+      qs('#uploadTitle').textContent = `Upload your ${b.dataset.ut} bill`;
+      show('s3');
     });
-
-    // Back from upload → Utility choice
-    qs('#back2')?.addEventListener('click', () => show('s2'));
-
-    // Fetch! → Processing → Contract Summary
-    qs('#fetchBtn')?.addEventListener('click', () => {
-      show('s4');
-      setTimeout(() => show('s5'), 1500); // fake delay
-    });
-
-    // Confirm → Receipt
-    qs('#confirm')?.addEventListener('click', () => show('s6'));
-
-    // Restart → Splash
-    qs('#restart')?.addEventListener('click', () => show('s0'));
   });
-  </script>
+
+  qs('#back2')?.addEventListener('click', ()=> show('s2'));
+
+  // fake OCR/processing
+  qs('#file')?.addEventListener('change', e=>{
+    qs('#fetchBtn').disabled = !e.target.files?.length;
+  });
+  qs('#fetchBtn')?.addEventListener('click', ()=>{
+    show('s4');
+    setTimeout(()=> show('s5'), 1200);
+  });
+
+  // confirm → receipt
+  qs('#confirm')?.addEventListener('click', ()=>{
+    if(!qs('#c1')?.checked || !qs('#c2')?.checked){ alert('Please confirm the first two checkboxes.'); return; }
+    show('s6');
+    // if first was electric, offer gas handoff
+    qs('#handoff').style.display='block';
+  });
+
+  // restart
+  qs('#restart')?.addEventListener('click', ()=> show('s0'));
+});
+</script>
 </body>
 </html>
