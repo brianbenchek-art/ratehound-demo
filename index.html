@@ -69,182 +69,24 @@
 }
   </style>
 </head>
-
-document.addEventListener('DOMContentLoaded', () => {
-  const s0=document.querySelector('#s0');
-  const s1=document.querySelector('#s1');
-  const btn=document.querySelector('#goSignup');
-  if(!s0||!s1||!btn) return;
-  btn.addEventListener('click', () => {
-    s0.classList.remove('active'); s0.style.display='none';
-    s1.classList.add('active');   s1.style.display='block';
-    window.scrollTo(0,0);
-  });
-});
-
 <body>
 
 <!-- Splash -->
-<section id="s0" class="step active full splash" aria-label="Welcome">
-  <div class="wrap center" style="flex-direction:column;gap:28px">
-    <img class="logo" src="logo.png" alt="RateHound logo">
-    <button class="btn wide" id="goSignup" aria-describedby="splashHint">Fetch my savings!</button>
-    <span id="splashHint" class="muted" style="color:#fff">Demo only. No data is sent or stored.</span>
-  </div>
+<section id="s0" …>
+  …
 </section>
 
-<div class="wrap">
-  <div class="card" role="application" aria-label="RateHound demo flow">
+<!-- Sign up -->
+<section id="s1" …>
+  …
+</section>
 
-    <!-- Sign up -->
-    <section id="s1" class="step" aria-label="Sign up">
-      <h3>Sign up</h3>
-      <div class="grid">
-        <input id="name" placeholder="Full name" autocomplete="name" inputmode="text" aria-required="true">
-        <input id="phone" placeholder="Phone" autocomplete="tel" inputmode="tel" aria-required="true">
-      </div>
-      <input id="email" placeholder="Email" type="email" autocomplete="email" aria-required="true" style="margin-top:8px">
-      <div style="height:8px"></div>
-      <div class="row">
-        <button class="btn wide" id="toUtility">Continue</button>
-        <button class="btn ghost" id="back0">Back</button>
-      </div>
-      <p class="muted">Demo only. No data is sent or stored.</p>
-    </section>
-
-    <!-- Utility choice -->
-    <section id="s2" class="step" aria-label="Choose utility">
-      <h3>Which bill are we saving on?</h3>
-      <div class="row">
-        <button class="btn flat wide" data-ut="electric" aria-label="Electric bill">Electric</button>
-        <button class="btn flat wide" data-ut="gas" aria-label="Gas bill">Gas</button>
-      </div>
-      <p class="muted" style="margin-top:8px">You can do both. We’ll guide you one at a time.</p>
-    </section>
-
-    <!-- Upload -->
-    <section id="s3" class="step" aria-label="Upload bill">
-      <h3 id="uploadTitle">Upload your bill</h3>
-      <input id="file" type="file" accept="image/*,application/pdf" capture="environment" aria-label="Upload bill image or PDF">
-      <img id="preview" class="preview" style="display:none" alt="Bill preview">
-      <div style="height:8px"></div>
-      <div class="row">
-        <button class="btn wide" id="fetchBtn" disabled>Fetch!</button>
-        <button class="btn ghost" id="back2">Back</button>
-      </div>
-      <p class="muted">Tip: first page of your utility bill.</p>
-    </section>
-
-    <!-- Processing -->
-    <section id="s4" class="step" aria-live="polite" aria-busy="true">
-      <div class="spinner" role="status" aria-label="Processing"></div>
-      <p class="center">Checking your current rate…</p>
-    </section>
-
-    <!-- Contract Summary -->
-    <section id="s5" class="step" aria-label="Confirm supplier & authorize">
-      <header>
-        <img src="logo.png" alt="logo" onerror="this.style.display='none'"><h3 style="margin:0">Confirm supplier & authorize</h3>
-      </header>
-
-      <div id="topCard" style="border:1px solid var(--border);border-radius:12px;padding:12px;margin-bottom:10px">
-        <div style="font-weight:600">Plan: <span id="planName">SupplierCo • Saver 12</span></div>
-        <div>Price: <span id="price">7.09¢/kWh</span> <span id="rtype">(Fixed)</span> • Term: <span id="term">12 months</span> • ETF: <span id="etf">$0</span></div>
-        <div>Utility: <span id="edu">The Illuminating Company</span> handles delivery and emergencies</div>
-        <div class="muted">Est. savings vs utility: <span id="savings">18.7%</span></div>
-      </div>
-
-      <div class="docbox" id="summaryBox" tabindex="0" aria-label="Contract Summary (scrollable)">
-        <h4 style="margin:4px 0 8px">Contract Summary</h4>
-        <div id="summaryContent"></div>
-      </div>
-
-      <div class="stickyConsent" aria-label="Consent">
-        <label><input type="checkbox" id="c1"> I received and read the Contract Summary above and agree to enroll with <span class="supp">SupplierCo</span>.</label>
-        <label><input type="checkbox" id="c2"> I am the account holder or authorized to change this account.</label>
-        <label><input type="checkbox" id="c3"> I authorize RateHound to act as my energy broker under the described conditions.</label>
-        <label><input type="checkbox" id="c4"> (Optional) I consent to calls/texts from Supplier and RateHound.</label>
-        <div class="row" style="margin-top:8px">
-          <button class="btn wide" id="confirm">Confirm & enroll</button>
-          <button class="btn ghost" id="emailCopy">Email/SMS me a copy</button>
-        </div>
-        <p class="muted" style="margin-top:6px">
-          This offer is sold and contracted by the supplier. RateHound may receive compensation.
-        </p>
-      </div>
-    </section>
-
-    <!-- Receipt / gas handoff -->
-    <section id="s6" class="step" aria-label="Enrollment submitted">
-      <h3>Enrollment submitted</h3>
-      <p class="muted">A receipt would be sent by email/SMS in production.</p>
-      <div id="handoff" style="display:none;margin-top:10px;padding:12px;border:1px dashed var(--border);border-radius:12px">
-        <strong>Now let’s save on your gas bill!</strong><br>
-        <div class="row" style="margin-top:8px">
-          <button class="btn flat wide" id="gasUpload">Upload bill</button>
-          <button class="btn ghost" id="gasLater">Remind me later</button>
-        </div>
-      </div>
-      <div style="height:8px"></div>
-      <button class="btn wide" id="restart">Done</button>
-    </section>
-
-  </div>
-</div>
+<!-- rest of sections -->
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
-  const qs = s => document.querySelector(s);
-  const show = id => document.querySelectorAll('.step')
-    .forEach(el => el.classList.toggle('active', el.id === id));
-
-  let firstUtility = null;
-
-  // Splash → Sign up
-  const goBtn = qs('#goSignup');
-  if (goBtn) goBtn.addEventListener('click', () => {
-    show('s1');
-    window.scrollTo(0,0);
-  });
-
-  // Back from sign up → Splash
-  const back0 = qs('#back0');
-  if (back0) back0.addEventListener('click', () => {
-    show('s0');
-    window.scrollTo(0,0);
-  });
-
-  // Continue from sign up → Utility choice
-  const toUtility = qs('#toUtility');
-  if (toUtility) toUtility.addEventListener('click', () => {
-    show('s2');
-    window.scrollTo(0,0);
-  });
-
-  // Utility choice → Upload
-  document.querySelectorAll('#s2 .btn.flat').forEach(b => {
-    b.addEventListener('click', () => {
-      firstUtility = b.dataset.ut;
-      const uploadTitle = qs('#uploadTitle');
-      if (uploadTitle) uploadTitle.textContent = `Upload your ${firstUtility} bill`;
-      show('s3');
-      window.scrollTo(0,0);
-    });
-  });
-
-  // Back from upload → Utility choice
-  const back2 = qs('#back2');
-  if (back2) back2.addEventListener('click', () => {
-    show('s2');
-    window.scrollTo(0,0);
-  });
-
-  // Restart → reload page
-  const restart = qs('#restart');
-  if (restart) restart.addEventListener('click', () => {
-    location.reload();
-  });
+  // all your handlers go here
 });
 </script>
-  </body>
+</body>
 </html>
