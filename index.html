@@ -66,14 +66,15 @@
   .muted{font-size:12px;color:var(--muted)}
 
   /* splash */
-.splash {
-  background: var(--brand);
-  color: #fff;
-  display: flex;
-  align-items: center;      /* vertical centering */
-  justify-content: center;  /* horizontal centering */
-  text-align: center;
-  flex-direction: column;   /* stack logo + button */
+.splash{
+  background:var(--brand);
+  color:#fff;
+  display:flex;
+  align-items:center;      /* vertical center */
+  justify-content:center;  /* horizontal center */
+  text-align:center;
+  flex-direction:column;   /* stack logo + button */
+  min-height:100%;         /* ensure full section height is used */
 }
   .logo{width:180px;height:auto;display:block;margin:0 auto 24px}
 
@@ -95,8 +96,7 @@
 <body>
 
 <!-- Splash -->
-<section id="s0" class="step active full splash">
-  <div class="wrap center" style="flex-direction:column;gap:28px">
+<div style="display:flex;flex-direction:column;gap:28px;align-items:center">
     <img class="logo" src="logo.png" alt="RateHound logo">
     <button class="btn" id="goSignup">Fetch my savings!</button>
     <p class="muted" style="color:#fff">Demo only. No data is sent or stored.</p>
