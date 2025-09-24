@@ -53,6 +53,22 @@
     width:100%; padding:14px 18px; border:2px solid var(--brand);
     border-radius:999px; background:#fff; color:var(--brand); font-weight:700; text-align:center; cursor:pointer;
   }
+  /* Special styling only for the Sign Up button */
+#signUpBtn {
+  background: var(--brand);   /* green */
+  color: #fff;                /* white text */
+  font-size: 20px;            /* larger text */
+  padding: 16px 20px;         /* taller button */
+  border: none;               /* remove outline */
+  border-radius: 999px;       /* pill shape */
+  font-weight: 700;           /* bold */
+  text-align: center;         /* center text */
+  cursor: pointer;            /* pointer on hover */
+}
+  #signUpBtn:active {
+  background: #0f3a05; /* darker green when pressed */
+  transform: scale(0.98); /* slight press-down effect */
+}
   .btn:active{transform:scale(.99)}
   .hint{color:var(--muted); font-size:12px; text-align:center; margin-top:6px}
   /* PAGE 3 — Utility choice */
