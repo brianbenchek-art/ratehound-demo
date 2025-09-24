@@ -65,6 +65,17 @@
   text-align: center;         /* center text */
   cursor: pointer;            /* pointer on hover */
 }
+  /* Special styling for the "Both" button */
+#bothBtn {
+  background: var(--brand);   /* green background */
+  color: #fff;                /* white text */
+  font-size: 20px;            /* larger text */
+  border: none;               /* remove outline */
+  border-radius: 999px;        /* rounded but not pill-shaped */
+  font-weight: 700;           /* bold */
+  text-align: center;
+  cursor: pointer;
+}
   #signUpBtn:active {
   background: #0f3a05; /* darker green when pressed */
   transform: scale(0.98); /* slight press-down effect */
@@ -120,7 +131,7 @@
     <h1>Save on my...</h1>
     <button class="btn tall">Electric Bill</button>
     <button class="btn tall">Gas Bill</button>
-    <button class="btn tall">Both</button>
+    <button class="btn tall" id="bothBtn">Both</button>
   </div>
 </section>
 <script>
@@ -135,14 +146,14 @@ if (signUpBtn) {
     document.getElementById('utility').classList.add('show');
   });
 }
-  // auto-transition after 2.8s
+  // auto-transition after 2.5s
   setTimeout(() => {
     splash.classList.add('out');         // fade splash
     setTimeout(() => {                   // after fade, hide splash and show signup
       splash.style.display = 'none';
       signup.classList.add('show');
     }, 450);
-  }, 2800);
+  }, 2500);
 
   // optional: allow tap to skip immediately
   splash.addEventListener('click', () => {
