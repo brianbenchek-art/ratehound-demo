@@ -55,6 +55,25 @@
   }
   .btn:active{transform:scale(.99)}
   .hint{color:var(--muted); font-size:12px; text-align:center; margin-top:6px}
+  /* PAGE 3 — Utility choice */
+#utility{background:#fff;color:var(--ink);display:none}
+#utility.show{display:flex}
+#utility .inner{
+  margin:0 auto; width:min(92%,420px);
+  padding:28px 16px;
+  display:flex; flex-direction:column; gap:16px;
+  justify-content:center;               /* vertical center */
+  min-height:100vh;
+}
+#utility h1{
+  margin:0 0 12px; font-size:26px; font-weight:700; text-align:center; color:var(--ink);
+}
+.btn.tall{
+  height:25vh;
+  display:flex; align-items:center; justify-content:center;
+  border:2px solid var(--brand); background:#fff; color:var(--brand);
+  border-radius:12px; font-weight:700; font-size:20px; width:100%;
+}
 </style>
 </head>
 <body>
@@ -78,12 +97,27 @@
     <p class="hint">Demo only. No data is sent or stored.</p>
   </div>
 </section>
-
+<!-- PAGE 3 — Utility choice -->
+<section id="utility" class="vh">
+  <div class="inner">
+    <h1>Save on my...</h1>
+    <button class="btn tall">Electric</button>
+    <button class="btn tall">Gas</button>
+    <button class="btn tall">Both</button>
+  </div>
+</section>
 <script>
 document.addEventListener('DOMContentLoaded', () => {
   const splash = document.getElementById('splash');
   const signup = document.getElementById('signup');
-
+// When user taps "Sign up", hide signup and show utility page
+const signUpBtn = document.getElementById('signUpBtn');
+if (signUpBtn) {
+  signUpBtn.addEventListener('click', () => {
+    document.getElementById('signup').classList.remove('show');
+    document.getElementById('utility').classList.add('show');
+  });
+}
   // auto-transition after 2.8s
   setTimeout(() => {
     splash.classList.add('out');         // fade splash
