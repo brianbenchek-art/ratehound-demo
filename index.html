@@ -66,16 +66,19 @@
   .muted{font-size:12px;color:var(--muted)}
 
   /* splash */
+/* center splash content perfectly on iPhone */
 .splash{
   background:var(--brand);
   color:#fff;
   display:flex;
-  align-items:center;      /* vertical center */
-  justify-content:center;  /* horizontal center */
+  flex-direction:column;
+  justify-content:center;   /* vertical */
+  align-items:center;       /* horizontal */
   text-align:center;
-  flex-direction:column;   /* stack logo + button */
-  min-height:100%;         /* ensure full section height is used */
+  height:100vh;             /* fallback */
 }
+@supports (height: 100dvh){ .splash{ height:100dvh } }
+@supports (height: 100svh){ .splash{ height:100svh } }
   .logo{width:180px;height:auto;display:block;margin:0 auto 24px}
 
   /* step visibility */
@@ -83,7 +86,7 @@
   .step.active{display:block}
 
   /* spinner */
-.spinner{width:32px;height:32px;border:3px solid #e5e7eb;border-top-color:var(--brand);border-radius:50%;animation:spin 1s linear infinite;margin:24px auto}}
+.spinner{width:32px;height:32px;border:3px solid #ffffff44;border-top-color:#fff;border-radius:50%;animation:spin 1s linear infinite;margin:24px auto}
 
   /* consent box */
   .docbox{border:1px solid var(--border);border-radius:12px;padding:12px;background:#fff;max-height:260px;overflow:auto}
@@ -96,10 +99,11 @@
 <body>
 
 <!-- Splash -->
-<div style="display:flex;flex-direction:column;gap:28px;align-items:center">
+<section id="s0" class="step active splash" aria-label="Welcome">
+  <div style="display:flex;flex-direction:column;gap:28px;align-items:center;width:90%;max-width:420px;margin:0 auto">
     <img class="logo" src="logo.png" alt="RateHound logo">
     <button class="btn" id="goSignup">Fetch my savings!</button>
-    <p class="muted" style="color:#fff">Demo only. No data is sent or stored.</p>
+    <p class="muted" style="color:#fff;margin:0">Demo only. No data is sent or stored.</p>
   </div>
 </section>
 
