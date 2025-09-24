@@ -69,14 +69,14 @@ document.addEventListener('DOMContentLoaded', () => {
   const splash = document.getElementById('splash');
   const signup = document.getElementById('signup');
 
-  // auto-transition after 2s
+  // auto-transition after 3s
   setTimeout(() => {
     splash.classList.add('out');         // fade splash
     setTimeout(() => {                   // after fade, hide splash and show signup
       splash.style.display = 'none';
       signup.classList.add('show');
     }, 450);
-  }, 2000);
+  }, 3000);
 
   // optional: allow tap to skip immediately
   splash.addEventListener('click', () => {
