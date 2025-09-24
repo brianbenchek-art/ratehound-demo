@@ -102,6 +102,38 @@
   border:2px solid var(--brand); background:#fff; color:var(--brand);
   border-radius:12px; font-weight:600; font-size:18px; width:100%;
 }
+  /* utility select states */
+.btn.selectable {
+  background:#fff;
+  color:var(--brand);
+  border:2px solid var(--brand);
+}
+.btn.selectable.selected {
+  background:var(--brand);
+  color:#fff;
+}
+
+/* hint and Fetch button */
+.utilityHint {
+  color:var(--muted);
+  text-align:center;
+  margin-top:6px;
+}
+#fetchUtilities {
+  margin-top:16px;
+  background:var(--brand);
+  color:#fff;
+  border:none;
+  border-radius:999px;
+  font-size:20px;
+  padding:16px 20px;
+  opacity:.5;
+  pointer-events:none; /* disabled until choice */
+}
+#fetchUtilities.enabled {
+  opacity:1;
+  pointer-events:auto;
+}
 </style>
 </head>
 <body>
@@ -128,10 +160,14 @@
 <!-- PAGE 3 — Utility choice -->
 <section id="utility" class="vh">
   <div class="inner">
-    <h1>Save money on your...</h1>
-    <button class="btn tall">Electric Bill</button>
-    <button class="btn tall">Gas Bill</button>
-    <button class="btn tall" id="bothBtn">Both</button>
+    <h1>Save on my...</h1>
+
+    <button class="btn tall selectable" id="chooseElectric">Electric</button>
+    <button class="btn tall selectable" id="chooseGas">Gas</button>
+
+    <p class="utilityHint">Choose one or both.</p>
+
+    <button class="btn" id="fetchUtilities">Fetch!</button>
   </div>
 </section>
 <script>
@@ -146,6 +182,37 @@ if (signUpBtn) {
     document.getElementById('utility').classList.add('show');
   });
 }
+  // Utility selection logic
+const sel = { electric:false, gas:false };
+const eBtn = document.getElementById('chooseElectric');
+const gBtn = document.getElementById('chooseGas');
+const fetchU = document.getElementById('fetchUtilities');
+
+function refreshFetch(){
+  const any = sel.electric || sel.gas;
+  fetchU.classList.toggle('enabled', any);
+}
+
+eBtn?.addEventListener('click', () => {
+  sel.electric = !sel.electric;
+  eBtn.classList.toggle('selected', sel.electric);
+  refreshFetch();
+});
+
+gBtn?.addEventListener('click', () => {
+  sel.gas = !sel.gas;
+  gBtn.classList.toggle('selected', sel.gas);
+  refreshFetch();
+});
+
+fetchU?.addEventListener('click', () => {
+  if(!(sel.electric || sel.gas)) return;
+  // TODO: navigate to next page
+  alert(`Selected: ${[
+    sel.electric ? 'Electric' : null,
+    sel.gas ? 'Gas' : null
+  ].filter(Boolean).join(' + ')}`);
+});
   // auto-transition after 2.5s
   setTimeout(() => {
     splash.classList.add('out');         // fade splash
