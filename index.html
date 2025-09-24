@@ -19,7 +19,10 @@
 
   /* layout */
   .wrap{max-width:420px;margin:0 auto;padding:16px}
-  .full{min-height:100dvh}
+ /* full screen on all iPhones */
+.full{min-height:100vh}              /* fallback */
+@supports (height: 100dvh){ .full{min-height:100dvh} }   /* modern iOS */
+@supports (height: 100svh){ .full{min-height:100svh} }   /* safe viewport */
 
 /* center each screen vertically */
 .vcenter{
@@ -63,7 +66,15 @@
   .muted{font-size:12px;color:var(--muted)}
 
   /* splash */
-  .splash{background:var(--brand);color:#fff}
+.splash {
+  background: var(--brand);
+  color: #fff;
+  display: flex;
+  align-items: center;      /* vertical centering */
+  justify-content: center;  /* horizontal centering */
+  text-align: center;
+  flex-direction: column;   /* stack logo + button */
+}
   .logo{width:180px;height:auto;display:block;margin:0 auto 24px}
 
   /* step visibility */
