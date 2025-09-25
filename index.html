@@ -232,265 +232,200 @@
 </section>
 <script>
 document.addEventListener('DOMContentLoaded', () => {
+  /* -------------------------------------------------
+   * splash → signup
+   * ------------------------------------------------- */
   const splash = document.getElementById('splash');
   const signup = document.getElementById('signup');
-// When user taps "Sign up", hide signup and show utility page
-const signUpBtn = document.getElementById('signUpBtn');
-if (signUpBtn) {
-  signUpBtn.addEventListener('click', () => {
-    document.getElementById('signup').classList.remove('show');
-    document.getElementById('utility').classList.add('show');
-  });
-}
-  // Utility selection logic
-const sel = { electric:false, gas:false };
-const eBtn = document.getElementById('chooseElectric');
-const gBtn = document.getElementById('chooseGas');
-const fetchU = document.getElementById('fetchUtilities');
 
-function refreshFetch(){
-  const any = sel.electric || sel.gas;
-  fetchU?.classList.toggle('enabled', any);
-}
-
-eBtn?.addEventListener('click', () => {
-  sel.electric = !sel.electric;
-  eBtn.classList.toggle('selected', sel.electric);
-  refreshFetch();
-});
-
-gBtn?.addEventListener('click', () => {
-  sel.gas = !sel.gas;
-  gBtn.classList.toggle('selected', sel.gas);
-  refreshFetch();
-});
-
-fetchU?.addEventListener('click', () => {
-  if (!(sel.electric || sel.gas)) return;
-
- // Queue: electric first, then gas (if both selected)
-let uploadQueue = [];
-let uploadIndex = 0;
-
-function setUploadTitleFor(kind){
-  const titleEl = document.getElementById('uploadTitle');
-  if(kind === 'electric') titleEl.textContent = "Let’s start with your electric bill";
-  else if(kind === 'gas')  titleEl.textContent = "Now for your gas account";
-  else titleEl.textContent = "Upload your bill";
-}
-
-function startUploadFlow(){
-  uploadIndex = 0;
-  setUploadTitleFor(uploadQueue[0]);
-  resetPanels();
-  validateUpload();           // ensure Continue is disabled initially
-  document.getElementById('utility').classList.remove('show');
-  document.getElementById('upload').classList.add('show');
-  window.scrollTo(0,0);
-}
-
-fetchU?.addEventListener('click', () => {
-  if(!(sel.electric || sel.gas)) return;
-  uploadQueue = [];
-  if(sel.electric) uploadQueue.push('electric');
-  if(sel.gas)      uploadQueue.push('gas');
-  startUploadFlow();
-});
-  // ----- method buttons + panels -----
-const mBtns = {
-  manual:  document.getElementById('mBtnManual'),
-  upload:  document.getElementById('mBtnUpload'),
-  ai:      document.getElementById('mBtnAI'),
-};
-const panels = {
-  manual:  document.getElementById('m-manual'),
-  upload:  document.getElementById('m-upload'),
-  ai:      document.getElementById('m-ai'),
-};
-const continueBtn = document.getElementById('continueUpload');
-const fileInput   = document.getElementById('billFile');
-const previewEl   = document.getElementById('preview');
-
-function resetPanels(){
-  Object.values(panels).forEach(p => p.hidden = true);
-  Object.values(mBtns).forEach(b => b.classList.remove('selected'));
-  disableContinue();
-}
-function selectMethod(which){
-  resetPanels();
-  mBtns[which].classList.add('selected');
-  panels[which].hidden = false;
-  validateUpload();
-}
-function enableContinue(){ continueBtn.classList.add('enabled'); continueBtn.style.opacity='1'; continueBtn.style.pointerEvents='auto'; }
-function disableContinue(){ continueBtn.classList.remove('enabled'); continueBtn.style.opacity='.5'; continueBtn.style.pointerEvents='none'; }
-
-// button events
-mBtns.manual.addEventListener('click', ()=>selectMethod('manual'));
-mBtns.upload.addEventListener('click', ()=>selectMethod('upload'));
-mBtns.ai.addEventListener('click',     ()=>{
-  selectMethod('ai');
-  // Demo: mark as ready immediately
-  enableContinue();
-});
-
-// validation
-function validateUpload(){
-  // Manual: require three fields
-  if(!panels.manual.hidden){
-    const ok =
-      document.getElementById('acctName').value.trim() &&
-      document.getElementById('acctNumber').value.trim() &&
-      document.getElementById('serviceAddr').value.trim();
-    return ok ? enableContinue() : disableContinue();
-  }
-  // Upload: require a file
-  if(!panels.upload.hidden){
-    const ok = !!fileInput.files?.[0];
-    return ok ? enableContinue() : disableContinue();
-  }
-  // AI panel handled in its click handler
-  disableContinue();
-}
-
-// file preview for images
-fileInput?.addEventListener('change', () => {
-  const f = fileInput.files?.[0];
-  if(!f){ previewEl.style.display='none'; return validateUpload(); }
-  if(f.type.startsWith('image/')){
-    previewEl.src = URL.createObjectURL(f);
-    previewEl.style.display = 'block';
-  } else {
-    previewEl.style.display = 'none';
-  }
-  validateUpload();
-});
-
-// Continue → either next utility or finish
-continueBtn.addEventListener('click', () => {
-  if(!continueBtn.classList.contains('enabled')) return;
-  uploadIndex++;
-  if(uploadIndex < uploadQueue.length){
-    setUploadTitleFor(uploadQueue[uploadIndex]);
-    resetPanels();      // back to method choices
-    window.scrollTo(0,0);
-  } else {
-    alert('Submitted (demo). Next screen would show confirmation.');
-  }
-});
-// --- Upload method + validation ---
-const segBtns = Array.from(document.querySelectorAll('.segbtn'));
-const panels = {
-  manual: document.getElementById('m-manual'),
-  camera: document.getElementById('m-camera'),
-  file:   document.getElementById('m-file'),
-};
-let method = 'manual';
-
-const acctNumber = document.getElementById('acctNumber');
-const serviceAddress = document.getElementById('serviceAddress');
-const billCam  = document.getElementById('billCam');
-const prevCam  = document.getElementById('previewCam');
-const billFile = document.getElementById('billFile');
-const prevFile = document.getElementById('previewFile');
-const continueBtn = document.getElementById('continueUpload');
-
-function showMethod(m){
-  method = m;
-  segBtns.forEach(b=>{
-    const on = b.dataset.m===m;
-    b.classList.toggle('on', on);
-    b.setAttribute('aria-selected', on ? 'true' : 'false');
-  });
-  Object.entries(panels).forEach(([k,el])=> el.hidden = (k!==m));
-  validateUpload();
-}
-segBtns.forEach(b=> b.addEventListener('click', ()=> showMethod(b.dataset.m)));
-
-function validateUpload(){
-  let ok = false;
-  if(method==='manual'){
-    ok = !!acctNumber.value.trim() && !!serviceAddress.value.trim();
-  }else if(method==='camera'){
-    ok = !!(billCam.files && billCam.files[0]);
-  }else{
-    ok = !!(billFile.files && billFile.files[0]);
-  }
-  continueBtn.classList.toggle('enabled', ok);
-  continueBtn.toggleAttribute('disabled', !ok);
-}
-
-// live validation
-[acctNumber, serviceAddress].forEach(el=> el?.addEventListener('input', validateUpload));
-
-// previews
-function previewInto(file, imgEl){
-  if(file && file.type.startsWith('image/')){
-    const url = URL.createObjectURL(file);
-    imgEl.src = url; imgEl.style.display='block';
-  }else{
-    imgEl.style.display='none';
-  }
-}
-
-billCam?.addEventListener('change', ()=>{
-  previewInto(billCam.files?.[0], prevCam);
-  validateUpload();
-});
-billFile?.addEventListener('change', ()=>{
-  previewInto(billFile.files?.[0], prevFile);
-  validateUpload();
-});
-
-// --- Handle electric → gas queue when BOTH selected ---
-let uploadQueue = [];   // e.g., ['electric','gas']
-let uploadIndex = 0;
-
-function setUploadTitleFor(util){
-  const title = `Enter your ${util} account`;
-  document.getElementById('uploadTitle').textContent = title;
-}
-
-function resetPanels(){
-  acctNumber.value=''; serviceAddress.value='';
-  if (billCam)  billCam.value = '';
-  if (billFile) billFile.value = '';
-  prevCam.style.display='none'; prevFile.style.display='none';
-  showMethod('manual'); // default
-}
-
-// continue
-continueBtn?.addEventListener('click', ()=>{
-  if (!continueBtn.classList.contains('enabled')) return;
-
-  // Demo “save” would happen here
-
-  // Move to next utility if any
-  uploadIndex += 1;
-  if (uploadIndex < uploadQueue.length){
-    setUploadTitleFor(uploadQueue[uploadIndex]);
-    resetPanels();
-    validateUpload();
-  } else {
-    alert('Account info captured (demo).');
-    // TODO: navigate to next page in your flow
-  }
-});
   // auto-transition after 2.5s
   setTimeout(() => {
-    splash.classList.add('out');         // fade splash
-    setTimeout(() => {                   // after fade, hide splash and show signup
-      splash.style.display = 'none';
-      signup.classList.add('show');
-    }, 450);
+    splash.classList.add('out');
+    setTimeout(() => { splash.style.display = 'none'; signup.classList.add('show'); }, 450);
   }, 2500);
 
-  // optional: allow tap to skip immediately
+  // tap to skip immediately
   splash.addEventListener('click', () => {
     splash.classList.add('out');
-    setTimeout(() => { splash.style.display='none'; signup.classList.add('show'); }, 250);
+    setTimeout(() => { splash.style.display = 'none'; signup.classList.add('show'); }, 250);
   });
-  }); // end DOMContentLoaded
+
+  // “Sign up” → utility choice
+  const signUpBtn = document.getElementById('signUpBtn');
+  signUpBtn?.addEventListener('click', () => {
+    signup.classList.remove('show');
+    document.getElementById('utility').classList.add('show');
+    window.scrollTo(0,0);
+  });
+
+  /* -------------------------------------------------
+   * PAGE 3 — utility choice
+   * ------------------------------------------------- */
+  const sel = { electric:false, gas:false };
+  const eBtn   = document.getElementById('chooseElectric');
+  const gBtn   = document.getElementById('chooseGas');
+  const fetchU = document.getElementById('fetchUtilities');
+
+  function refreshFetch() {
+    const any = sel.electric || sel.gas;
+    fetchU.classList.toggle('enabled', any);
+  }
+
+  eBtn?.addEventListener('click', () => {
+    sel.electric = !sel.electric;
+    eBtn.classList.toggle('selected', sel.electric);
+    refreshFetch();
+  });
+
+  gBtn?.addEventListener('click', () => {
+    sel.gas = !sel.gas;
+    gBtn.classList.toggle('selected', sel.gas);
+    refreshFetch();
+  });
+
+  /* -------------------------------------------------
+   * PAGE 4 — account intake
+   *  - queue order: electric first, then gas (if both)
+   *  - 3 methods: manual / upload bill / AI assist
+   * ------------------------------------------------- */
+  const uploadPage  = document.getElementById('upload');
+  const utilityPage = document.getElementById('utility');
+  const titleEl     = document.getElementById('uploadTitle');
+
+  // method buttons + panels
+  const mBtns = {
+    manual: document.getElementById('mBtnManual'),
+    upload: document.getElementById('mBtnUpload'),
+    ai:     document.getElementById('mBtnAI'),
+  };
+  const panels = {
+    manual: document.getElementById('m-manual'),
+    upload: document.getElementById('m-upload'),
+    ai:     document.getElementById('m-ai'),
+  };
+
+  // inputs used by validation
+  const manualName   = document.getElementById('acctName');
+  const manualNum    = document.getElementById('acctNumber');
+  const manualAddr   = document.getElementById('serviceAddr');
+  const fileInput    = document.getElementById('billFile');
+  const previewEl    = document.getElementById('preview');
+  const continueBtn  = document.getElementById('continueUpload');
+
+  let uploadQueue = [];   // ['electric','gas']
+  let uploadIndex = 0;    // pointer into queue
+  let currentMethod = null;
+
+  function setUploadTitleFor(kind){
+    if (kind === 'electric') titleEl.textContent = "Let’s start with your electric bill";
+    else if (kind === 'gas') titleEl.textContent = "Now for your gas account";
+    else titleEl.textContent = "Upload your bill";
+  }
+
+  function enableContinue() {
+    continueBtn.classList.add('enabled');
+    continueBtn.style.opacity = '1';
+    continueBtn.style.pointerEvents = 'auto';
+  }
+  function disableContinue() {
+    continueBtn.classList.remove('enabled');
+    continueBtn.style.opacity = '.5';
+    continueBtn.style.pointerEvents = 'none';
+  }
+
+  function resetPanels() {
+    Object.values(panels).forEach(p => p.hidden = true);
+    Object.values(mBtns).forEach(b => b.classList.remove('selected'));
+    // clear inputs
+    manualName.value = '';
+    manualNum.value  = '';
+    manualAddr.value = '';
+    if (fileInput) { fileInput.value = ''; }
+    if (previewEl) { previewEl.style.display = 'none'; }
+    currentMethod = null;
+    disableContinue();
+  }
+
+  function selectMethod(which) {
+    resetPanels();
+    currentMethod = which;
+    mBtns[which].classList.add('selected');
+    panels[which].hidden = false;
+    validateUpload();
+  }
+
+  // wire method buttons
+  mBtns.manual?.addEventListener('click', () => selectMethod('manual'));
+  mBtns.upload?.addEventListener('click', () => selectMethod('upload'));
+  mBtns.ai?.addEventListener('click', () => {
+    selectMethod('ai');
+    // demo: treat AI assist as immediately valid
+    enableContinue();
+  });
+
+  // validation rules
+  function validateUpload() {
+    if (currentMethod === 'manual') {
+      const ok = manualName.value.trim() && manualNum.value.trim() && manualAddr.value.trim();
+      return ok ? enableContinue() : disableContinue();
+    }
+    if (currentMethod === 'upload') {
+      const ok = !!fileInput.files?.[0];
+      return ok ? enableContinue() : disableContinue();
+    }
+    // ai handled on click
+    disableContinue();
+  }
+
+  // live validation
+  [manualName, manualNum, manualAddr].forEach(el => el?.addEventListener('input', validateUpload));
+
+  // file preview + validation
+  fileInput?.addEventListener('change', () => {
+    const f = fileInput.files?.[0];
+    if (!f) { previewEl.style.display = 'none'; return validateUpload(); }
+    if (f.type.startsWith('image/')) {
+      previewEl.src = URL.createObjectURL(f);
+      previewEl.style.display = 'block';
+    } else {
+      previewEl.style.display = 'none';
+    }
+    validateUpload();
+  });
+
+  // start intake flow after utility selection
+  fetchU?.addEventListener('click', () => {
+    if (!(sel.electric || sel.gas)) return;
+
+    // build queue (electric first)
+    uploadQueue = [];
+    if (sel.electric) uploadQueue.push('electric');
+    if (sel.gas)      uploadQueue.push('gas');
+    uploadIndex = 0;
+
+    setUploadTitleFor(uploadQueue[0]);
+    resetPanels();
+    // default to showing method choices (none selected)
+    utilityPage.classList.remove('show');
+    uploadPage.classList.add('show');
+    window.scrollTo(0, 0);
+  });
+
+  // continue through queue
+  continueBtn?.addEventListener('click', () => {
+    if (!continueBtn.classList.contains('enabled')) return;
+
+    // (demo) here you’d persist the captured data for the current utility
+
+    uploadIndex += 1;
+    if (uploadIndex < uploadQueue.length) {
+      setUploadTitleFor(uploadQueue[uploadIndex]);
+      resetPanels();          // back to method choices for next utility
+      window.scrollTo(0, 0);
+    } else {
+      alert('Account info captured (demo).');
+      // TODO: navigate to next step/confirmation
+    }
+  });
+});
 </script>
-</body>
-</html>
