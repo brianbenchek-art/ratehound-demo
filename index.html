@@ -134,6 +134,23 @@
   opacity:1;
   pointer-events:auto;
 }
+  /* PAGE 4 — Upload bill */
+#upload{background:#fff;color:var(--ink);display:none}
+#upload.show{display:flex}
+#upload .inner{
+  margin:0 auto; width:min(92%,420px);
+  padding:28px 16px;
+  display:flex; flex-direction:column; gap:14px;
+  justify-content:flex-start; min-height:100vh;
+}
+#upload h1{margin:0 0 8px; font-size:26px; font-weight:700; text-align:center}
+#billFile{width:100%}
+#preview{display:none; width:100%; max-height:300px; object-fit:contain; border:1px solid var(--border); border-radius:8px}
+#continueUpload{
+  background:var(--brand); color:#fff; border:none; border-radius:999px;
+  font-size:20px; padding:16px 20px; opacity:.5; pointer-events:none;
+}
+#continueUpload.enabled{opacity:1; pointer-events:auto}
 </style>
 </head>
 <body>
@@ -170,6 +187,16 @@
     <button class="btn" id="fetchUtilities">One more step!</button>
   </div>
 </section>
+  <!-- PAGE 4 — Upload bill -->
+<section id="upload" class="vh">
+  <div class="inner">
+    <h1 id="uploadTitle">Upload your bill</h1>
+    <input id="billFile" type="file" accept="image/*,application/pdf" capture="environment" aria-label="Upload bill image or PDF">
+    <img id="preview" alt="Bill preview">
+    <button class="btn" id="continueUpload">Continue</button>
+    <p class="hint">Tip: first page of your bill. Demo only. No data is sent or stored.</p>
+  </div>
+</section>
 <script>
 document.addEventListener('DOMContentLoaded', () => {
   const splash = document.getElementById('splash');
@@ -190,7 +217,7 @@ const fetchU = document.getElementById('fetchUtilities');
 
 function refreshFetch(){
   const any = sel.electric || sel.gas;
-  fetchU.classList.toggle('enabled', any);
+  fetchU?.classList.toggle('enabled', any);
 }
 
 eBtn?.addEventListener('click', () => {
@@ -206,12 +233,40 @@ gBtn?.addEventListener('click', () => {
 });
 
 fetchU?.addEventListener('click', () => {
-  if(!(sel.electric || sel.gas)) return;
-  // TODO: navigate to next page
-  alert(`Selected: ${[
-    sel.electric ? 'Electric' : null,
-    sel.gas ? 'Gas' : null
-  ].filter(Boolean).join(' + ')}`);
+  if (!(sel.electric || sel.gas)) return;
+
+  const title =
+    sel.electric && sel.gas ? 'Upload your electric or gas bill' :
+    sel.electric ? 'Upload your electric bill' :
+                   'Upload your gas bill';
+  document.getElementById('uploadTitle').textContent = title;
+
+  document.getElementById('utility').classList.remove('show');
+  document.getElementById('upload').classList.add('show');
+});
+  // Enable Continue after a file is chosen and show preview for images
+const fileInput   = document.getElementById('billFile');
+const previewEl   = document.getElementById('preview');
+const continueBtn = document.getElementById('continueUpload');
+
+fileInput?.addEventListener('change', () => {
+  const f = fileInput.files?.[0];
+  if (!f) { continueBtn.classList.remove('enabled'); previewEl.style.display='none'; return; }
+
+  continueBtn.classList.add('enabled');
+
+  if (f.type.startsWith('image/')) {
+    const url = URL.createObjectURL(f);
+    previewEl.src = url;
+    previewEl.style.display = 'block';
+  } else {
+    previewEl.style.display = 'none';
+  }
+});
+
+continueBtn?.addEventListener('click', () => {
+  if (!continueBtn.classList.contains('enabled')) return;
+  alert('Proceeding to next step (demo).');
 });
   // auto-transition after 2.5s
   setTimeout(() => {
@@ -227,12 +282,7 @@ fetchU?.addEventListener('click', () => {
     splash.classList.add('out');
     setTimeout(() => { splash.style.display='none'; signup.classList.add('show'); }, 250);
   });
-
-  // placeholder submit
-  document.getElementById('signUpBtn').addEventListener('click', () => {
-    alert('Signed up (demo).');
-  });
-});
+  }); // end DOMContentLoaded
 </script>
 </body>
 </html>
