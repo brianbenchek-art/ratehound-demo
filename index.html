@@ -146,10 +146,13 @@
 }
 #upload h1{margin:0 0 8px; font-size:26px; font-weight:700; text-align:center}
 
-/* segmented method chooser */
-.seg{display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px}
-.segbtn{padding:10px 12px; border:2px solid var(--brand); background:#fff; color:var(--brand); border-radius:10px; font-weight:600}
-.segbtn.on{background:var(--brand); color:#fff;}
+/* method buttons (vertical like earlier utility buttons) */
+.method{ width:100%; height:8vh; min-height:64px;
+  display:flex; align-items:center; justify-content:center;
+  border:2px solid var(--brand); background:#fff; color:var(--brand);
+  border-radius:12px; font-weight:600; font-size:18px; margin-top:10px;
+}
+.method.selected{ background:var(--brand); color:#fff }
 
 /* panels */
 .panel[hidden]{display:none}
@@ -200,28 +203,27 @@
 <!-- PAGE 4 — Account intake -->
 <section id="upload" class="vh">
   <div class="inner">
-    <h1 id="uploadTitle">Upload your bill</h1>
+    <h1 id="uploadTitle">Let’s start with your electric bill</h1>
 
-    <!-- segmented chooser -->
-    <div class="seg">
-      <button type="button" class="sebtn" id="manualBtn">Enter Manually</button>
-      <label for="billFile" class="sebtn">Upload Bill</label>
-      <button type="button" class="sebtn" id="aiBtn">AI Assist</button>
+    <!-- three vertical method choices -->
+    <button class="method" id="mBtnManual">Enter Manually</button>
+    <button class="method" id="mBtnUpload">Upload Bill</button>
+    <button class="method" id="mBtnAI">AI Assist</button>
+
+    <!-- panels (only one shown at a time) -->
+    <div id="m-manual" class="panel" hidden>
+      <input class="field" id="acctName"  placeholder="Account name">
+      <input class="field" id="acctNumber" placeholder="Account number">
+      <input class="field" id="serviceAddr" placeholder="Service address">
     </div>
 
-    <!-- panels -->
-    <div id="manualPanel" class="panel" hidden>
-      <input class="field" placeholder="Account Number">
-      <input class="field" placeholder="Zip Code">
-    </div>
-
-    <div id="uploadPanel" class="panel" hidden>
-      <input id="billFile" type="file" accept="image/*,application/pdf" hidden>
+    <div id="m-upload" class="panel" hidden>
+      <input id="billFile" type="file" accept="image/*,application/pdf" aria-label="Upload bill image or PDF">
       <img id="preview" class="preview" alt="Bill preview">
     </div>
 
-    <div id="aiPanel" class="panel" hidden>
-      <p class="hint">AI Assist will scan your bill and auto-fill details (demo only).</p>
+    <div id="m-ai" class="panel" hidden>
+      <p class="hint">Demo only. Tapping “AI Assist” marks this step as ready.</p>
     </div>
 
     <button class="btn" id="continueUpload">Continue</button>
@@ -266,16 +268,115 @@ gBtn?.addEventListener('click', () => {
 fetchU?.addEventListener('click', () => {
   if (!(sel.electric || sel.gas)) return;
 
-  // Set dynamic title and navigate
-const titleEl = document.getElementById('uploadTitle');
-titleEl.textContent =
-  sel.electric && sel.gas ? 'Upload your electric or gas bill' :
-  sel.electric ? 'Upload your electric bill' :
-                 'Upload your gas bill';
+ // Queue: electric first, then gas (if both selected)
+let uploadQueue = [];
+let uploadIndex = 0;
 
-document.getElementById('utility').classList.remove('show');
-document.getElementById('upload').classList.add('show');
-window.scrollTo(0, 0);
+function setUploadTitleFor(kind){
+  const titleEl = document.getElementById('uploadTitle');
+  if(kind === 'electric') titleEl.textContent = "Let’s start with your electric bill";
+  else if(kind === 'gas')  titleEl.textContent = "Now for your gas account";
+  else titleEl.textContent = "Upload your bill";
+}
+
+function startUploadFlow(){
+  uploadIndex = 0;
+  setUploadTitleFor(uploadQueue[0]);
+  resetPanels();
+  validateUpload();           // ensure Continue is disabled initially
+  document.getElementById('utility').classList.remove('show');
+  document.getElementById('upload').classList.add('show');
+  window.scrollTo(0,0);
+}
+
+fetchU?.addEventListener('click', () => {
+  if(!(sel.electric || sel.gas)) return;
+  uploadQueue = [];
+  if(sel.electric) uploadQueue.push('electric');
+  if(sel.gas)      uploadQueue.push('gas');
+  startUploadFlow();
+});
+  // ----- method buttons + panels -----
+const mBtns = {
+  manual:  document.getElementById('mBtnManual'),
+  upload:  document.getElementById('mBtnUpload'),
+  ai:      document.getElementById('mBtnAI'),
+};
+const panels = {
+  manual:  document.getElementById('m-manual'),
+  upload:  document.getElementById('m-upload'),
+  ai:      document.getElementById('m-ai'),
+};
+const continueBtn = document.getElementById('continueUpload');
+const fileInput   = document.getElementById('billFile');
+const previewEl   = document.getElementById('preview');
+
+function resetPanels(){
+  Object.values(panels).forEach(p => p.hidden = true);
+  Object.values(mBtns).forEach(b => b.classList.remove('selected'));
+  disableContinue();
+}
+function selectMethod(which){
+  resetPanels();
+  mBtns[which].classList.add('selected');
+  panels[which].hidden = false;
+  validateUpload();
+}
+function enableContinue(){ continueBtn.classList.add('enabled'); continueBtn.style.opacity='1'; continueBtn.style.pointerEvents='auto'; }
+function disableContinue(){ continueBtn.classList.remove('enabled'); continueBtn.style.opacity='.5'; continueBtn.style.pointerEvents='none'; }
+
+// button events
+mBtns.manual.addEventListener('click', ()=>selectMethod('manual'));
+mBtns.upload.addEventListener('click', ()=>selectMethod('upload'));
+mBtns.ai.addEventListener('click',     ()=>{
+  selectMethod('ai');
+  // Demo: mark as ready immediately
+  enableContinue();
+});
+
+// validation
+function validateUpload(){
+  // Manual: require three fields
+  if(!panels.manual.hidden){
+    const ok =
+      document.getElementById('acctName').value.trim() &&
+      document.getElementById('acctNumber').value.trim() &&
+      document.getElementById('serviceAddr').value.trim();
+    return ok ? enableContinue() : disableContinue();
+  }
+  // Upload: require a file
+  if(!panels.upload.hidden){
+    const ok = !!fileInput.files?.[0];
+    return ok ? enableContinue() : disableContinue();
+  }
+  // AI panel handled in its click handler
+  disableContinue();
+}
+
+// file preview for images
+fileInput?.addEventListener('change', () => {
+  const f = fileInput.files?.[0];
+  if(!f){ previewEl.style.display='none'; return validateUpload(); }
+  if(f.type.startsWith('image/')){
+    previewEl.src = URL.createObjectURL(f);
+    previewEl.style.display = 'block';
+  } else {
+    previewEl.style.display = 'none';
+  }
+  validateUpload();
+});
+
+// Continue → either next utility or finish
+continueBtn.addEventListener('click', () => {
+  if(!continueBtn.classList.contains('enabled')) return;
+  uploadIndex++;
+  if(uploadIndex < uploadQueue.length){
+    setUploadTitleFor(uploadQueue[uploadIndex]);
+    resetPanels();      // back to method choices
+    window.scrollTo(0,0);
+  } else {
+    alert('Submitted (demo). Next screen would show confirmation.');
+  }
 });
 // --- Upload method + validation ---
 const segBtns = Array.from(document.querySelectorAll('.segbtn'));
