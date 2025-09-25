@@ -197,37 +197,35 @@
     <button class="btn" id="fetchUtilities">One more step!</button>
   </div>
 </section>
-  <!-- PAGE 4 — Upload bill -->
+<!-- PAGE 4 — Account intake -->
 <section id="upload" class="vh">
   <div class="inner">
-    <h1 id="uploadTitle">Account info</h1>
+    <h1 id="uploadTitle">Upload your bill</h1>
 
-    <div class="seg" role="tablist" aria-label="Choose entry method">
-      <button class="segbtn on"  data-m="manual" aria-selected="true">Manual</button>
-      <button class="segbtn"     data-m="camera" aria-selected="false">Take picture</button>
-      <button class="segbtn"     data-m="file"   aria-selected="false">Upload file</button>
+    <!-- segmented chooser -->
+    <div class="seg">
+      <button type="button" class="sebtn" id="manualBtn">Enter Manually</button>
+      <label for="billFile" class="sebtn">Upload Bill</label>
+      <button type="button" class="sebtn" id="aiBtn">AI Assist</button>
     </div>
 
-    <!-- Manual panel -->
-    <div id="m-manual" class="panel">
-      <input class="field" id="acctNumber" placeholder="Account number">
-      <input class="field" id="serviceAddress" placeholder="Service address">
+    <!-- panels -->
+    <div id="manualPanel" class="panel" hidden>
+      <input class="field" placeholder="Account Number">
+      <input class="field" placeholder="Zip Code">
     </div>
 
-    <!-- Camera panel (opens camera) -->
-    <div id="m-camera" class="panel" hidden>
-      <input id="billCam" type="file" accept="image/*" capture="environment" aria-label="Take a photo of the bill">
-      <img id="previewCam" class="preview" alt="Preview">
+    <div id="uploadPanel" class="panel" hidden>
+      <input id="billFile" type="file" accept="image/*,application/pdf" hidden>
+      <img id="preview" class="preview" alt="Bill preview">
     </div>
 
-    <!-- File upload panel (picker, no camera hint) -->
-    <div id="m-file" class="panel" hidden>
-      <input id="billFile" type="file" accept="image/*,application/pdf" aria-label="Upload bill image or PDF">
-      <img id="previewFile" class="preview" alt="Preview">
+    <div id="aiPanel" class="panel" hidden>
+      <p class="hint">AI Assist will scan your bill and auto-fill details (demo only).</p>
     </div>
 
     <button class="btn" id="continueUpload">Continue</button>
-    <p class="hint" id="uploadHint">You can enter fields, take a photo, or upload a file. Demo only.</p>
+    <p class="hint">Demo only. No data is sent or stored.</p>
   </div>
 </section>
 <script>
