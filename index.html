@@ -439,12 +439,13 @@ let shownElectricTip = false; // show the 080 tip only once per electric step
   enableContinue();
   return;
 }
-    if (currentMethod === 'upload') {
-      const ok = !!fileInput.files?.[0];
-      return ok ? enableContinue() : disableContinue();
-    }
-    // ai handled on click
-    disableContinue();
+if (currentMethod === 'upload') {
+  const ok = !!fileInput.files?.[0];
+  return ok ? enableContinue() : disableContinue();
+}
+
+// default: no valid method yet
+disableContinue();
   }
 
   // live validation
@@ -472,7 +473,7 @@ let shownElectricTip = false; // show the 080 tip only once per electric step
     if (sel.electric) uploadQueue.push('electric');
     if (sel.gas)      uploadQueue.push('gas');
     uploadIndex = 0;
-    shownElectricTip = false;
+    shownElectricTip = false; // reset the once-per-electric guard
 
    setUploadTitleFor(uploadQueue[0]);
 
