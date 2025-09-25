@@ -134,7 +134,8 @@
   opacity:1;
   pointer-events:auto;
 }
-  /* PAGE 4 — Upload bill */
+
+/* PAGE 4 — Account intake */
 #upload{background:#fff;color:var(--ink);display:none}
 #upload.show{display:flex}
 #upload .inner{
@@ -144,8 +145,17 @@
   justify-content:flex-start; min-height:100vh;
 }
 #upload h1{margin:0 0 8px; font-size:26px; font-weight:700; text-align:center}
-#billFile{width:100%}
-#preview{display:none; width:100%; max-height:300px; object-fit:contain; border:1px solid var(--border); border-radius:8px}
+
+/* segmented method chooser */
+.seg{display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px}
+.segbtn{padding:10px 12px; border:2px solid var(--brand); background:#fff; color:var(--brand); border-radius:10px; font-weight:600}
+.segbtn.on{background:var(--brand); color:#fff;}
+
+/* panels */
+.panel[hidden]{display:none}
+.preview{display:none; width:100%; max-height:300px; object-fit:contain; border:1px solid var(--border); border-radius:8px}
+
+/* continue */
 #continueUpload{
   background:var(--brand); color:#fff; border:none; border-radius:999px;
   font-size:20px; padding:16px 20px; opacity:.5; pointer-events:none;
@@ -190,11 +200,34 @@
   <!-- PAGE 4 — Upload bill -->
 <section id="upload" class="vh">
   <div class="inner">
-    <h1 id="uploadTitle">Upload your bill</h1>
-    <input id="billFile" type="file" accept="image/*,application/pdf" capture="environment" aria-label="Upload bill image or PDF">
-    <img id="preview" alt="Bill preview">
+    <h1 id="uploadTitle">Account info</h1>
+
+    <div class="seg" role="tablist" aria-label="Choose entry method">
+      <button class="segbtn on"  data-m="manual" aria-selected="true">Manual</button>
+      <button class="segbtn"     data-m="camera" aria-selected="false">Take picture</button>
+      <button class="segbtn"     data-m="file"   aria-selected="false">Upload file</button>
+    </div>
+
+    <!-- Manual panel -->
+    <div id="m-manual" class="panel">
+      <input class="field" id="acctNumber" placeholder="Account number">
+      <input class="field" id="serviceAddress" placeholder="Service address">
+    </div>
+
+    <!-- Camera panel (opens camera) -->
+    <div id="m-camera" class="panel" hidden>
+      <input id="billCam" type="file" accept="image/*" capture="environment" aria-label="Take a photo of the bill">
+      <img id="previewCam" class="preview" alt="Preview">
+    </div>
+
+    <!-- File upload panel (picker, no camera hint) -->
+    <div id="m-file" class="panel" hidden>
+      <input id="billFile" type="file" accept="image/*,application/pdf" aria-label="Upload bill image or PDF">
+      <img id="previewFile" class="preview" alt="Preview">
+    </div>
+
     <button class="btn" id="continueUpload">Continue</button>
-    <p class="hint">Tip: first page of your bill. Demo only. No data is sent or stored.</p>
+    <p class="hint" id="uploadHint">You can enter fields, take a photo, or upload a file. Demo only.</p>
   </div>
 </section>
 <script>
@@ -235,38 +268,116 @@ gBtn?.addEventListener('click', () => {
 fetchU?.addEventListener('click', () => {
   if (!(sel.electric || sel.gas)) return;
 
-  const title =
-    sel.electric && sel.gas ? 'Upload your electric or gas bill' :
-    sel.electric ? 'Upload your electric bill' :
-                   'Upload your gas bill';
-  document.getElementById('uploadTitle').textContent = title;
+  // Build the queue in desired order: electric first, then gas
+  uploadQueue = [];
+  if (sel.electric) uploadQueue.push('electric');
+  if (sel.gas)      uploadQueue.push('gas');
+  uploadIndex = 0;
+
+  setUploadTitleFor(uploadQueue[0]);
+  resetPanels();
+  validateUpload();
 
   document.getElementById('utility').classList.remove('show');
   document.getElementById('upload').classList.add('show');
 });
-  // Enable Continue after a file is chosen and show preview for images
-const fileInput   = document.getElementById('billFile');
-const previewEl   = document.getElementById('preview');
+// --- Upload method + validation ---
+const segBtns = Array.from(document.querySelectorAll('.segbtn'));
+const panels = {
+  manual: document.getElementById('m-manual'),
+  camera: document.getElementById('m-camera'),
+  file:   document.getElementById('m-file'),
+};
+let method = 'manual';
+
+const acctNumber = document.getElementById('acctNumber');
+const serviceAddress = document.getElementById('serviceAddress');
+const billCam  = document.getElementById('billCam');
+const prevCam  = document.getElementById('previewCam');
+const billFile = document.getElementById('billFile');
+const prevFile = document.getElementById('previewFile');
 const continueBtn = document.getElementById('continueUpload');
 
-fileInput?.addEventListener('change', () => {
-  const f = fileInput.files?.[0];
-  if (!f) { continueBtn.classList.remove('enabled'); previewEl.style.display='none'; return; }
+function showMethod(m){
+  method = m;
+  segBtns.forEach(b=>{
+    const on = b.dataset.m===m;
+    b.classList.toggle('on', on);
+    b.setAttribute('aria-selected', on ? 'true' : 'false');
+  });
+  Object.entries(panels).forEach(([k,el])=> el.hidden = (k!==m));
+  validateUpload();
+}
+segBtns.forEach(b=> b.addEventListener('click', ()=> showMethod(b.dataset.m)));
 
-  continueBtn.classList.add('enabled');
-
-  if (f.type.startsWith('image/')) {
-    const url = URL.createObjectURL(f);
-    previewEl.src = url;
-    previewEl.style.display = 'block';
-  } else {
-    previewEl.style.display = 'none';
+function validateUpload(){
+  let ok = false;
+  if(method==='manual'){
+    ok = !!acctNumber.value.trim() && !!serviceAddress.value.trim();
+  }else if(method==='camera'){
+    ok = !!(billCam.files && billCam.files[0]);
+  }else{
+    ok = !!(billFile.files && billFile.files[0]);
   }
+  continueBtn.classList.toggle('enabled', ok);
+  continueBtn.toggleAttribute('disabled', !ok);
+}
+
+// live validation
+[acctNumber, serviceAddress].forEach(el=> el?.addEventListener('input', validateUpload));
+
+// previews
+function previewInto(file, imgEl){
+  if(file && file.type.startsWith('image/')){
+    const url = URL.createObjectURL(file);
+    imgEl.src = url; imgEl.style.display='block';
+  }else{
+    imgEl.style.display='none';
+  }
+}
+
+billCam?.addEventListener('change', ()=>{
+  previewInto(billCam.files?.[0], prevCam);
+  validateUpload();
+});
+billFile?.addEventListener('change', ()=>{
+  previewInto(billFile.files?.[0], prevFile);
+  validateUpload();
 });
 
-continueBtn?.addEventListener('click', () => {
+// --- Handle electric → gas queue when BOTH selected ---
+let uploadQueue = [];   // e.g., ['electric','gas']
+let uploadIndex = 0;
+
+function setUploadTitleFor(util){
+  const title = `Enter your ${util} account`;
+  document.getElementById('uploadTitle').textContent = title;
+}
+
+function resetPanels(){
+  acctNumber.value=''; serviceAddress.value='';
+  if (billCam)  billCam.value = '';
+  if (billFile) billFile.value = '';
+  prevCam.style.display='none'; prevFile.style.display='none';
+  showMethod('manual'); // default
+}
+
+// continue
+continueBtn?.addEventListener('click', ()=>{
   if (!continueBtn.classList.contains('enabled')) return;
-  alert('Proceeding to next step (demo).');
+
+  // Demo “save” would happen here
+
+  // Move to next utility if any
+  uploadIndex += 1;
+  if (uploadIndex < uploadQueue.length){
+    setUploadTitleFor(uploadQueue[uploadIndex]);
+    resetPanels();
+    validateUpload();
+  } else {
+    alert('Account info captured (demo).');
+    // TODO: navigate to next page in your flow
+  }
 });
   // auto-transition after 2.5s
   setTimeout(() => {
