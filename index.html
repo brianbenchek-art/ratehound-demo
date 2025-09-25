@@ -410,9 +410,24 @@ document.addEventListener('DOMContentLoaded', () => {
   // validation rules
   function validateUpload() {
     if (currentMethod === 'manual') {
-      const ok = manualName.value.trim() && manualNum.value.trim() && manualAddr.value.trim();
-      return ok ? enableContinue() : disableContinue();
-    }
+  const filled = manualName.value.trim() && manualNum.value.trim() && manualAddr.value.trim();
+
+  if (!filled) {
+    disableContinue();
+    return;
+  }
+
+  // Extra rule only for electric accounts
+  if (uploadQueue[uploadIndex] === 'electric' && !manualNum.value.startsWith('080')) {
+    disableContinue();
+    manualTip.classList.add('show');         // show the modal reminder
+    document.body.classList.add('modal-open');
+    return;
+  }
+
+  enableContinue();
+  return;
+}
     if (currentMethod === 'upload') {
       const ok = !!fileInput.files?.[0];
       return ok ? enableContinue() : disableContinue();
