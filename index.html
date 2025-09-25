@@ -164,6 +164,50 @@
   font-size:20px; padding:16px 20px; opacity:.5; pointer-events:none;
 }
 #continueUpload.enabled{opacity:1; pointer-events:auto}
+/* modal tip */
+.modal {
+  position: fixed;
+  inset: 0;
+  display: none;
+  place-items: center;
+  background: #0008;
+  z-index: 50;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+.modal.show {
+  display: grid;
+  opacity: 1;
+}
+.modal .box {
+  background: #fff;
+  color: var(--ink);
+  width: min(92%, 420px);
+  border-radius: 12px;
+  padding: 16px 16px 12px;
+  border: 2px solid var(--border);
+  position: relative;
+}
+.modal .close {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  border: 0;
+  background: transparent;
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+  color: var(--ink);
+}
+.modal h3 {
+  margin: 0 0 8px;
+  font-size: 18px;
+}
+
+/* lock background scroll when modal open */
+body.modal-open {
+  overflow: hidden;
+}  
 </style>
 </head>
 <body>
@@ -238,11 +282,11 @@ document.addEventListener('DOMContentLoaded', () => {
   const splash = document.getElementById('splash');
   const signup = document.getElementById('signup');
 
-  // auto-transition after 2.5s
+  // auto-transition after 2.3s
   setTimeout(() => {
     splash.classList.add('out');
     setTimeout(() => { splash.style.display = 'none'; signup.classList.add('show'); }, 450);
-  }, 2500);
+  }, 2300);
 
   // tap to skip immediately
   splash.addEventListener('click', () => {
@@ -429,8 +473,43 @@ continueBtn.addEventListener('click', () => {
     alert('Submitted (demo). Next screen would show confirmation.');
   }
 }); // end Continue click
-  
+// modal elements
+const manualTip  = document.getElementById('manualTip');
+const tipClose   = document.getElementById('tipClose');
+
+// open modal only when "manual" is chosen AND current utility is electric
+// (replace the old one-liner manual listener)
+mBtns.manual?.addEventListener('click', () => {
+  selectMethod('manual');
+  if (uploadQueue[uploadIndex] === 'electric') {
+    manualTip.classList.add('show');          // reveal the modal
+    document.body.classList.add('modal-open'); // lock background scroll
+  }
+});
+
+// close modal when X is clicked
+tipClose?.addEventListener('click', () => {
+  manualTip.classList.remove('show');
+  document.body.classList.remove('modal-open');
+});
+
+// also close modal if user clicks outside the box
+manualTip?.addEventListener('click', (e) => {
+  if (e.target === manualTip) {
+    manualTip.classList.remove('show');
+    document.body.classList.remove('modal-open');
+  }
+});  
 }); // end DOMContentLoaded
 </script>
+  
+    <!-- Modal Tip -->
+  <div id="manualTip" class="modal">
+    <div class="box">
+      <button class="close" id="closeTip">&times;</button>
+      <h3>Tip</h3>
+      <p>Customer Number must begin with 080.</p>
+    </div>
+  </div>
 </body>
 </html>
