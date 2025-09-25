@@ -411,21 +411,22 @@ document.addEventListener('DOMContentLoaded', () => {
     window.scrollTo(0, 0);
   });
 
-  // continue through queue
-  continueBtn?.addEventListener('click', () => {
-    if (!continueBtn.classList.contains('enabled')) return;
+// Continue → either next utility or finish
+continueBtn.addEventListener('click', () => {
+  if(!continueBtn.classList.contains('enabled')) return;
 
-    // (demo) here you’d persist the captured data for the current utility
+  uploadIndex++;
+  if(uploadIndex < uploadQueue.length){
+    setUploadTitleFor(uploadQueue[uploadIndex]);
+    resetPanels();      // back to method choices
+    window.scrollTo(0,0);
 
-    uploadIndex += 1;
-    if (uploadIndex < uploadQueue.length) {
-      setUploadTitleFor(uploadQueue[uploadIndex]);
-      resetPanels();          // back to method choices for next utility
-      window.scrollTo(0, 0);
-    } else {
-      alert('Account info captured (demo).');
-      // TODO: navigate to next step/confirmation
-    }
-  });
+    // make sure button says Continue during intermediate step
+    continueBtn.textContent = "Continue";
+  } else {
+    // final step reached
+    continueBtn.textContent = "Fetch my savings!";
+    alert('Submitted (demo). Next screen would show confirmation.');
+  }
 });
 </script>
