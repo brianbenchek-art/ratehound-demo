@@ -447,12 +447,19 @@ document.addEventListener('DOMContentLoaded', () => {
     if (sel.gas)      uploadQueue.push('gas');
     uploadIndex = 0;
 
-    setUploadTitleFor(uploadQueue[0]);
-    resetPanels();
-    // default to showing method choices (none selected)
-    utilityPage.classList.remove('show');
-    uploadPage.classList.add('show');
-    window.scrollTo(0, 0);
+   setUploadTitleFor(uploadQueue[0]);
+
+// label depends on queue
+if (uploadQueue.length === 2 && uploadQueue[0] === 'electric') {
+  continueBtn.textContent = 'Continue to gas account';
+} else {
+  continueBtn.textContent = 'Fetch my savings!';
+}
+
+resetPanels(); // keeps it disabled until valid
+
+utilityPage.classList.remove('show');
+uploadPage.classList.add('show');
   });
 
 // Continue → either next utility or finish
@@ -460,16 +467,15 @@ continueBtn.addEventListener('click', () => {
   if(!continueBtn.classList.contains('enabled')) return;
 
   uploadIndex++;
-  if(uploadIndex < uploadQueue.length){
-    setUploadTitleFor(uploadQueue[uploadIndex]);
-    resetPanels();      // back to method choices
-    window.scrollTo(0,0);
 
-    // make sure button says Continue during intermediate step
-    continueBtn.textContent = "Continue";
+  if (uploadIndex < uploadQueue.length) {
+    // now on gas
+    setUploadTitleFor(uploadQueue[uploadIndex]);
+    continueBtn.textContent = 'Fetch my savings!';
+    resetPanels();                 // disables until gas info is valid
+    window.scrollTo(0,0);
   } else {
-    // final step reached
-    continueBtn.textContent = "Fetch my savings!";
+    // finished both or single utility
     alert('Submitted (demo). Next screen would show confirmation.');
   }
 }); // end Continue click
