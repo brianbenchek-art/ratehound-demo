@@ -356,9 +356,10 @@ document.addEventListener('DOMContentLoaded', () => {
   const previewEl    = document.getElementById('preview');
   const continueBtn  = document.getElementById('continueUpload');
 
-  let uploadQueue = [];   // ['electric','gas']
-  let uploadIndex = 0;    // pointer into queue
-  let currentMethod = null;
+let uploadQueue = [];   // ['electric','gas']
+let uploadIndex = 0;    // pointer into queue
+let currentMethod = null;
+let shownElectricTip = false; // show the 080 tip only once per electric step
 
   function setUploadTitleFor(kind){
     if (kind === 'electric') titleEl.textContent = "Let’s start with your electric account.";
@@ -410,7 +411,10 @@ document.addEventListener('DOMContentLoaded', () => {
   // validation rules
   function validateUpload() {
     if (currentMethod === 'manual') {
-  const filled = manualName.value.trim() && manualNum.value.trim() && manualAddr.value.trim();
+  const filled =
+    manualName.value.trim() &&
+    manualNum.value.trim() &&
+    manualAddr.value.trim();
 
   if (!filled) {
     disableContinue();
@@ -418,13 +422,20 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // Extra rule only for electric accounts
-  if (uploadQueue[uploadIndex] === 'electric' && !manualNum.value.startsWith('080')) {
+  const isElectric = uploadQueue[uploadIndex] === 'electric';
+  const starts080 = manualNum.value.startsWith('080');
+
+  if (isElectric && !starts080) {
     disableContinue();
-    manualTip.classList.add('show');         // show the modal reminder
-    document.body.classList.add('modal-open');
+    if (!shownElectricTip) {
+      shownElectricTip = true;
+      manualTip.classList.add('show');
+      document.body.classList.add('modal-open');
+    }
     return;
   }
 
+  // valid case
   enableContinue();
   return;
 }
@@ -461,6 +472,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (sel.electric) uploadQueue.push('electric');
     if (sel.gas)      uploadQueue.push('gas');
     uploadIndex = 0;
+    shownElectricTip = false;
 
    setUploadTitleFor(uploadQueue[0]);
 
@@ -482,6 +494,7 @@ continueBtn.addEventListener('click', () => {
   if(!continueBtn.classList.contains('enabled')) return;
 
   uploadIndex++;
+  shownElectricTip = false; // new step, allow showing the tip once again if needed
 
   if (uploadIndex < uploadQueue.length) {
     // now on gas
