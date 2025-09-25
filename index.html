@@ -266,18 +266,16 @@ gBtn?.addEventListener('click', () => {
 fetchU?.addEventListener('click', () => {
   if (!(sel.electric || sel.gas)) return;
 
-  // Build the queue in desired order: electric first, then gas
-  uploadQueue = [];
-  if (sel.electric) uploadQueue.push('electric');
-  if (sel.gas)      uploadQueue.push('gas');
-  uploadIndex = 0;
+  // Set dynamic title and navigate
+const titleEl = document.getElementById('uploadTitle');
+titleEl.textContent =
+  sel.electric && sel.gas ? 'Upload your electric or gas bill' :
+  sel.electric ? 'Upload your electric bill' :
+                 'Upload your gas bill';
 
-  setUploadTitleFor(uploadQueue[0]);
-  resetPanels();
-  validateUpload();
-
-  document.getElementById('utility').classList.remove('show');
-  document.getElementById('upload').classList.add('show');
+document.getElementById('utility').classList.remove('show');
+document.getElementById('upload').classList.add('show');
+window.scrollTo(0, 0);
 });
 // --- Upload method + validation ---
 const segBtns = Array.from(document.querySelectorAll('.segbtn'));
