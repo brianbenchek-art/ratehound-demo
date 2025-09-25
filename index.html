@@ -179,7 +179,7 @@
 <!-- Signup landing -->
 <section id="signup" class="vh">
   <div class="inner">
-    <h1>Let’s save you some money!</h1>
+    <h1>Get ready to save some money!</h1>
     <input class="field" id="name" placeholder="Full name" autocomplete="name" inputmode="text">
     <input class="field" id="phone" placeholder="Phone" autocomplete="tel" inputmode="tel">
     <input class="field" id="email" placeholder="Email" type="email" autocomplete="email">
@@ -203,7 +203,7 @@
 <!-- PAGE 4 — Account intake -->
 <section id="upload" class="vh">
   <div class="inner">
-    <h1 id="uploadTitle">Let’s start with your electric bill</h1>
+    <h1 id="uploadTitle">Let’s start with your electric account</h1>
 
     <!-- three vertical method choices -->
     <button class="method" id="mBtnManual">Enter Manually</button>
@@ -317,8 +317,8 @@ document.addEventListener('DOMContentLoaded', () => {
   let currentMethod = null;
 
   function setUploadTitleFor(kind){
-    if (kind === 'electric') titleEl.textContent = "Let’s start with your electric bill";
-    else if (kind === 'gas') titleEl.textContent = "Now for your gas account";
+    if (kind === 'electric') titleEl.textContent = "Let’s start with your electric account.";
+    else if (kind === 'gas') titleEl.textContent = "Now for your gas account.";
     else titleEl.textContent = "Upload your bill";
   }
 
