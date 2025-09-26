@@ -408,30 +408,39 @@ let shownElectricTip = false; // show the 080 tip only once per electric step
     enableContinue();
   });
 
-  // validation rules
-  function validateUpload() {
-    if (currentMethod === 'manual') {
-  const filled =
-    manualName.value.trim() &&
-    manualNum.value.trim() &&
-    manualAddr.value.trim();
+ // validation rules
+function validateUpload() {
+  if (currentMethod === 'manual') {
+    const nameOk = manualName.value.trim();
+    const numVal = manualNum.value.trim();
+    const addrOk = manualAddr.value.trim();
 
-  if (!filled) {
-    disableContinue();
-    return;
+    // apply the 080 rule ONLY for electric and ONLY to the account number
+    let electricRuleOk = true;
+    if (uploadQueue[uploadIndex] === 'electric' && numVal) {
+      if (!numVal.startsWith('080')) {
+        electricRuleOk = false;
+        // show tip once and lock background
+        if (!document.body.classList.contains('modal-open')) {
+          manualTip.classList.add('show');           // uses your existing modal
+          document.body.classList.add('modal-open'); // prevent background scroll
+        }
+      }
+    }
+
+    return (nameOk && numVal && addrOk && electricRuleOk)
+      ? enableContinue()
+      : disableContinue();
   }
 
-  // Extra rule only for electric accounts
-  const isElectric = uploadQueue[uploadIndex] === 'electric';
-  const starts080 = manualNum.value.startsWith('080');
+  if (currentMethod === 'upload') {
+    const ok = !!fileInput.files?.[0];
+    return ok ? enableContinue() : disableContinue();
+  }
 
-  if (isElectric && !starts080) {
-    disableContinue();
-    if (!shownElectricTip) {
-      shownElectricTip = true;
-      manualTip.classList.add('show');
-      document.body.classList.add('modal-open');
-    }
+  // AI panel is enabled on click handler; keep disabled here
+  disableContinue();
+}
     return;
   }
 
