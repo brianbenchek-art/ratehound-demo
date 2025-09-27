@@ -33,238 +33,214 @@
   #signup.show{display:flex}
   #signup .inner{margin:0 auto; width:min(92%,420px); padding:28px 16px; display:flex; flex-direction:column; gap:14px}
   #signup .inner h1 {
-  margin: 0 0 12px;      /* adds more space below the heading */
-  font-size: 26px;       /* larger text */
-  font-weight: 700;      /* bold for emphasis */
-  text-align: center;    /* centers it above the fields */
-  color: var(--ink);     /* keep your current text color */
-}
+    margin: 0 0 12px;
+    font-size: 26px;
+    font-weight: 700;
+    text-align: center;
+    color: var(--ink);
+  }
   .field {
-  width: 100%;
-  padding: 12px 14px;
-  border: 2px solid var(--border);
-  border-radius: 12px;
-  background: #fff;
-  color: var(--ink);
-  font-size: 16px;     /* 👈 prevents Safari zoom on focus */
-  box-sizing: border-box;
-}
+    width: 100%;
+    padding: 12px 14px;
+    border: 2px solid var(--border);
+    border-radius: 12px;
+    background: #fff;
+    color: var(--ink);
+    font-size: 16px;
+  }
   .btn{
     width:100%; padding:14px 18px; border:2px solid var(--brand);
     border-radius:999px; background:#fff; color:var(--brand); font-weight:700; text-align:center; cursor:pointer;
   }
-  /* Special styling only for the Sign Up button */
-#signUpBtn {
-  background: var(--brand);   /* green */
-  color: #fff;                /* white text */
-  font-size: 20px;            /* larger text */
-  padding: 16px 20px;         /* taller button */
-  border: none;               /* remove outline */
-  border-radius: 999px;       /* pill shape */
-  font-weight: 700;           /* bold */
-  text-align: center;         /* center text */
-  cursor: pointer;            /* pointer on hover */
-}
-  /* Special styling for the "Both" button */
-#bothBtn {
-  background: var(--brand);   /* green background */
-  color: #fff;                /* white text */
-  font-size: 20px;            /* larger text */
-  border: none;               /* remove outline */
-  border-radius: 999px;        /* rounded but not pill-shaped */
-  font-weight: 700;           /* bold */
-  text-align: center;
-  cursor: pointer;
-}
+  #signUpBtn {
+    background: var(--brand);
+    color: #fff;
+    font-size: 20px;
+    padding: 16px 20px;
+    border: none;
+    border-radius: 999px;
+    font-weight: 700;
+    text-align: center;
+    cursor: pointer;
+  }
   #signUpBtn:active {
-  background: #0f3a05; /* darker green when pressed */
-  transform: scale(0.98); /* slight press-down effect */
-}
+    background: #0f3a05;
+    transform: scale(0.98);
+  }
+  #bothBtn {
+    background: var(--brand);
+    color: #fff;
+    font-size: 20px;
+    border: none;
+    border-radius: 999px;
+    font-weight: 700;
+    text-align: center;
+    cursor: pointer;
+  }
   .btn:active{transform:scale(.99)}
   .hint{color:var(--muted); font-size:12px; text-align:center; margin-top:6px}
+
   /* PAGE 3 — Utility choice */
-#utility{background:#fff;color:var(--ink);display:none}
-#utility.show{display:flex}
-#utility .inner{
-  margin:0 auto; width:min(92%,420px);
-  padding:28px 16px;
-  display:flex; flex-direction:column; gap:16px;
-  justify-content:center;               /* vertical center */
-  min-height:100vh;
-  margin-top:-15vh;  /* nudges everything up slightly */
-}
-#utility h1{
-  margin:0 0 12px; font-size:26px; font-weight:700; text-align:center; color:var(--ink);
-}
-.btn.tall{
-  height:8vh;
-  display:flex; align-items:center; justify-content:center;
-  border:2px solid var(--brand); background:#fff; color:var(--brand);
-  border-radius:12px; font-weight:600; font-size:18px; width:100%;
-}
-  /* utility select states */
-.btn.selectable {
-  background:#fff;
-  color:var(--brand);
-  border:2px solid var(--brand);
-}
-.btn.selectable.selected {
-  background:var(--brand);
-  color:#fff;
-}
+  #utility{background:#fff;color:var(--ink);display:none}
+  #utility.show{display:flex}
+  #utility .inner{
+    margin:0 auto; width:min(92%,420px);
+    padding:28px 16px;
+    display:flex; flex-direction:column; gap:16px;
+    justify-content:center;
+    min-height:100vh;
+    margin-top:-15vh;
+  }
+  #utility h1{margin:0 0 12px; font-size:26px; font-weight:700; text-align:center; color:var(--ink);}
+  .btn.tall{
+    height:8vh;
+    display:flex; align-items:center; justify-content:center;
+    border:2px solid var(--brand); background:#fff; color:var(--brand);
+    border-radius:12px; font-weight:600; font-size:18px; width:100%;
+  }
+  .btn.selectable { background:#fff; color:var(--brand); border:2px solid var(--brand); }
+  .btn.selectable.selected { background:var(--brand); color:#fff; }
 
-/* hint and Fetch button */
-.utilityHint {
-  color:var(--muted);
-  text-align:center;
-  margin-top:6px;
-}
-#fetchUtilities {
-  margin-top:16px;
-  background:var(--brand);
-  color:#fff;
-  border:none;
-  border-radius:999px;
-  font-size:20px;
-  padding:16px 20px;
-  opacity:.5;
-  pointer-events:none; /* disabled until choice */
-}
-#fetchUtilities.enabled {
-  opacity:1;
-  pointer-events:auto;
-}
+  .utilityHint { color:var(--muted); text-align:center; margin-top:6px; }
+  #fetchUtilities {
+    margin-top:16px;
+    background:var(--brand); color:#fff;
+    border:none; border-radius:999px;
+    font-size:20px; padding:16px 20px;
+    opacity:.5; pointer-events:none;
+  }
+  #fetchUtilities.enabled { opacity:1; pointer-events:auto; }
 
-/* PAGE 4 — Account intake */
-#upload{background:#fff;color:var(--ink);display:none}
-#upload.show{display:flex}
-#upload .inner{
-  margin:0 auto; width:min(92%,420px);
-  padding:28px 16px;
-  display:flex; flex-direction:column; gap:14px;
-  justify-content:flex-start; min-height:100vh;
-}
-#upload h1{margin:0 0 8px; font-size:26px; font-weight:700; text-align:center}
+  /* PAGE 4 — Account intake */
+  #upload{background:#fff;color:var(--ink);display:none}
+  #upload.show{display:flex}
+  #upload .inner{
+    margin:0 auto; width:min(92%,420px);
+    padding:28px 16px;
+    display:flex; flex-direction:column; gap:14px;
+    justify-content:flex-start; min-height:100vh;
+  }
+  #upload h1{margin:0 0 8px; font-size:26px; font-weight:700; text-align:center}
+  .method{
+    width:100%; height:8vh; min-height:64px;
+    display:flex; align-items:center; justify-content:center;
+    border:2px solid var(--brand); background:#fff; color:var(--brand);
+    border-radius:12px; font-weight:600; font-size:18px; margin-top:10px;
+  }
+  .method.selected{ background:var(--brand); color:#fff }
+  .panel[hidden]{display:none}
+  .preview{display:none; width:100%; max-height:300px; object-fit:contain; border:1px solid var(--border); border-radius:8px}
+  #continueUpload{
+    background:var(--brand); color:#fff; border:none; border-radius:999px;
+    font-size:20px; padding:16px 20px; opacity:.5; pointer-events:none;
+  }
+  #continueUpload.enabled{opacity:1; pointer-events:auto}
 
-/* method buttons (vertical like earlier utility buttons) */
-.method{ width:100%; height:8vh; min-height:64px;
-  display:flex; align-items:center; justify-content:center;
-  border:2px solid var(--brand); background:#fff; color:var(--brand);
-  border-radius:12px; font-weight:600; font-size:18px; margin-top:10px;
-}
-.method.selected{ background:var(--brand); color:#fff }
+  /* modal tip */
+  .modal {
+    position: fixed; inset: 0; display: none; place-items: center;
+    background: #0008; z-index: 50; opacity: 0; transition: opacity 0.3s ease;
+  }
+  .modal.show { display: grid; opacity: 1; }
+  .modal .box {
+    background: #fff; color: var(--ink); width: min(92%, 420px);
+    border-radius: 12px; padding: 16px 16px 12px; border: 2px solid var(--border); position: relative;
+  }
+  .modal .close {
+    position: absolute; top: 10px; right: 12px; border: 0; background: transparent;
+    font-size: 22px; line-height: 1; cursor: pointer; color: var(--ink);
+  }
+  .modal h3 { margin: 0 0 8px; font-size: 18px; }
+  body.modal-open { overflow:hidden; }
 
-/* panels */
-.panel[hidden]{display:none}
-.preview{display:none; width:100%; max-height:300px; object-fit:contain; border:1px solid var(--border); border-radius:8px}
-
-/* continue */
-#continueUpload{
-  background:var(--brand); color:#fff; border:none; border-radius:999px;
-  font-size:20px; padding:16px 20px; opacity:.5; pointer-events:none;
-}
-#continueUpload.enabled{opacity:1; pointer-events:auto}
-/* modal tip */
-.modal {
-  position: fixed;
-  inset: 0;
-  display: none;
-  place-items: center;
-  background: #0008;
-  z-index: 50;
-  opacity: 0;
-  transition: opacity 0.3s ease;
-}
-.modal.show {
-  display: grid;
-  opacity: 1;
-}
-.modal .box {
-  background: #fff;
-  color: var(--ink);
-  width: min(92%, 420px);
-  border-radius: 12px;
-  padding: 16px 16px 12px;
-  border: 2px solid var(--border);
-  position: relative;
-}
-.modal .close {
-  position: absolute;
-  top: 10px;
-  right: 12px;
-  border: 0;
-  background: transparent;
-  font-size: 22px;
-  line-height: 1;
-  cursor: pointer;
-  color: var(--ink);
-}
-.modal h3 {
-  margin: 0 0 8px;
-  font-size: 18px;
-}
-
-/* lock background scroll when modal open */
-body.modal-open {
-  overflow: hidden;
-/* lock background scroll when modal open */
-body.modal-open{
-  overflow:hidden;
-}
-/* PAGE 5 – Offer */
-#offer{background:#f6f7f8;color:var(--ink);display:none}
-#offer.show{display:flex}
-#offer .inner{margin:0 auto;width:min(92%,420px);padding:28px 16px;display:flex;flex-direction:column;gap:16px;min-height:100vh}
-.card{background:#fff;border:1px solid var(--border);border-radius:16px;padding:20px;box-shadow:0 1px 2px rgba(0,0,0,.03)}
-.card h2{margin:0 0 8px;font-size:22px}
-.compareBox{background:#fff8cc;border-left:4px solid #f2c200;border-radius:10px;padding:10px 12px;font-weight:600}
-.kv{display:flex;justify-content:space-between;align-items:center;margin:14px 0}
-.kv .big{font-size:28px;font-weight:800}
-.kv small{display:block;font-weight:600;color:var(--muted)}
-.row2{display:flex;gap:20px;margin-top:8px}
-.row2 .blk{flex:1}
-.supplier{display:flex;align-items:center;gap:12px;margin-top:14px;padding-top:12px;border-top:1px solid #e6e8eb}
-.links a{color:#2d7cf6;text-decoration:none}
-.btn--outline{background:#fff;color:var(--brand);border:2px solid var(--brand);border-radius:999px;padding:12px 16px;font-weight:700}
-
-/* modal for rate choice (reuses your existing .modal styles) */
-#rateChoice .box{padding:18px 16px}
-#rateChoice .actions{display:flex;flex-direction:column;gap:10px;margin-top:12px}
-#rateChoice .actions .btn--outline{text-align:center}
-}  
+  /* PAGE 5 – Offer */
+  #offer{background:#f6f7f8;color:var(--ink);display:none}
+  #offer.show{display:flex}
+  #offer .inner{margin:0 auto;width:min(92%,420px);padding:28px 16px;display:flex;flex-direction:column;gap:16px;min-height:100vh}
+  .card{background:#fff;border:1px solid var(--border);border-radius:16px;padding:20px;box-shadow:0 1px 2px rgba(0,0,0,.03)}
+  .card h2{margin:0 0 8px;font-size:22px}
+  .compareBox{background:#fff8cc;border-left:4px solid #f2c200;border-radius:10px;padding:10px 12px;font-weight:600}
+  .kv{display:flex;justify-content:space-between;align-items:center;margin:14px 0}
+  .kv .big{font-size:28px;font-weight:800}
+  .kv small{display:block;font-weight:600;color:var(--muted)}
+  .row2{display:flex;gap:20px;margin-top:8px}
+  .row2 .blk{flex:1}
+  .supplier{display:flex;align-items:center;gap:12px;margin-top:14px;padding-top:12px;border-top:1px solid #e6e8eb}
+  .links a{color:#2d7cf6;text-decoration:none}
+  .btn--outline{background:#fff;color:var(--brand);border:2px solid var(--brand);border-radius:999px;padding:12px 16px;font-weight:700}
 </style>
 </head>
 <body>
- 
-<!-- PAGE 5 — Offer -->
+
+<!-- Splash -->
+<section id="splash" class="vh fade">
+  <div class="inner">
+    <img class="logo" src="logo.png" alt="RateHound">
+  </div>
+</section>
+
+<!-- Signup -->
+<section id="signup" class="vh">
+  <div class="inner">
+    <h1>Get ready to save some money!</h1>
+    <input class="field" id="name" placeholder="Full name" autocomplete="name">
+    <input class="field" id="phone" placeholder="Phone" autocomplete="tel">
+    <input class="field" id="email" placeholder="Email" type="email" autocomplete="email">
+    <button class="btn" id="signUpBtn">Sign up</button>
+    <p class="hint">Demo only. No data is sent or stored.</p>
+  </div>
+</section>
+
+<!-- Utility -->
+<section id="utility" class="vh">
+  <div class="inner">
+    <h1>Save me money on my...</h1>
+    <button class="btn tall selectable" id="chooseElectric">Electric Bill</button>
+    <button class="btn tall selectable" id="chooseGas">Gas Bill</button>
+    <p class="utilityHint">Choose one or both.</p>
+    <button class="btn" id="fetchUtilities">One more step!</button>
+  </div>
+</section>
+
+<!-- Upload -->
+<section id="upload" class="vh">
+  <div class="inner">
+    <h1 id="uploadTitle">Let’s start with your electric account</h1>
+    <button class="method" id="mBtnAI">AI Assist</button>
+    <button class="method" id="mBtnUpload">Upload/Take Pic Of Bill</button>
+    <button class="method" id="mBtnManual">Enter Manually</button>
+    <div id="m-manual" class="panel" hidden>
+      <input class="field" id="acctName" placeholder="Account name">
+      <input class="field" id="acctNumber" placeholder="Account number">
+      <input class="field" id="serviceAddr" placeholder="Service address">
+    </div>
+    <div id="m-upload" class="panel" hidden>
+      <input id="billFile" type="file" accept="image/*,application/pdf">
+      <img id="preview" class="preview" alt="Bill preview">
+    </div>
+    <div id="m-ai" class="panel" hidden>
+      <p class="hint">Demo only. Tapping “AI Assist” marks this step as ready.</p>
+    </div>
+    <button class="btn" id="continueUpload">Continue</button>
+    <p class="hint">Demo only. No data is sent or stored.</p>
+  </div>
+</section>
+
+<!-- Offer -->
 <section id="offer" class="vh">
   <div class="inner">
     <div class="card">
       <h2>Your Selected Plan</h2>
-
-      <div class="compareBox">
-        <strong>Price to Compare:</strong> 9.39¢ / kWh
-      </div>
-
-      <div class="kv">
-        <div class="big">$4.79</div>
-        <small>per kWh</small>
-      </div>
-
+      <div class="compareBox"><strong>Price to Compare:</strong> 9.39¢ / kWh</div>
+      <div class="kv"><div class="big">$4.79</div><small>per kWh</small></div>
       <div class="row2">
-        <div class="blk">
-          <strong>Contract Term</strong><br>9 Months
-        </div>
-        <div class="blk">
-          <strong>Early Termination Fee</strong><br>$150
-        </div>
+        <div class="blk"><strong>Contract Term</strong><br>9 Months</div>
+        <div class="blk"><strong>Early Termination Fee</strong><br>$150</div>
       </div>
-
       <div class="supplier">
         <img src="OHGE.png" alt="Supplier Logo" style="height:40px">
         <span>Clearview Energy</span>
       </div>
-
       <div class="links">
         <a href="#">Supplier Terms & Conditions</a><br>
         <a href="#">RateHound Terms of Service</a>
@@ -273,376 +249,64 @@ body.modal-open{
   </div>
 </section>
 
-<!-- Splash -->
-<section id="splash" class="vh fade">
-  <div class="inner">
-    <img class="logo" src="logo.png" alt="RateHound">
-   
+<!-- Modal -->
+<div id="manualTip" class="modal">
+  <div class="box">
+    <button class="close" id="tipClose" type="button">×</button>
+    <h3>Tip</h3>
+    <p>Customer Number must begin with 080.</p>
   </div>
-</section>
+</div>
 
-<!-- Signup landing -->
-<section id="signup" class="vh">
-  <div class="inner">
-    <h1>Get ready to save some money!</h1>
-    <input class="field" id="name" placeholder="Full name" autocomplete="name" inputmode="text">
-    <input class="field" id="phone" placeholder="Phone" autocomplete="tel" inputmode="tel">
-    <input class="field" id="email" placeholder="Email" type="email" autocomplete="email">
-    <button class="btn" id="signUpBtn">Sign up</button>
-    <p class="hint">Demo only. No data is sent or stored.</p>
-  </div>
-</section>
-<!-- PAGE 3 — Utility choice -->
-<section id="utility" class="vh">
-  <div class="inner">
-    <h1>Save me money on my...</h1>
-
-    <button class="btn tall selectable" id="chooseElectric">Electric Bill</button>
-    <button class="btn tall selectable" id="chooseGas">Gas Bill</button>
-
-    <p class="utilityHint">Choose one or both.</p>
-
-    <button class="btn" id="fetchUtilities">One more step!</button>
-  </div>
-</section>
-<!-- PAGE 4 — Account intake -->
-<section id="upload" class="vh">
-  <div class="inner">
-    <h1 id="uploadTitle">Let’s start with your electric account</h1>
-
-    <!-- three vertical method choices -->
-<button class="method" id="mBtnAI">AI Assist</button>
-<button class="method" id="mBtnUpload">Upload/Take Pic Of Bill</button>
-<button class="method" id="mBtnManual">Enter Manually</button>
-
-    <!-- panels (only one shown at a time) -->
-    <div id="m-manual" class="panel" hidden>
-      <input class="field" id="acctName"  placeholder="Account name">
-      <input class="field" id="acctNumber" placeholder="Account number">
-      <input class="field" id="serviceAddr" placeholder="Service address">
-    </div>
-
-    <div id="m-upload" class="panel" hidden>
-      <input id="billFile" type="file" accept="image/*,application/pdf" aria-label="Upload bill image or PDF">
-      <img id="preview" class="preview" alt="Bill preview">
-    </div>
-
-    <div id="m-ai" class="panel" hidden>
-      <p class="hint">Demo only. Tapping “AI Assist” marks this step as ready.</p>
-    </div>
-
-    <button class="btn" id="continueUpload">Continue</button>
-    <p class="hint">Demo only. No data is sent or stored.</p>
-  </div>
-</section>
 <script>
 document.addEventListener('DOMContentLoaded', () => {
-  /* -------------------------------------------------
-   * splash → signup
-   * ------------------------------------------------- */
   const splash = document.getElementById('splash');
   const signup = document.getElementById('signup');
+  const signUpBtn = document.getElementById('signUpBtn');
+  const utilityPage = document.getElementById('utility');
+  const uploadPage = document.getElementById('upload');
+  const offerPage = document.getElementById('offer');
+  const continueBtn = document.getElementById('continueUpload');
 
-  // auto-transition after 2.3s
+  // splash → signup
   setTimeout(() => {
     splash.classList.add('out');
-    setTimeout(() => { splash.style.display = 'none'; signup.classList.add('show'); }, 450);
+    setTimeout(() => { splash.style.display='none'; signup.classList.add('show'); }, 450);
   }, 2300);
-
-  // tap to skip immediately
   splash.addEventListener('click', () => {
     splash.classList.add('out');
-    setTimeout(() => { splash.style.display = 'none'; signup.classList.add('show'); }, 250);
+    setTimeout(() => { splash.style.display='none'; signup.classList.add('show'); }, 250);
   });
 
-  // “Sign up” → utility choice
-  const signUpBtn = document.getElementById('signUpBtn');
+  // signup → utility
   signUpBtn?.addEventListener('click', () => {
     signup.classList.remove('show');
-    document.getElementById('utility').classList.add('show');
+    utilityPage.classList.add('show');
     window.scrollTo(0,0);
   });
 
-  /* -------------------------------------------------
-   * PAGE 3 — utility choice
-   * ------------------------------------------------- */
-  const sel = { electric:false, gas:false };
-  const eBtn   = document.getElementById('chooseElectric');
-  const gBtn   = document.getElementById('chooseGas');
-  const fetchU = document.getElementById('fetchUtilities');
-
-  function refreshFetch() {
-    const any = sel.electric || sel.gas;
-    fetchU.classList.toggle('enabled', any);
-  }
-
-  eBtn?.addEventListener('click', () => {
-    sel.electric = !sel.electric;
-    eBtn.classList.toggle('selected', sel.electric);
-    refreshFetch();
+  // utility → upload
+  const sel = {electric:false, gas:false};
+  document.getElementById('chooseElectric')?.addEventListener('click', e => {
+    sel.electric=!sel.electric; e.target.classList.toggle('selected',sel.electric);
+    document.getElementById('fetchUtilities').classList.toggle('enabled',sel.electric||sel.gas);
+  });
+  document.getElementById('chooseGas')?.addEventListener('click', e => {
+    sel.gas=!sel.gas; e.target.classList.toggle('selected',sel.gas);
+    document.getElementById('fetchUtilities').classList.toggle('enabled',sel.electric||sel.gas);
+  });
+  document.getElementById('fetchUtilities')?.addEventListener('click', () => {
+    if(!(sel.electric||sel.gas)) return;
+    utilityPage.classList.remove('show');
+    uploadPage.classList.add('show');
   });
 
-  gBtn?.addEventListener('click', () => {
-    sel.gas = !sel.gas;
-    gBtn.classList.toggle('selected', sel.gas);
-    refreshFetch();
+  // upload → offer
+  continueBtn?.addEventListener('click', () => {
+    uploadPage.classList.remove('show');
+    offerPage.classList.add('show');
   });
-
-  /* -------------------------------------------------
-   * PAGE 4 — account intake
-   *  - queue order: electric first, then gas (if both)
-   *  - 3 methods: manual / upload bill / AI assist
-   * ------------------------------------------------- */
-  const uploadPage  = document.getElementById('upload');
-  const utilityPage = document.getElementById('utility');
-  const titleEl     = document.getElementById('uploadTitle');
-
-  // method buttons + panels
-  const mBtns = {
-    manual: document.getElementById('mBtnManual'),
-    upload: document.getElementById('mBtnUpload'),
-    ai:     document.getElementById('mBtnAI'),
-  };
-  const panels = {
-    manual: document.getElementById('m-manual'),
-    upload: document.getElementById('m-upload'),
-    ai:     document.getElementById('m-ai'),
-  };
-
-  // inputs used by validation
-  const manualName   = document.getElementById('acctName');
-  const manualNum    = document.getElementById('acctNumber');
-  const manualAddr   = document.getElementById('serviceAddr');
-  const fileInput    = document.getElementById('billFile');
-  const previewEl    = document.getElementById('preview');
-  const continueBtn  = document.getElementById('continueUpload');
-  const manualTip  = document.getElementById('manualTip');
-  const tipClose   = document.getElementById('tipClose');
-let uploadQueue = [];   // ['electric','gas']
-let uploadIndex = 0;    // pointer into queue
-let currentMethod = null;
-let shownElectricTip = false; // show the 080 tip only once per electric step
-
-  function setUploadTitleFor(kind){
-    if (kind === 'electric') titleEl.textContent = "Let’s start with your electric account.";
-    else if (kind === 'gas') titleEl.textContent = "Now for your gas account.";
-    else titleEl.textContent = "Upload your bill";
-  }
-
-  function enableContinue() {
-    continueBtn.classList.add('enabled');
-    continueBtn.style.opacity = '1';
-    continueBtn.style.pointerEvents = 'auto';
-  }
-  function disableContinue() {
-    continueBtn.classList.remove('enabled');
-    continueBtn.style.opacity = '.5';
-    continueBtn.style.pointerEvents = 'none';
-  }
-
-  function resetPanels() {
-    Object.values(panels).forEach(p => p.hidden = true);
-    Object.values(mBtns).forEach(b => b.classList.remove('selected'));
-    // clear inputs
-    manualName.value = '';
-    manualNum.value  = '';
-    manualAddr.value = '';
-    if (fileInput) { fileInput.value = ''; }
-    if (previewEl) { previewEl.style.display = 'none'; }
-    currentMethod = null;
-    disableContinue();
-  }
-
-  function selectMethod(which) {
-    resetPanels();
-    currentMethod = which;
-    mBtns[which].classList.add('selected');
-    panels[which].hidden = false;
-    validateUpload();
-  }
-
-  // modal elements
-const manualTip  = document.getElementById('manualTip');
-const tipClose   = document.getElementById('tipClose');
-
-// open modal only when "manual" is chosen AND current utility is electric
-mBtns.manual?.addEventListener('click', () => {
-  selectMethod('manual');
-  if (uploadQueue[uploadIndex] === 'electric') {
-    manualTip.classList.add('show');          // reveal the modal
-    document.body.classList.add('modal-open'); // lock background scroll
-  }
 });
-
-// close modal when X is clicked
-tipClose?.addEventListener('click', () => {
-  manualTip.classList.remove('show');
-  document.body.classList.remove('modal-open');
-});
-
-// also close modal if user clicks outside the box
-manualTip?.addEventListener('click', (e) => {
-  if (e.target === manualTip) {
-    manualTip.classList.remove('show');
-    document.body.classList.remove('modal-open');
-  }
-});
-
-function validateUpload(){
-  if (currentMethod === 'manual'){
-    const nameOk = manualName.value.trim();
-    const numVal = manualNum.value.trim();
-    const addrOk = manualAddr.value.trim();
-
-    // 080 rule only for electric + only on the account number
-    let electricRuleOk = true;
-    if (uploadQueue[uploadIndex] === 'electric' && numVal){
-      if (!numVal.startsWith('080')){
-        electricRuleOk = false;
-        if (!document.body.classList.contains('modal-open')){
-          manualTip.classList.add('show');
-          document.body.classList.add('modal-open');
-        }
-      }
-    }
-
-    return (nameOk && numVal && addrOk && electricRuleOk)
-      ? enableContinue()
-      : disableContinue();
-  }
-
-  if (currentMethod === 'upload'){
-    const ok = !!fileInput.files?.[0];
-    return ok ? enableContinue() : disableContinue();
-  }
-
-  // AI is enabled in its click handler; default to disabled here
-  disableContinue();
-}
-
-  if (currentMethod === 'upload') {
-    const ok = !!fileInput.files?.[0];
-    return ok ? enableContinue() : disableContinue();
-  }
-
-  // AI panel is enabled on click handler; keep disabled here
-  disableContinue();
-}
-    return;
-  }
-
-  // valid case
-  enableContinue();
-  return;
-}
-if (currentMethod === 'upload') {
-  const ok = !!fileInput.files?.[0];
-  return ok ? enableContinue() : disableContinue();
-}
-
-// default: no valid method yet
-disableContinue();
-  }
-
-  // live validation
-  [manualName, manualNum, manualAddr].forEach(el => el?.addEventListener('input', validateUpload));
-
-  // file preview + validation
-  fileInput?.addEventListener('change', () => {
-    const f = fileInput.files?.[0];
-    if (!f) { previewEl.style.display = 'none'; return validateUpload(); }
-    if (f.type.startsWith('image/')) {
-      previewEl.src = URL.createObjectURL(f);
-      previewEl.style.display = 'block';
-    } else {
-      previewEl.style.display = 'none';
-    }
-    validateUpload();
-  });
-
-  // start intake flow after utility selection
-  fetchU?.addEventListener('click', () => {
-    if (!(sel.electric || sel.gas)) return;
-
-    // build queue (electric first)
-    uploadQueue = [];
-    if (sel.electric) uploadQueue.push('electric');
-    if (sel.gas)      uploadQueue.push('gas');
-    uploadIndex = 0;
-    shownElectricTip = false; // reset the once-per-electric guard
-
-   setUploadTitleFor(uploadQueue[0]);
-
-// label depends on queue
-if (uploadQueue.length === 2 && uploadQueue[0] === 'electric') {
-  continueBtn.textContent = 'Continue to gas account';
-} else {
-  continueBtn.textContent = 'Fetch my savings!';
-}
-
-resetPanels(); // keeps it disabled until valid
-
-utilityPage.classList.remove('show');
-uploadPage.classList.add('show');
-  });
-
-// Continue → either next utility or finish
-continueBtn.addEventListener('click', () => {
-  if (!continueBtn.classList.contains('enabled')) return;
-
-  uploadIndex++;
-  shownElectricTip = false; // allow showing the 080 tip again on gas if needed
-
-  if (uploadIndex < uploadQueue.length) {
-    // still have another utility (now on gas)
-    setUploadTitleFor(uploadQueue[uploadIndex]);
-    continueBtn.textContent = 'Fetch my savings!';
-    resetPanels();                 // re-disable until valid
- } else {
-  // finished both (or single) → show Offer page (Page 5)
-  document.getElementById('manualTip')?.classList.remove('show');
-  document.body.classList.remove('modal-open');
-
-  document.getElementById('utility').classList.remove('show');
-  document.getElementById('upload').classList.remove('show');
-  document.getElementById('offer').classList.add('show');
-  window.scrollTo(0, 0);
-}
-});
-// modal elements
-// open modal only when "manual" is chosen AND current utility is electric
-// (replace the old one-liner manual listener)
-mBtns.manual?.addEventListener('click', () => {
-  selectMethod('manual');
-  if (uploadQueue[uploadIndex] === 'electric') {
-    manualTip.classList.add('show');
-    document.body.classList.add('modal-open');
-  }
-});
-
-// close modal when X is clicked
-tipClose?.addEventListener('click', () => {
-  manualTip.classList.remove('show');
-  document.body.classList.remove('modal-open');
-});
-
-// also close modal if user clicks outside the box
-manualTip?.addEventListener('click', (e) => {
-  if (e.target === manualTip) {
-    manualTip.classList.remove('show');
-    document.body.classList.remove('modal-open');
-  }
-});  
-}); // end DOMContentLoaded
 </script>
-  
-    <!-- Modal Tip -->
-  <div id="manualTip" class="modal">
-    <div class="box">
-      <button class="close" id="tipClose" type="button">×</button>
-      <h3>Tip</h3>
-      <p>Customer Number must begin with 080.</p>
-    </div>
-  </div>
 </body>
 </html>
