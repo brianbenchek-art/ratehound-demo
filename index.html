@@ -207,7 +207,11 @@
 /* lock background scroll when modal open */
 body.modal-open {
   overflow: hidden;
-  /* PAGE 5 – Offer */
+/* lock background scroll when modal open */
+body.modal-open{
+  overflow:hidden;
+}
+/* PAGE 5 – Offer */
 #offer{background:#f6f7f8;color:var(--ink);display:none}
 #offer.show{display:flex}
 #offer .inner{margin:0 auto;width:min(92%,420px);padding:28px 16px;display:flex;flex-direction:column;gap:16px;min-height:100vh}
@@ -231,7 +235,7 @@ body.modal-open {
 </style>
 </head>
 <body>
-  });
+ 
 <!-- PAGE 5 — Offer -->
 <section id="offer" class="vh">
   <div class="inner">
@@ -268,35 +272,7 @@ body.modal-open {
     </div>
   </div>
 </section>
- // validation rules
-function validateUpload() {
-  if (currentMethod === 'manual') {
-    const nameOk = manualName.value.trim();
-    const numVal = manualNum.value.trim();
-    const addrOk = manualAddr.value.trim();
 
-    // apply the 080 rule ONLY for electric and ONLY to the account number
-    let electricRuleOk = true;
-    if (uploadQueue[uploadIndex] === 'electric' && numVal) {
-      if (!numVal.startsWith('080')) {
-        electricRuleOk = false;
-        // show tip once and lock background
-        if (!document.body.classList.contains('modal-open')) {
-          manualTip.classList.add('show');           // uses your existing modal
-          document.body.classList.add('modal-open'); // prevent background scroll
-        }
-      }
-    }
-
-    return (nameOk && numVal && addrOk && electricRuleOk)
-      ? enableContinue()
-      : disableContinue();
-  }
-
-  if (currentMethod === 'upload') {
-    const ok = !!fileInput.files?.[0];
-    return ok ? enableContinue() : disableContinue();
-  }
 <!-- Splash -->
 <section id="splash" class="vh fade">
   <div class="inner">
@@ -440,7 +416,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const fileInput    = document.getElementById('billFile');
   const previewEl    = document.getElementById('preview');
   const continueBtn  = document.getElementById('continueUpload');
-
+  const manualTip  = document.getElementById('manualTip');
+  const tipClose   = document.getElementById('tipClose');
 let uploadQueue = [];   // ['electric','gas']
 let uploadIndex = 0;    // pointer into queue
 let currentMethod = null;
@@ -484,31 +461,47 @@ let shownElectricTip = false; // show the 080 tip only once per electric step
     validateUpload();
   }
 
-  // wire method buttons
-  mBtns.manual?.addEventListener('click', () => selectMethod('manual'));
-  mBtns.upload?.addEventListener('click', () => selectMethod('upload'));
-  mBtns.ai?.addEventListener('click', () => {
-    selectMethod('ai');
-    // demo: treat AI assist as immediately valid
-    enableContinue();
-  });
+  // modal elements
+const manualTip  = document.getElementById('manualTip');
+const tipClose   = document.getElementById('tipClose');
 
- // validation rules
-function validateUpload() {
-  if (currentMethod === 'manual') {
+// open modal only when "manual" is chosen AND current utility is electric
+mBtns.manual?.addEventListener('click', () => {
+  selectMethod('manual');
+  if (uploadQueue[uploadIndex] === 'electric') {
+    manualTip.classList.add('show');          // reveal the modal
+    document.body.classList.add('modal-open'); // lock background scroll
+  }
+});
+
+// close modal when X is clicked
+tipClose?.addEventListener('click', () => {
+  manualTip.classList.remove('show');
+  document.body.classList.remove('modal-open');
+});
+
+// also close modal if user clicks outside the box
+manualTip?.addEventListener('click', (e) => {
+  if (e.target === manualTip) {
+    manualTip.classList.remove('show');
+    document.body.classList.remove('modal-open');
+  }
+});
+
+function validateUpload(){
+  if (currentMethod === 'manual'){
     const nameOk = manualName.value.trim();
     const numVal = manualNum.value.trim();
     const addrOk = manualAddr.value.trim();
 
-    // apply the 080 rule ONLY for electric and ONLY to the account number
+    // 080 rule only for electric + only on the account number
     let electricRuleOk = true;
-    if (uploadQueue[uploadIndex] === 'electric' && numVal) {
-      if (!numVal.startsWith('080')) {
+    if (uploadQueue[uploadIndex] === 'electric' && numVal){
+      if (!numVal.startsWith('080')){
         electricRuleOk = false;
-        // show tip once and lock background
-        if (!document.body.classList.contains('modal-open')) {
-          manualTip.classList.add('show');           // uses your existing modal
-          document.body.classList.add('modal-open'); // prevent background scroll
+        if (!document.body.classList.contains('modal-open')){
+          manualTip.classList.add('show');
+          document.body.classList.add('modal-open');
         }
       }
     }
@@ -517,6 +510,15 @@ function validateUpload() {
       ? enableContinue()
       : disableContinue();
   }
+
+  if (currentMethod === 'upload'){
+    const ok = !!fileInput.files?.[0];
+    return ok ? enableContinue() : disableContinue();
+  }
+
+  // AI is enabled in its click handler; default to disabled here
+  disableContinue();
+}
 
   if (currentMethod === 'upload') {
     const ok = !!fileInput.files?.[0];
@@ -608,16 +610,13 @@ continueBtn.addEventListener('click', () => {
 }
 });
 // modal elements
-const manualTip  = document.getElementById('manualTip');
-const tipClose   = document.getElementById('tipClose');
-
 // open modal only when "manual" is chosen AND current utility is electric
 // (replace the old one-liner manual listener)
 mBtns.manual?.addEventListener('click', () => {
   selectMethod('manual');
   if (uploadQueue[uploadIndex] === 'electric') {
-    manualTip.classList.add('show');          // reveal the modal
-    document.body.classList.add('modal-open'); // lock background scroll
+    manualTip.classList.add('show');
+    document.body.classList.add('modal-open');
   }
 });
 
