@@ -388,38 +388,26 @@ document.addEventListener('DOMContentLoaded', () => {
     manualTip.classList.remove('show');
     document.body.classList.remove('modal-open');
   });
-  manualTip?.addEventListener('click', (e) => {
-    if (e.target === manualTip){
-      manualTip.classList.remove('show');
-      document.body.classList.remove('modal-open');
-    }
-  });
+  mBtns.manual?.addEventListener('click', () => {
+  selectMethod('manual');
+  const needs080 = (uploadQueue[uploadIndex] === 'electric');
+  manualAddr.disabled = needs080 && !manualNum.value.startsWith('080');
+});
 
- // validation
-function validateUpload(){
+ // validationfunction validateUpload(){
   if (currentMethod === 'manual'){
     const nameOk = manualName.value.trim();
     const numVal = manualNum.value.trim();
     const addrOk = manualAddr.value.trim();
 
-    // ONLY for electric and ONLY account number must start with 080
     let electricRuleOk = true;
+
     if (uploadQueue[uploadIndex] === 'electric') {
-      if (!numVal.startsWith('080')) {
-        electricRuleOk = false;
-
-        // block address entry until account is valid
-        manualAddr.disabled = true;
-
-        // show the tip (but only once per step)
-        if (!shownElectricTip){
-          manualTip.classList.add('show');
-          document.body.classList.add('modal-open');
-          shownElectricTip = true;
-        }
-      } else {
-        manualAddr.disabled = false;
-      }
+      // lock address until 080 is present
+      const ok080 = numVal.startsWith('080');
+      electricRuleOk = ok080;
+      manualAddr.disabled = !ok080;
+      // NOTE: no modal opens here; focus/blur handlers handle that UX
     } else {
       manualAddr.disabled = false;
     }
@@ -434,12 +422,33 @@ function validateUpload(){
     return ok ? enableContinue() : disableContinue();
   }
 
-  // AI panel: enabled on its click; keep disabled here
+  // AI panel: enabled from its click; keep disabled here
   disableContinue();
 }
 
   [manualName, manualNum, manualAddr].forEach(el => el?.addEventListener('input', validateUpload));
+// #3 — enforce 080 rule on acctNumber field
+manualNum?.addEventListener('focus', () => {
+  if (uploadQueue[uploadIndex] === 'electric' && !manualNum.value.startsWith('080')) {
+    manualTip.classList.add('show');
+    document.body.classList.add('modal-open');
+  }
+});
 
+manualNum?.addEventListener('input', () => {
+  if (uploadQueue[uploadIndex] === 'electric') {
+    if (!manualNum.value.startsWith('080')) {
+      manualTip.classList.add('show');
+      document.body.classList.add('modal-open');
+      manualAddr.disabled = true;  // prevent address until valid
+    } else {
+      manualTip.classList.remove('show');
+      document.body.classList.remove('modal-open');
+      manualAddr.disabled = false;
+    }
+  }
+  validateUpload();
+});
   fileInput?.addEventListener('change', () => {
     const f = fileInput.files?.[0];
     if (!f){ previewEl.style.display = 'none'; return validateUpload(); }
