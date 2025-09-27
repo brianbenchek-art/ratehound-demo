@@ -362,12 +362,6 @@ document.addEventListener('DOMContentLoaded', () => {
     mBtns[which].classList.add('selected');
     panels[which].hidden = false;
 
-    // show info modal immediately when choosing manual for electric
-    if (which === 'manual' && uploadQueue[uploadIndex] === 'electric'){
-      manualTip.classList.add('show');
-      document.body.classList.add('modal-open');
-      shownElectricTip = true; // counted as shown to avoid duplicate on first validate
-    }
 
     validateUpload();
   }
@@ -388,26 +382,20 @@ document.addEventListener('DOMContentLoaded', () => {
     manualTip.classList.remove('show');
     document.body.classList.remove('modal-open');
   });
-  mBtns.manual?.addEventListener('click', () => {
-  selectMethod('manual');
-  const needs080 = (uploadQueue[uploadIndex] === 'electric');
-  manualAddr.disabled = needs080 && !manualNum.value.startsWith('080');
-});
-
- // validationfunction validateUpload(){
+ 
+ // validation
+function validateUpload(){
   if (currentMethod === 'manual'){
     const nameOk = manualName.value.trim();
     const numVal = manualNum.value.trim();
     const addrOk = manualAddr.value.trim();
 
+    // Electric-only 080 rule: lock address until OK
     let electricRuleOk = true;
-
-    if (uploadQueue[uploadIndex] === 'electric') {
-      // lock address until 080 is present
+    if (uploadQueue[uploadIndex] === 'electric'){
       const ok080 = numVal.startsWith('080');
       electricRuleOk = ok080;
       manualAddr.disabled = !ok080;
-      // NOTE: no modal opens here; focus/blur handlers handle that UX
     } else {
       manualAddr.disabled = false;
     }
@@ -422,19 +410,38 @@ document.addEventListener('DOMContentLoaded', () => {
     return ok ? enableContinue() : disableContinue();
   }
 
-  // AI panel: enabled from its click; keep disabled here
+  // AI panel: enabled via its click; keep disabled here
   disableContinue();
 }
 
-  [manualName, manualNum, manualAddr].forEach(el => el?.addEventListener('input', validateUpload));
-// #3 — enforce 080 rule on acctNumber field
+// Re-run validation on inputs
+[manualName, manualNum, manualAddr].forEach(el =>
+  el?.addEventListener('input', validateUpload)
+);
+
+// Show the tip when the account number field is focused if not 080
 manualNum?.addEventListener('focus', () => {
-  if (uploadQueue[uploadIndex] === 'electric' && !manualNum.value.startsWith('080')) {
+  if (uploadQueue[uploadIndex] === 'electric' && !manualNum.value.startsWith('080')){
     manualTip.classList.add('show');
     document.body.classList.add('modal-open');
   }
 });
 
+// Keep tip visible while invalid; unlock address once valid
+manualNum?.addEventListener('input', () => {
+  if (uploadQueue[uploadIndex] === 'electric'){
+    const ok080 = manualNum.value.startsWith('080');
+    manualAddr.disabled = !ok080;
+    if (!ok080){
+      manualTip.classList.add('show');
+      document.body.classList.add('modal-open');
+    } else {
+      manualTip.classList.remove('show');
+      document.body.classList.remove('modal-open');
+    }
+  }
+  validateUpload();
+});
 manualNum?.addEventListener('input', () => {
   if (uploadQueue[uploadIndex] === 'electric') {
     if (!manualNum.value.startsWith('080')) {
