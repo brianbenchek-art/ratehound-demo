@@ -395,35 +395,48 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // validation
-  function validateUpload(){
-    if (currentMethod === 'manual'){
-      const nameOk = manualName.value.trim();
-      const numVal = manualNum.value.trim();
-      const addrOk = manualAddr.value.trim();
+ // validation
+function validateUpload(){
+  if (currentMethod === 'manual'){
+    const nameOk = manualName.value.trim();
+    const numVal = manualNum.value.trim();
+    const addrOk = manualAddr.value.trim();
 
-      // ONLY for electric and ONLY account number must start with 080
-      let electricRuleOk = true;
-      if (uploadQueue[uploadIndex] === 'electric' && numVal && !numVal.startsWith('080')){
+    // ONLY for electric and ONLY account number must start with 080
+    let electricRuleOk = true;
+    if (uploadQueue[uploadIndex] === 'electric') {
+      if (!numVal.startsWith('080')) {
         electricRuleOk = false;
+
+        // block address entry until account is valid
+        manualAddr.disabled = true;
+
+        // show the tip (but only once per step)
         if (!shownElectricTip){
           manualTip.classList.add('show');
           document.body.classList.add('modal-open');
-          shownElectricTip = true; // show once per step
+          shownElectricTip = true;
         }
+      } else {
+        manualAddr.disabled = false;
       }
-
-      return (nameOk && numVal && addrOk && electricRuleOk) ? enableContinue() : disableContinue();
+    } else {
+      manualAddr.disabled = false;
     }
 
-    if (currentMethod === 'upload'){
-      const ok = !!fileInput.files?.[0];
-      return ok ? enableContinue() : disableContinue();
-    }
-
-    // AI panel: enabled on click
-    disableContinue();
+    return (nameOk && numVal && addrOk && electricRuleOk)
+      ? enableContinue()
+      : disableContinue();
   }
+
+  if (currentMethod === 'upload'){
+    const ok = !!fileInput.files?.[0];
+    return ok ? enableContinue() : disableContinue();
+  }
+
+  // AI panel: enabled on its click; keep disabled here
+  disableContinue();
+}
 
   [manualName, manualNum, manualAddr].forEach(el => el?.addEventListener('input', validateUpload));
 
