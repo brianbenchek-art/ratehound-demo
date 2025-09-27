@@ -381,8 +381,8 @@ document.addEventListener('DOMContentLoaded', () => {
  tipClose?.addEventListener('click', () => {
   manualTip.classList.remove('show');
   document.body.classList.remove('modal-open');
-  tipSnoozed = true;                 // don't re-open while typing
-  manualNum?.focus({ preventScroll: true }); // put cursor back in the field
+  tipSnoozed = true; // snooze until next blur/focus cycle
+  setTimeout(() => manualNum?.focus({ preventScroll: true }), 50);
 });
  
  // validation
@@ -421,35 +421,19 @@ function validateUpload(){
   el?.addEventListener('input', validateUpload)
 );
 
-// Show once when the user taps into the acct # field (if invalid)
+// Show tip on focus if invalid (electric only)
 manualNum?.addEventListener('focus', () => {
-  if (uploadQueue[uploadIndex] === 'electric' && !manualNum.value.startsWith('080')) {
-    tipSnoozed = false; // fresh focus -> allow showing
+  if (
+    uploadQueue[uploadIndex] === 'electric' &&
+    !manualNum.value.startsWith('080') &&
+    !tipSnoozed
+  ) {
     manualTip.classList.add('show');
     document.body.classList.add('modal-open');
   }
 });
 
-// Reset snooze on blur so re-focus can show the tip again if still invalid
-manualNum?.addEventListener('blur', () => {
-  tipSnoozed = false;
-});
-// Show tip on focus if invalid, enforce 080 while typing
-manualNum?.addEventListener('focus', () => {
-  if (uploadQueue[uploadIndex] === 'electric' && !manualNum.value.startsWith('080')) {
-    manualTip.classList.add('show');
-    document.body.classList.add('modal-open');
-  }
-});
-
-// Show tip on focus if invalid, enforce 080 while typing
-manualNum?.addEventListener('focus', () => {
-  if (uploadQueue[uploadIndex] === 'electric' && !manualNum.value.startsWith('080')) {
-    manualTip.classList.add('show');
-    document.body.classList.add('modal-open');
-  }
-});
-
+// Enforce 080 while typing; lock address; auto-hide tip when valid
 manualNum?.addEventListener('input', () => {
   if (uploadQueue[uploadIndex] === 'electric') {
     const ok = manualNum.value.startsWith('080');
@@ -458,10 +442,17 @@ manualNum?.addEventListener('input', () => {
     if (ok) {
       manualTip.classList.remove('show');
       document.body.classList.remove('modal-open');
+      tipSnoozed = false; // reset once valid
+    } else if (!tipSnoozed && !manualTip.classList.contains('show')) {
+      manualTip.classList.add('show');
+      document.body.classList.add('modal-open');
     }
   }
   validateUpload();
 });
+
+// Let the tip show again after leaving the field
+manualNum?.addEventListener('blur', () => { tipSnoozed = false; });
   fileInput?.addEventListener('change', () => {
     const f = fileInput.files?.[0];
     if (!f){ previewEl.style.display = 'none'; return validateUpload(); }
@@ -482,8 +473,9 @@ manualNum?.addEventListener('input', () => {
     if (sel.electric) uploadQueue.push('electric');
     if (sel.gas)      uploadQueue.push('gas');
     uploadIndex = 0;
+tipSnoozed = false; // reset snooze state each time intake starts
 
-    setUploadTitleFor(uploadQueue[0]);
+setUploadTitleFor(uploadQueue[0]);
 
     // label depends on queue
     if (uploadQueue.length === 2 && uploadQueue[0] === 'electric'){
