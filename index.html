@@ -327,7 +327,7 @@ document.addEventListener('DOMContentLoaded', () => {
   let uploadIndex = 0;           // pointer into queue
   let currentMethod = null;
   let shownElectricTip = false;  // for the 080 tip (validation)
-
+  let tipSnoozed = false;       // suppress re-opening the tip until blur/re-focus
   function setUploadTitleFor(kind){
     if (kind === 'electric') titleEl.textContent = "Let’s start with your electric account.";
     else if (kind === 'gas') titleEl.textContent = "Now for your gas account.";
@@ -378,10 +378,11 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // modal close handlers
-  tipClose?.addEventListener('click', () => {
-    manualTip.classList.remove('show');
-    document.body.classList.remove('modal-open');
-  });
+ tipClose?.addEventListener('click', () => {
+  manualTip.classList.remove('show');
+  document.body.classList.remove('modal-open');
+  tipSnoozed = true; // don't re-open while the user keeps typing
+});
  
  // validation
 function validateUpload(){
@@ -419,28 +420,40 @@ function validateUpload(){
   el?.addEventListener('input', validateUpload)
 );
 
-// Show the tip when the account number field is focused if not 080
+// Show once when the user taps into the acct # field (if invalid)
 manualNum?.addEventListener('focus', () => {
-  if (uploadQueue[uploadIndex] === 'electric' && !manualNum.value.startsWith('080')){
+  if (uploadQueue[uploadIndex] === 'electric' && !manualNum.value.startsWith('080')) {
+    tipSnoozed = false; // fresh focus -> allow showing
     manualTip.classList.add('show');
     document.body.classList.add('modal-open');
   }
 });
 
-// Keep tip visible while invalid; unlock address once valid
+// While typing: enforce 080, lock address, and don't spam the tip
 manualNum?.addEventListener('input', () => {
-  if (uploadQueue[uploadIndex] === 'electric'){
-    const ok080 = manualNum.value.startsWith('080');
-    manualAddr.disabled = !ok080;
-    if (!ok080){
-      manualTip.classList.add('show');
-      document.body.classList.add('modal-open');
+  if (uploadQueue[uploadIndex] === 'electric') {
+    const ok = manualNum.value.startsWith('080');
+    manualAddr.disabled = !ok;
+
+    if (ok) {
+      if (manualTip.classList.contains('show')) {
+        manualTip.classList.remove('show');
+        document.body.classList.remove('modal-open');
+      }
+      tipSnoozed = false; // reset once valid
     } else {
-      manualTip.classList.remove('show');
-      document.body.classList.remove('modal-open');
+      if (!tipSnoozed && !manualTip.classList.contains('show')) {
+        manualTip.classList.add('show');
+        document.body.classList.add('modal-open');
+      }
     }
   }
   validateUpload();
+});
+
+// Reset snooze on blur so re-focus can show the tip again if still invalid
+manualNum?.addEventListener('blur', () => {
+  tipSnoozed = false;
 });
 manualNum?.addEventListener('input', () => {
   if (uploadQueue[uploadIndex] === 'electric') {
