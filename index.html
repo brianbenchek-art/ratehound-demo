@@ -123,7 +123,7 @@
 #loader.show {
   display: flex;
 }
-#lottieLoader {
+#lottieContainer {
   width: 200px;
   height: 200px;
 }
@@ -245,8 +245,8 @@
   </div>
 </section>
   <!-- Loader Page -->
-<section id="loader" class="page" style="background:#0a0;display:none;align-items:center;justify-content:center;height:100vh;">
-  <div id="lottieContainer" style="width:200px;height:200px;"></div>
+<section id="loader" class="vh">
+  <div id="lottieContainer"></div>
 </section>
 
 <!-- Manual-entry tip (electric only) -->
@@ -259,6 +259,17 @@
 </div>
 
 <script>
+    // Lottie init for loader
+  const lottieBox = document.getElementById('lottieContainer');
+  if (lottieBox && window.lottie) {
+    lottie.loadAnimation({
+      container: lottieBox,
+      renderer: 'svg',
+      loop: true,
+      autoplay: true,
+      path: 'loader.json'   // file in repo root
+    });
+  }
 document.addEventListener('DOMContentLoaded', () => {
   /* -------------------------------------------------
    * splash → signup
