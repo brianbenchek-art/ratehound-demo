@@ -545,11 +545,11 @@ setUploadTitleFor(uploadQueue[0]);
   document.getElementById('loader').classList.add('show'); // NEW loader page
   window.scrollTo(0,0);
 
-  // after 2.5s → swap loader for Offer page
+  // after 4s → swap loader for Offer page
   setTimeout(() => {
     document.getElementById('loader').classList.remove('show');
     document.getElementById('offer').classList.add('show');
-  }, 2500);
+  }, 4000);
 }
   });
 });
