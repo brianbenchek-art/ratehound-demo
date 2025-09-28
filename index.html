@@ -114,18 +114,20 @@
   body.modal-open{overflow:hidden}
 #loader {
   background: #006400; /* solid green */
-  color: #fff;
   display: none;
   justify-content: center;
   align-items: center;
-  min-height: 100vh;
+  width: 100%;
+  height: 100vh;
 }
+
 #loader.show {
   display: flex;
 }
+
 #lottieContainer {
-  width: 200px;
-  height: 200px;
+  width: 100%;
+  height: 100%;
 }
   /* PAGE 5 – Offer */
   #offer{background:#f6f7f8;color:var(--ink);display:none}
@@ -244,9 +246,9 @@
     </div>
   </div>
 </section>
-  <!-- Loader Page -->
-<section id="loader" class="vh">
-  <div id="lottieContainer"></div>
+<!-- Loader Page -->
+<section id="loader" class="vh" style="background:#0a0;display:none;align-items:center;justify-content:center;">
+  <div id="lottieContainer" style="width:100%;height:100%;"></div>
 </section>
 
 <!-- Manual-entry tip (electric only) -->
