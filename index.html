@@ -112,7 +112,21 @@
   }
   .modal h3{margin:0 0 8px; font-size:18px}
   body.modal-open{overflow:hidden}
-
+#loader {
+  background: #006400; /* solid green */
+  color: #fff;
+  display: none;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+}
+#loader.show {
+  display: flex;
+}
+#lottieLoader {
+  width: 200px;
+  height: 200px;
+}
   /* PAGE 5 – Offer */
   #offer{background:#f6f7f8;color:var(--ink);display:none}
   #offer.show{display:flex}
@@ -129,6 +143,7 @@
   .links a{color:#2d7cf6;text-decoration:none}
   .btn--outline{background:#fff;color:var(--brand);border:2px solid var(--brand);border-radius:999px;padding:12px 16px;font-weight:700}
 </style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js"></script>
 </head>
 <body>
 
@@ -228,6 +243,10 @@
       </div>
     </div>
   </div>
+</section>
+  <!-- Loader Page -->
+<section id="loader" class="page" style="background:#0a0;display:none;align-items:center;justify-content:center;height:100vh;">
+  <div id="lottieContainer" style="width:200px;height:200px;"></div>
 </section>
 
 <!-- Manual-entry tip (electric only) -->
@@ -503,16 +522,22 @@ setUploadTitleFor(uploadQueue[0]);
       continueBtn.textContent = 'Fetch my savings!';
       resetPanels();
       window.scrollTo(0,0);
-    } else {
-      // finished → show Offer page
-      document.getElementById('manualTip')?.classList.remove('show');
-      document.body.classList.remove('modal-open');
+   } else {
+  // finished → show loader first
+  document.getElementById('manualTip')?.classList.remove('show');
+  document.body.classList.remove('modal-open');
 
-      document.getElementById('utility').classList.remove('show');
-      document.getElementById('upload').classList.remove('show');
-      document.getElementById('offer').classList.add('show');
-      window.scrollTo(0,0);
-    }
+  document.getElementById('utility').classList.remove('show');
+  document.getElementById('upload').classList.remove('show');
+  document.getElementById('loader').classList.add('show'); // NEW loader page
+  window.scrollTo(0,0);
+
+  // after 2.5s → swap loader for Offer page
+  setTimeout(() => {
+    document.getElementById('loader').classList.remove('show');
+    document.getElementById('offer').classList.add('show');
+  }, 2500);
+}
   });
 });
 </script>
