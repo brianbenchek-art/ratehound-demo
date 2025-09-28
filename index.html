@@ -112,13 +112,19 @@
   }
   .modal h3{margin:0 0 8px; font-size:18px}
   body.modal-open{overflow:hidden}
-#loader {
-  background: #006400; /* solid green */
+#loader{
+  background: var(--brand);   /* use your brand green */
   display: none;
   justify-content: center;
   align-items: center;
   width: 100%;
-  height: 100vh;
+  height: 100svh;             /* full, safe viewport height */
+}
+#loader.show{ display:flex; }
+
+#lottieContainer{
+  width: 100%;
+  height: 100%;
 }
 
 #loader.show {
