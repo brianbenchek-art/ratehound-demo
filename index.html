@@ -259,7 +259,10 @@
   </div>
 </section>
 
-
+<!-- Loader Page -->
+<section id="loader" class="vh">
+  <div id="lottieContainer"></div>
+</section>
 <!-- Manual-entry tip (electric only) -->
 <div id="manualTip" class="modal" role="dialog" aria-modal="true" aria-labelledby="tipTitle">
   <div class="box">
@@ -272,15 +275,7 @@
 <script>
   
 document.addEventListener('DOMContentLoaded', () => {
-// finished → show loader first
-document.getElementById('manualTip')?.classList.remove('show');
-document.body.classList.remove('modal-open');
 
-document.getElementById('utility').classList.remove('show');
-document.getElementById('upload').classList.remove('show');
-const loaderEl = document.getElementById('loader');
-loaderEl.classList.add('show');
-window.scrollTo(0,0);
 
 // Init (or resume) Lottie NOW that the container is visible
 if (window.lottie) {
