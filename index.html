@@ -114,12 +114,15 @@
   body.modal-open{overflow:hidden}
 /* Loader page */
 #loader{
+  position: fixed;
+  inset: 0;                /* top:0; right:0; bottom:0; left:0 */
+  z-index: 999;            /* keep loader above all other sections */
   background: var(--brand) !important;   /* your green behind the animation */
   display: none;
   justify-content: center;
   align-items: center;
   width: 100%;
-  height: 100svh;                        /* full, safe viewport height */
+  height: 100svh;          /* full, safe viewport height */
 }
 #loader.show{ display:flex; }
 
@@ -269,17 +272,41 @@
 <script>
   
 document.addEventListener('DOMContentLoaded', () => {
-// Lottie init for loader (now that DOM exists)
-const lottieBox = document.getElementById('lottieContainer');
-if (lottieBox && window.lottie) {
-  lottie.loadAnimation({
-    container: lottieBox,
-    renderer: 'svg',
-    loop: true,
-    autoplay: true,
-    path: 'loader.json' // must be in the same folder as index.html
-  });
+// finished → show loader first
+document.getElementById('manualTip')?.classList.remove('show');
+document.body.classList.remove('modal-open');
+
+document.getElementById('utility').classList.remove('show');
+document.getElementById('upload').classList.remove('show');
+const loaderEl = document.getElementById('loader');
+loaderEl.classList.add('show');
+window.scrollTo(0,0);
+
+// Init (or resume) Lottie NOW that the container is visible
+if (window.lottie) {
+  const box = document.getElementById('lottieContainer');
+  if (!window.__loaderAnim) {
+    window.__loaderAnim = lottie.loadAnimation({
+      container: box,
+      renderer: 'svg',
+      loop: true,
+      autoplay: true,
+      path: 'loader.json'
+    });
+  } else {
+    window.__loaderAnim.play();
+    // ensure it picks up the new size if it was created while hidden
+    window.__loaderAnim.resize && window.__loaderAnim.resize();
+  }
 }
+
+// after 4s → swap loader for Offer page
+setTimeout(() => {
+  loaderEl.classList.remove('show');
+  document.getElementById('offer').classList.add('show');
+  // optional: pause the animation
+  window.__loaderAnim && window.__loaderAnim.pause && window.__loaderAnim.pause();
+}, 4000);
   /* -------------------------------------------------
    * splash → signup
    * ------------------------------------------------- */
