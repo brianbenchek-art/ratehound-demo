@@ -175,7 +175,7 @@
     <input class="field" id="name" placeholder="Full name" autocomplete="name" inputmode="text">
     <input class="field" id="phone" placeholder="Phone" autocomplete="tel" inputmode="tel">
     <input class="field" id="email" placeholder="Email" type="email" autocomplete="email">
-    <button class="btn" id="signUpBtn">Sign up</button>
+    <button class="btn" id="signUpBtn" disabled>Sign up</button>
     <p class="hint">Demo only. No data is sent or stored.</p>
   </div>
 </section>
@@ -322,6 +322,25 @@ setTimeout(() => {
 
   // “Sign up” → utility choice
   const signUpBtn = document.getElementById('signUpBtn');
+ 
+  // grab the inputs
+const nameInput  = document.getElementById('name');
+const phoneInput = document.getElementById('phone');
+const emailInput = document.getElementById('email');
+
+// function to check all fields
+function checkSignupFields() {
+  if (nameInput.value.trim() && phoneInput.value.trim() && emailInput.value.trim()) {
+    signUpBtn.disabled = false;
+  } else {
+    signUpBtn.disabled = true;
+  }
+}
+
+// attach listeners
+[nameInput, phoneInput, emailInput].forEach(el => {
+  el.addEventListener('input', checkSignupFields);
+});
   signUpBtn?.addEventListener('click', () => {
     signup.classList.remove('show');
     document.getElementById('utility').classList.add('show');
