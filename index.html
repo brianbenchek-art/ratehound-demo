@@ -171,7 +171,7 @@
 <!-- Signup landing -->
 <section id="signup" class="vh">
   <div class="inner">
-    <h1>Get ready to save some money!</h1>
+    <h1>Get ready to save some money on your utilities!</h1>
     <input class="field" id="name" placeholder="Full name" autocomplete="name" inputmode="text">
     <input class="field" id="phone" placeholder="Phone" autocomplete="tel" inputmode="tel">
     <input class="field" id="email" placeholder="Email" type="email" autocomplete="email">
@@ -187,14 +187,14 @@
     <button class="btn tall selectable" id="chooseElectric">Electric Bill</button>
     <button class="btn tall selectable" id="chooseGas">Gas Bill</button>
     <p class="utilityHint">Choose one or both.</p>
-    <button class="btn" id="fetchUtilities">One more step!</button>
+    <button class="btn" id="fetchUtilities">Almost done!</button>
   </div>
 </section>
 
 <!-- PAGE 4 — Account intake -->
 <section id="upload" class="vh">
   <div class="inner">
-    <h1 id="uploadTitle">Let’s start with your electric account</h1>
+    <h1 id="uploadTitle">Provide your electric account information.</h1>
 
     <!-- three vertical method choices -->
     <button class="method" id="mBtnAI">AI Assist</button>
@@ -390,8 +390,8 @@ setTimeout(() => {
   let shownElectricTip = false;  // for the 080 tip (validation)
   let tipSnoozed = false;       // suppress re-opening the tip until blur/re-focus
   function setUploadTitleFor(kind){
-    if (kind === 'electric') titleEl.textContent = "Let’s start with your electric account.";
-    else if (kind === 'gas') titleEl.textContent = "Now for your gas account.";
+    if (kind === 'electric') titleEl.textContent = "Provide your electric account information.";
+    else if (kind === 'gas') titleEl.textContent = "Now provide your gas account information.";
     else titleEl.textContent = "Upload your bill";
   }
 
