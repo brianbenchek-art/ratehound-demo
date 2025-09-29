@@ -135,8 +135,21 @@
   width: 100%;
   height: 100%;
 }
-  /* PAGE 5 – Offer */
-  #offer{background:#f6f7f8;color:var(--ink);display:none}
+
+/* force Lottie svg background transparent */
+#loader svg {
+  width:100% !important;
+  height:100% !important;
+  display:block;
+  background:transparent !important;
+}
+
+/* PAGE 5 – Offer */
+#offer {
+  background:#f6f7f8;
+  color:var(--ink);
+  display:none
+}
   #offer.show{display:flex}
   #offer .inner{margin:0 auto;width:min(92%,420px);padding:28px 16px;display:flex;flex-direction:column;gap:16px;min-height:100vh}
   .card{background:#fff;border:1px solid var(--border);border-radius:16px;padding:20px;box-shadow:0 1px 2px rgba(0,0,0,.03)}
@@ -253,7 +266,9 @@
   </div>
 </section>
 <!-- Loader Page -->
-<section id="loader" class="vh" style="display:none;align-items:center;justify-content:center;"></section>
+<section id="loader" class="vh" style="display:none;align-items:center;justify-content:center;">
+  <div id="lottieContainer" style="width:100%;height:100%;"></div>
+</section>
 
 <!-- Manual-entry tip (electric only) -->
 <div id="manualTip" class="modal" role="dialog" aria-modal="true" aria-labelledby="tipTitle">
@@ -265,18 +280,19 @@
 </div>
 
 <script>
-    // Lottie init for loader
-  const lottieBox = document.getElementById('lottieContainer');
-  if (lottieBox && window.lottie) {
-    lottie.loadAnimation({
-      container: lottieBox,
-      renderer: 'svg',
-      loop: true,
-      autoplay: true,
-      path: 'loader.json'   // file in repo root
-    });
-  }
+  
 document.addEventListener('DOMContentLoaded', () => {
+  // Lottie init for loader (now that DOM exists)
+const lottieBox = document.getElementById('lottieContainer');
+if (lottieBox && window.lottie) {
+  lottie.loadAnimation({
+    container: lottieBox,
+    renderer: 'svg',
+    loop: true,
+    autoplay: true,
+    path: 'loader.json'
+  });
+}
   /* -------------------------------------------------
    * splash → signup
    * ------------------------------------------------- */
