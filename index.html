@@ -28,27 +28,60 @@
   .fade{opacity:1;transition:opacity .45s ease}
   .fade.out{opacity:0;pointer-events:none}
 
-  /* SIGNUP */
-  #signup{background:#fff; color:var(--ink); display:none}
-  #signup.show{display:flex}
-  #signup .inner{margin:0 auto; width:min(92%,420px); padding:28px 16px; display:flex; flex-direction:column; gap:14px}
-  #signup .inner h1{
-    margin:0 0 12px;font-size:26px;font-weight:700;text-align:center;color:var(--ink);
-  }
-  .field{
-    width:100%;padding:12px 14px;border:2px solid var(--border);border-radius:12px;background:#fff;color:var(--ink);
-    font-size:16px;box-sizing:border-box;
-  }
-  .btn{
+/* SIGNUP */
+#signup {
+  background:#fff; 
+  color:var(--ink); 
+  display:none;
+}
+#signup.show { display:flex }
+#signup .inner {
+  margin:0 auto; 
+  width:min(92%,420px); 
+  padding:28px 16px; 
+  display:flex; 
+  flex-direction:column; 
+  gap:14px;
+}
+#signup .inner h1 {
+  margin:0 0 12px;
+  font-size:26px;
+  font-weight:700;
+  text-align:center;
+  color:var(--ink);
+}
+.field {
   width:100%;
-  padding:14px 18px;
-  border:2px solid var(--brand);
-  border-radius:999px;
+  padding:12px 14px;
+  border:2px solid var(--border);
+  border-radius:12px;
   background:#fff;
-  color:var(--brand);
+  color:var(--ink);
+  font-size:16px;
+  box-sizing:border-box;
+}
+
+/* Disabled state for Sign Up button */
+#signUpBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Sign Up button styles */
+#signUpBtn {
+  background:var(--brand);
+  color:#fff;
+  font-size:20px;
+  padding:16px 20px;
+  border:none;
+  border-radius:999px;
   font-weight:700;
   text-align:center;
   cursor:pointer;
+}
+#signUpBtn:active {
+  background:#0f3a05;
+  transform:scale(.98);
 }
 
 /* Disabled state */
@@ -235,41 +268,9 @@
   </div>
 </section>
 
-<!-- PAGE 5 — Offer (placed AFTER other pages to avoid skipping flow) -->
-<section id="offer" class="vh">
-  <div class="inner">
-    <div class="card">
-      <h2>Your Selected Plan</h2>
-
-      <div class="compareBox">
-        <strong>Price to Compare:</strong> 9.39¢ / kWh
-      </div>
-
-      <div class="kv">
-        <div class="big">$4.79</div>
-        <small>per kWh</small>
-      </div>
-
-      <div class="row2">
-        <div class="blk">
-          <strong>Contract Term</strong><br>9 Months
-        </div>
-        <div class="blk">
-          <strong>Early Termination Fee</strong><br>$150
-        </div>
-      </div>
-
-      <div class="supplier">
-        <img src="OHGE.png" alt="Supplier Logo" style="height:40px">
-        <span>Clearview Energy</span>
-      </div>
-
-      <div class="links">
-        <a href="#">Supplier Terms &amp; Conditions</a><br>
-        <a href="#">RateHound Terms of Service</a>
-      </div>
-    </div>
-  </div>
+<!-- RESULTS (replaces #offer) -->
+<section id="results" class="vh" style="display:none">
+  <div class="inner" id="resultsInner"></div>
 </section>
 
 <!-- Loader Page -->
