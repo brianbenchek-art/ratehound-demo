@@ -605,14 +605,28 @@ setUploadTitleFor(uploadQueue[0]);
   document.getElementById('utility').classList.remove('show');
   document.getElementById('upload').classList.remove('show');
   document.getElementById('loader').classList.add('show'); // NEW loader page
-  window.scrollTo(0,0);
+ window.scrollTo(0,0);
 
-  // after 4s → swap loader for Offer page
-  setTimeout(() => {
-    document.getElementById('loader').classList.remove('show');
+function showLoaderThen(kind) {
+  if (kind === 'electric') {
     document.getElementById('offer').classList.add('show');
-  }, 4000);
+  } else if (kind === 'gas') {
+    document.getElementById('offer-gas').classList.add('show');
+  }
 }
+// after 4s → swap loader for results
+setTimeout(() => {
+  document.getElementById('loader').classList.remove('show');
+
+  // show whichever utility we're on
+  const currentKind = uploadQueue[uploadIndex] || 'electric';
+  showLoaderThen(currentKind);
+
+  // if there’s another utility queued (gas after electric), prepare for it
+  if (uploadIndex + 1 < uploadQueue.length) {
+    uploadIndex++;
+  }
+}, 4000);
   });
 });
 </script>
