@@ -299,13 +299,7 @@ if (window.lottie) {
   }
 }
 
-// after 4s → swap loader for Offer page
-setTimeout(() => {
-  loaderEl.classList.remove('show');
-  document.getElementById('offer').classList.add('show');
-  // optional: pause the animation
-  window.__loaderAnim && window.__loaderAnim.pause && window.__loaderAnim.pause();
-}, 4000);
+
   /* -------------------------------------------------
    * splash → signup
    * ------------------------------------------------- */
