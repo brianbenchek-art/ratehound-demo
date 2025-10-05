@@ -277,88 +277,62 @@
 </div>
 
 <script>
-  
 document.addEventListener('DOMContentLoaded', () => {
-
-  /* -------------------------------------------------
-   * splash → signup
-   * ------------------------------------------------- */
+  /* ---------- splash → signup ---------- */
   const splash = document.getElementById('splash');
   const signup = document.getElementById('signup');
 
-  // auto-transition after ~2.3s
   setTimeout(() => {
     splash.classList.add('out');
-    setTimeout(() => { splash.style.display = 'none'; signup.classList.add('show'); }, 450);
+    setTimeout(() => {
+      splash.style.display = 'none';
+      signup.classList.add('show');
+    }, 450);
   }, 2300);
 
-  // tap to skip immediately
   splash.addEventListener('click', () => {
     splash.classList.add('out');
-    setTimeout(() => { splash.style.display = 'none'; signup.classList.add('show'); }, 250);
+    setTimeout(() => {
+      splash.style.display = 'none';
+      signup.classList.add('show');
+    }, 250);
   });
 
-  // “Sign up” → utility choice
-  const signUpBtn = document.getElementById('signUpBtn');
- 
-  // grab the inputs
-const nameInput  = document.getElementById('name');
-const phoneInput = document.getElementById('phone');
-const emailInput = document.getElementById('email');
+  /* ---------- signup btn enable ---------- */
+  const signUpBtn  = document.getElementById('signUpBtn');
+  const nameInput  = document.getElementById('name');
+  const phoneInput = document.getElementById('phone');
+  const emailInput = document.getElementById('email');
 
-// function to check all fields
-function checkSignupFields() {
-  if (nameInput.value.trim() && phoneInput.value.trim() && emailInput.value.trim()) {
-    signUpBtn.disabled = false;
-  } else {
-    signUpBtn.disabled = true;
+  function checkSignupFields(){
+    signUpBtn.disabled = !(nameInput.value.trim() && phoneInput.value.trim() && emailInput.value.trim());
   }
-}
+  [nameInput, phoneInput, emailInput].forEach(el => el.addEventListener('input', checkSignupFields));
+  checkSignupFields();
 
-// attach listeners
-[nameInput, phoneInput, emailInput].forEach(el => {
-  el.addEventListener('input', checkSignupFields);
-});
-  checkSignupFields(); // ensure correct disabled state on page load
-  signUpBtn?.addEventListener('click', () => {
-    signup.classList.remove('show');
-    document.getElementById('utility').classList.add('show');
-    window.scrollTo(0,0);
-  });
-
-  /* -------------------------------------------------
-   * PAGE 3 — utility choice
-   * ------------------------------------------------- */
+  /* ---------- utility choice ---------- */
   const sel   = { electric:false, gas:false };
   const eBtn  = document.getElementById('chooseElectric');
   const gBtn  = document.getElementById('chooseGas');
   const fetchU= document.getElementById('fetchUtilities');
 
   function refreshFetch(){
-    const any = sel.electric || sel.gas;
-    fetchU.classList.toggle('enabled', any);
+    fetchU.classList.toggle('enabled', sel.electric || sel.gas);
   }
+  eBtn.addEventListener('click', () => { sel.electric = !sel.electric; eBtn.classList.toggle('selected', sel.electric); refreshFetch(); });
+  gBtn.addEventListener('click', () => { sel.gas      = !sel.gas;      gBtn.classList.toggle('selected', sel.gas);      refreshFetch(); });
 
-  eBtn?.addEventListener('click', () => {
-    sel.electric = !sel.electric;
-    eBtn.classList.toggle('selected', sel.electric);
-    refreshFetch();
+  signUpBtn.addEventListener('click', () => {
+    signup.classList.remove('show');
+    document.getElementById('utility').classList.add('show');
+    window.scrollTo(0,0);
   });
 
-  gBtn?.addEventListener('click', () => {
-    sel.gas = !sel.gas;
-    gBtn.classList.toggle('selected', sel.gas);
-    refreshFetch();
-  });
-
-  /* -------------------------------------------------
-   * PAGE 4 — account intake (queue electric → gas)
-   * ------------------------------------------------- */
+  /* ---------- intake ---------- */
   const uploadPage  = document.getElementById('upload');
   const utilityPage = document.getElementById('utility');
   const titleEl     = document.getElementById('uploadTitle');
 
-  // method buttons + panels
   const mBtns = {
     manual: document.getElementById('mBtnManual'),
     upload: document.getElementById('mBtnUpload'),
@@ -370,7 +344,6 @@ function checkSignupFields() {
     ai:     document.getElementById('m-ai'),
   };
 
-  // inputs used by validation
   const manualName  = document.getElementById('acctName');
   const manualNum   = document.getElementById('acctNumber');
   const manualAddr  = document.getElementById('serviceAddr');
@@ -378,40 +351,33 @@ function checkSignupFields() {
   const previewEl   = document.getElementById('preview');
   const continueBtn = document.getElementById('continueUpload');
 
-  // modal elements
   const manualTip = document.getElementById('manualTip');
   const tipClose  = document.getElementById('tipClose');
 
-  let uploadQueue = [];          // e.g., ['electric','gas']
-  let uploadIndex = 0;           // pointer into queue
+  let uploadQueue = [];
+  let uploadIndex = 0;
   let currentMethod = null;
-  let shownElectricTip = false;  // for the 080 tip (validation)
-  let tipSnoozed = false;       // suppress re-opening the tip until blur/re-focus
+  let tipSnoozed = false;
+
   function setUploadTitleFor(kind){
-    if (kind === 'electric') titleEl.textContent = "Provide your electric account information.";
-    else if (kind === 'gas') titleEl.textContent = "Now provide your gas account information.";
-    else titleEl.textContent = "Upload your bill";
+    titleEl.textContent = (kind === 'electric')
+      ? 'Provide your electric account information.'
+      : (kind === 'gas')
+        ? 'Now provide your gas account information.'
+        : 'Upload your bill';
   }
 
-  function enableContinue(){
-    continueBtn.classList.add('enabled');
-    continueBtn.style.opacity = '1';
-    continueBtn.style.pointerEvents = 'auto';
-  }
-  function disableContinue(){
-    continueBtn.classList.remove('enabled');
-    continueBtn.style.opacity = '.5';
-    continueBtn.style.pointerEvents = 'none';
-  }
+  function enableContinue(){ continueBtn.classList.add('enabled'); continueBtn.style.opacity='1'; continueBtn.style.pointerEvents='auto'; }
+  function disableContinue(){ continueBtn.classList.remove('enabled'); continueBtn.style.opacity='.5'; continueBtn.style.pointerEvents='none'; }
 
   function resetPanels(){
     Object.values(panels).forEach(p => p.hidden = true);
     Object.values(mBtns).forEach(b => b.classList.remove('selected'));
     manualName.value = ''; manualNum.value = ''; manualAddr.value = '';
-    if (fileInput){ fileInput.value = ''; }
-    if (previewEl){ previewEl.style.display = 'none'; }
+    if (fileInput) fileInput.value = '';
+    if (previewEl) previewEl.style.display = 'none';
     currentMethod = null;
-    shownElectricTip = false; // reset validation-tip guard for each step
+    tipSnoozed = false;
     disableContinue();
   }
 
@@ -420,224 +386,150 @@ function checkSignupFields() {
     currentMethod = which;
     mBtns[which].classList.add('selected');
     panels[which].hidden = false;
-
-
     validateUpload();
   }
 
-  // wire method buttons
-  mBtns.manual?.addEventListener('click', () => selectMethod('manual'));
-  mBtns.upload?.addEventListener('click', () => selectMethod('upload'));
-  mBtns.ai?.addEventListener('click', () => {
-    resetPanels();
-    currentMethod = 'ai';
-    mBtns.ai.classList.add('selected');
-    panels.ai.hidden = false;
-    enableContinue(); // AI assist marks ready in demo
+  mBtns.manual.addEventListener('click', () => selectMethod('manual'));
+  mBtns.upload.addEventListener('click', () => selectMethod('upload'));
+  mBtns.ai.addEventListener('click', () => { resetPanels(); currentMethod='ai'; mBtns.ai.classList.add('selected'); panels.ai.hidden=false; enableContinue(); });
+
+  tipClose.addEventListener('click', () => {
+    manualTip.classList.remove('show');
+    document.body.classList.remove('modal-open');
+    tipSnoozed = true;
+    setTimeout(() => manualNum?.focus({ preventScroll:true }), 50);
   });
 
-  // modal close handlers
- tipClose?.addEventListener('click', () => {
-  manualTip.classList.remove('show');
-  document.body.classList.remove('modal-open');
-  tipSnoozed = true; // snooze until next blur/focus cycle
-  setTimeout(() => manualNum?.focus({ preventScroll: true }), 50);
-});
- 
- // validation
-function validateUpload(){
-  if (currentMethod === 'manual'){
-    const nameOk = manualName.value.trim();
-    const numVal = manualNum.value.trim();
-    const addrOk = manualAddr.value.trim();
+  function validateUpload(){
+    if (currentMethod === 'manual'){
+      const nameOk = manualName.value.trim();
+      const numVal = manualNum.value.trim();
+      const addrOk = manualAddr.value.trim();
 
-    // Electric-only 080 rule: lock address until OK
-    let electricRuleOk = true;
+      let electricRuleOk = true;
+      if (uploadQueue[uploadIndex] === 'electric'){
+        const ok080 = numVal.startsWith('080');
+        electricRuleOk = ok080;
+        manualAddr.disabled = !ok080;
+      } else {
+        manualAddr.disabled = false;
+      }
+      return (nameOk && numVal && addrOk && electricRuleOk) ? enableContinue() : disableContinue();
+    }
+    if (currentMethod === 'upload'){
+      const ok = !!fileInput.files?.[0];
+      return ok ? enableContinue() : disableContinue();
+    }
+    disableContinue();
+  }
+
+  [manualName, manualNum, manualAddr].forEach(el => el?.addEventListener('input', validateUpload));
+  manualNum.addEventListener('focus', () => {
+    if (uploadQueue[uploadIndex] === 'electric' && !manualNum.value.startsWith('080') && !tipSnoozed){
+      manualTip.classList.add('show'); document.body.classList.add('modal-open');
+    }
+  });
+  manualNum.addEventListener('input', () => {
     if (uploadQueue[uploadIndex] === 'electric'){
-      const ok080 = numVal.startsWith('080');
-      electricRuleOk = ok080;
-      manualAddr.disabled = !ok080;
-    } else {
-      manualAddr.disabled = false;
+      const ok = manualNum.value.startsWith('080');
+      manualAddr.disabled = !ok;
+      if (ok){ manualTip.classList.remove('show'); document.body.classList.remove('modal-open'); tipSnoozed=false; }
+      else if (!tipSnoozed && !manualTip.classList.contains('show')){ manualTip.classList.add('show'); document.body.classList.add('modal-open'); }
     }
+    validateUpload();
+  });
+  manualNum.addEventListener('blur', () => { tipSnoozed = false; });
 
-    return (nameOk && numVal && addrOk && electricRuleOk)
-      ? enableContinue()
-      : disableContinue();
-  }
-
-  if (currentMethod === 'upload'){
-    const ok = !!fileInput.files?.[0];
-    return ok ? enableContinue() : disableContinue();
-  }
-
-  // AI panel: enabled via its click; keep disabled here
-  disableContinue();
-}
-
-// Re-run validation on inputs
-[manualName, manualNum, manualAddr].forEach(el =>
-  el?.addEventListener('input', validateUpload)
-);
-
-// Show tip on focus if invalid (electric only)
-manualNum?.addEventListener('focus', () => {
-  if (
-    uploadQueue[uploadIndex] === 'electric' &&
-    !manualNum.value.startsWith('080') &&
-    !tipSnoozed
-  ) {
-    manualTip.classList.add('show');
-    document.body.classList.add('modal-open');
-  }
-});
-
-// Enforce 080 while typing; lock address; auto-hide tip when valid
-manualNum?.addEventListener('input', () => {
-  if (uploadQueue[uploadIndex] === 'electric') {
-    const ok = manualNum.value.startsWith('080');
-    manualAddr.disabled = !ok;
-
-    if (ok) {
-      manualTip.classList.remove('show');
-      document.body.classList.remove('modal-open');
-      tipSnoozed = false; // reset once valid
-    } else if (!tipSnoozed && !manualTip.classList.contains('show')) {
-      manualTip.classList.add('show');
-      document.body.classList.add('modal-open');
-    }
-  }
-  validateUpload();
-});
-
-// Let the tip show again after leaving the field
-manualNum?.addEventListener('blur', () => { tipSnoozed = false; });
   fileInput?.addEventListener('change', () => {
     const f = fileInput.files?.[0];
-    if (!f){ previewEl.style.display = 'none'; return validateUpload(); }
-    if (f.type.startsWith('image/')){
-      previewEl.src = URL.createObjectURL(f);
-      previewEl.style.display = 'block';
-    } else {
-      previewEl.style.display = 'none';
-    }
+    if (!f){ previewEl.style.display='none'; return validateUpload(); }
+    if (f.type.startsWith('image/')){ previewEl.src = URL.createObjectURL(f); previewEl.style.display='block'; }
+    else { previewEl.style.display='none'; }
     validateUpload();
   });
 
-  // start intake flow after utility selection
-  fetchU?.addEventListener('click', () => {
+  fetchU.addEventListener('click', () => {
     if (!(sel.electric || sel.gas)) return;
-
-    uploadQueue = [];
-    if (sel.electric) uploadQueue.push('electric');
-    if (sel.gas)      uploadQueue.push('gas');
+    uploadQueue = []; if (sel.electric) uploadQueue.push('electric'); if (sel.gas) uploadQueue.push('gas');
     uploadIndex = 0;
-tipSnoozed = false; // reset snooze state each time intake starts
-
-setUploadTitleFor(uploadQueue[0]);
-
-    // label depends on queue
-    if (uploadQueue.length === 2 && uploadQueue[0] === 'electric'){
-      continueBtn.textContent = 'Continue to gas account';
-    } else {
-      continueBtn.textContent = 'Fetch my savings!';
-    }
-
-    resetPanels(); // keeps disabled until valid
-
-    utilityPage.classList.remove('show');
-    uploadPage.classList.add('show');
-    window.scrollTo(0,0);
+    setUploadTitleFor(uploadQueue[0]);
+    continueBtn.textContent = (uploadQueue.length === 2 && uploadQueue[0] === 'electric') ? 'Continue to gas account' : 'Fetch my savings!';
+    resetPanels();
+    utilityPage.classList.remove('show'); uploadPage.classList.add('show'); window.scrollTo(0,0);
   });
 
-  // Continue → either next utility or finish to Offer
   continueBtn.addEventListener('click', () => {
     if (!continueBtn.classList.contains('enabled')) return;
 
     uploadIndex++;
-
     if (uploadIndex < uploadQueue.length){
-      // now on gas
       setUploadTitleFor(uploadQueue[uploadIndex]);
       continueBtn.textContent = 'Fetch my savings!';
       resetPanels();
       window.scrollTo(0,0);
-   } else {
-  // finished → show loader first
-  document.getElementById('manualTip')?.classList.remove('show');
-  document.body.classList.remove('modal-open');
+      return;
+    }
 
-  document.getElementById('utility').classList.remove('show');
-  document.getElementById('upload').classList.remove('show');
-  document.getElementById('loader').classList.add('show'); // NEW loader page
-      if (window.lottie && !window.__loaderAnim) {
-  window.__loaderAnim = lottie.loadAnimation({
-    container: document.getElementById('lottieContainer'),
-    renderer: 'svg',
-    loop: true,
-    autoplay: true,
-    path: 'loader.json'
+    // finished → show loader
+    document.getElementById('manualTip')?.classList.remove('show');
+    document.body.classList.remove('modal-open');
+    document.getElementById('utility').classList.remove('show');
+    document.getElementById('upload').classList.remove('show');
+    document.getElementById('loader').classList.add('show');
+
+    // single Lottie init
+    if (window.lottie && !window.__loaderAnim){
+      window.__loaderAnim = lottie.loadAnimation({
+        container: document.getElementById('lottieContainer'),
+        renderer: 'svg',
+        loop: true,
+        autoplay: true,
+        path: 'loader.json'
+      });
+    } else if (window.__loaderAnim){
+      window.__loaderAnim.play();
+      window.__loaderAnim.resize && window.__loaderAnim.resize();
+    }
+
+    window.scrollTo(0,0);
+
+    setTimeout(() => {
+      const currentKind = uploadQueue[uploadIndex] || 'electric';
+      showLoaderThen(currentKind);
+      if (uploadIndex + 1 < uploadQueue.length) uploadIndex++;
+    }, 4000);
   });
-} else if (window.__loaderAnim) {
-  window.__loaderAnim.play();
-  window.__loaderAnim.resize && window.__loaderAnim.resize();
-}
 
+  /* ---------- results renderer (one copy only) ---------- */
+  function showLoaderThen(kind){
+    const results = document.getElementById('results');
+    const box = document.getElementById('resultsInner');
+    const headerLine = (kind === 'electric') ? 'New Electric Account Rate' : 'New Gas Account Rate';
 
-window.scrollTo(0,0);
-      // after 4s → swap loader for results
-setTimeout(() => {
-  // show whichever utility we're on
-  const currentKind = uploadQueue[uploadIndex] || 'electric';
-  showLoaderThen(currentKind);
-
-  // if there’s another utility queued (gas after electric), prepare for it
-  if (uploadIndex + 1 < uploadQueue.length) {
-    uploadIndex++;
+    box.innerHTML = `
+      <h3 style="color:#134c07;margin:0 0 12px;font-weight:800;">${headerLine}</h3>
+      <div class="card">
+        <h2>The best rate we found for you.</h2>
+        <div class="compareBox"><strong>Price to Compare:</strong> 9.39¢ / kWh</div>
+        <div class="kv"><div class="big">$4.79</div><small>per kWh</small></div>
+        <div class="row2">
+          <div class="blk"><strong>Contract Term</strong><br>9 Months</div>
+          <div class="blk"><strong>Early Termination Fee</strong><br>$150</div>
+        </div>
+        <div class="supplier">
+          <img src="Clearview_logo.png" alt="Supplier Logo" style="height:40px">
+          <span>Clearview Energy</span>
+        </div>
+        <div class="links">
+          <a href="#">Supplier Terms &amp; Conditions</a><br>
+          <a href="#">RateHound Terms of Service</a>
+        </div>
+      </div>
+    `;
+    document.getElementById('loader').classList.remove('show');
+    results.style.display = 'flex';
   }
-}, 4000);
- window.scrollTo(0,0);
-
-function showLoaderThen(kind) {
-  const results = document.getElementById('results');
-  const box = document.getElementById('resultsInner');
-
-  const headerLine = kind === 'electric'
-    ? 'New Electric Account Rate'
-    : 'New Gas Account Rate';
-
-  box.innerHTML = `
-    <h3 style="color:#134c07;margin:0 0 12px;font-weight:800;">${headerLine}</h3>
-    <div class="card">
-      <h2>The best rate we found for you.</h2>
-      <div class="compareBox">
-        <strong>Price to Compare:</strong> 9.39¢ / kWh
-      </div>
-      <div class="kv">
-        <div class="big">$4.79</div>
-        <small>per kWh</small>
-      </div>
-      <div class="row2">
-        <div class="blk"><strong>Contract Term</strong><br>9 Months</div>
-        <div class="blk"><strong>Early Termination Fee</strong><br>$150</div>
-      </div>
-      <div class="supplier">
-        <img src="Clearview_logo.png" alt="Supplier Logo" style="height:40px">
-        <span>Clearview Energy</span>
-      </div>
-      <div class="links">
-        <a href="#">Supplier Terms &amp; Conditions</a><br>
-        <a href="#">RateHound Terms of Service</a>
-      </div>
-    </div>
-  `;
-
-  // show results, hide loader
-  document.getElementById('loader').classList.remove('show');
-  results.style.display = 'flex';
-}
-  });
-}); 
+});
 </script>
 </body>
 </html>
