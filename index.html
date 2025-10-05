@@ -605,19 +605,8 @@ setUploadTitleFor(uploadQueue[0]);
   document.getElementById('utility').classList.remove('show');
   document.getElementById('upload').classList.remove('show');
   document.getElementById('loader').classList.add('show'); // NEW loader page
- window.scrollTo(0,0);
-
-function showLoaderThen(kind) {
-  if (kind === 'electric') {
-    document.getElementById('offer').classList.add('show');
-  } else if (kind === 'gas') {
-    document.getElementById('offer-gas').classList.add('show');
-  }
-}
-// after 4s → swap loader for results
+      // after 4s → swap loader for results
 setTimeout(() => {
-  document.getElementById('loader').classList.remove('show');
-
   // show whichever utility we're on
   const currentKind = uploadQueue[uploadIndex] || 'electric';
   showLoaderThen(currentKind);
@@ -627,6 +616,46 @@ setTimeout(() => {
     uploadIndex++;
   }
 }, 4000);
+ window.scrollTo(0,0);
+
+function showLoaderThen(kind) {
+  const results = document.getElementById('results');
+  const box = document.getElementById('resultsInner');
+
+  const headerLine = kind === 'electric'
+    ? 'New Electric Account Rate'
+    : 'New Gas Account Rate';
+
+  box.innerHTML = `
+    <h3 style="color:#134c07;margin:0 0 12px;font-weight:800;">${headerLine}</h3>
+    <div class="card">
+      <h2>The best rate we found for you.</h2>
+      <div class="compareBox">
+        <strong>Price to Compare:</strong> 9.39¢ / kWh
+      </div>
+      <div class="kv">
+        <div class="big">$4.79</div>
+        <small>per kWh</small>
+      </div>
+      <div class="row2">
+        <div class="blk"><strong>Contract Term</strong><br>9 Months</div>
+        <div class="blk"><strong>Early Termination Fee</strong><br>$150</div>
+      </div>
+      <div class="supplier">
+        <img src="Clearview_logo.png" alt="Supplier Logo" style="height:40px">
+        <span>Clearview Energy</span>
+      </div>
+      <div class="links">
+        <a href="#">Supplier Terms &amp; Conditions</a><br>
+        <a href="#">RateHound Terms of Service</a>
+      </div>
+    </div>
+  `;
+
+  // show results, hide loader
+  document.getElementById('loader').classList.remove('show');
+  results.style.display = 'flex';
+}
   });
 }); 
 </script>
