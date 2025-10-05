@@ -582,19 +582,6 @@ setUploadTitleFor(uploadQueue[0]);
   window.__loaderAnim.play();
   window.__loaderAnim.resize && window.__loaderAnim.resize();
 }
-      // (re)start lottie if available
-if (window.lottie && !window.__loaderAnim) {
-  window.__loaderAnim = lottie.loadAnimation({
-    container: document.getElementById('lottieContainer'),
-    renderer: 'svg',
-    loop: true,
-    autoplay: true,
-    path: 'loader.json'
-  });
-} else if (window.__loaderAnim) {
-  window.__loaderAnim.play();
-  window.__loaderAnim.resize && window.__loaderAnim.resize();
-}
 
 
 window.scrollTo(0,0);
