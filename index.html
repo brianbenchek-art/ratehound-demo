@@ -221,20 +221,18 @@
   .supplier{display:flex;align-items:center;gap:12px;margin-top:14px;padding-top:12px;border-top:1px solid #e6e8eb}
   .links a{color:#2d7cf6;text-decoration:none}
   .btn--outline{background:#fff;color:var(--brand);border:2px solid var(--brand);border-radius:999px;padding:12px 16px;font-weight:700}
-  .chip{
+ .chip{
   position:fixed;
-  top:14px; right:14px;
-  background:#134c07;
-  color:#fff;
-  padding:8px 14px;
+  top:10px; right:10px;
+  background:#134c07; color:#fff;
   border-radius:999px;
-  font-size:13px;
+  padding:6px 10px;               /* smaller padding */
+  font-size:12px;                 /* smaller text */
   font-weight:600;
-  box-shadow:0 2px 6px rgba(0,0,0,.15);
-  opacity:0;
-  transform:translateY(-6px);
-  transition:opacity .3s ease, transform .3s ease;
-  z-index:1000;
+  box-shadow:0 2px 6px rgba(0,0,0,.12);
+  z-index:1001;
+  opacity:.9;
+  transform:scale(0.9);           /* subtle shrink */
 }
 .chip.show{
   opacity:1;
