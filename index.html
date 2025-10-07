@@ -86,7 +86,21 @@
 
   .btn:active{transform:scale(.99)}
   .hint{color:var(--muted); font-size:12px; text-align:center; margin-top:6px}
-
+  /* Toasts (demo notifications) */
+#toasts{
+  position:fixed; inset:auto 12px 12px auto;
+  display:flex; flex-direction:column; gap:8px; z-index:1000;
+}
+.toast{
+  background:#134c07; color:#fff; border-radius:10px;
+  padding:10px 12px; box-shadow:0 6px 18px rgba(0,0,0,.18);
+  font-size:14px; max-width:min(92vw, 420px);
+  opacity:0; transform:translateY(6px);
+  transition:opacity .25s ease, transform .25s ease;
+}
+.toast.show{ opacity:1; transform:translateY(0) }
+.toast a{ color:#fff; text-decoration:underline; }
+  
   /* PAGE 3 — Utility choice */
   #utility{background:#fff;color:var(--ink);display:none}
   #utility.show{display:flex}
@@ -267,6 +281,10 @@
 <section id="loader" class="vh">
   <div id="lottieContainer"></div>
 </section>
+  
+  <!-- Toast container (for demo notifications) -->
+<div id="toasts" aria-live="polite" aria-atomic="true"></div>
+  
 <!-- Manual-entry tip (electric only) -->
 <div id="manualTip" class="modal" role="dialog" aria-modal="true" aria-labelledby="tipTitle">
   <div class="box">
@@ -309,6 +327,49 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   [nameInput, phoneInput, emailInput].forEach(el => el.addEventListener('input', checkSignupFields));
   checkSignupFields();
+  
+  /* ---------- shadow account + toast helpers (demo only) ---------- */
+const APP_LINK = '#'; // replace with real store link when ready
+
+function createShadowAccount(){
+  const user = {
+    id: 'demo_' + Date.now(),
+    name:  nameInput.value.trim(),
+    phone: phoneInput.value.trim(),
+    email: emailInput.value.trim(),
+    createdAt: new Date().toISOString()
+  };
+  try {
+    sessionStorage.setItem('rh_user', JSON.stringify(user));
+  } catch(e){
+    // sessionStorage may be blocked; safe no-op for demo
+  }
+  return user;
+}
+
+function showToast(html, ms=3500){
+  const wrap = document.getElementById('toasts');
+  if (!wrap) return;
+  const t = document.createElement('div');
+  t.className = 'toast';
+  t.innerHTML = html;
+  wrap.appendChild(t);
+  requestAnimationFrame(() => t.classList.add('show'));
+  setTimeout(() => {
+    t.classList.remove('show');
+    setTimeout(() => t.remove(), 250);
+  }, ms);
+}
+
+function sendDemoWelcome(user){
+  // Simulate SMS/Email with toasts (and console for devs)
+  console.log('[DEMO SMS] Welcome to RateHound,', user.name, 'Username:', user.email);
+  console.log('[DEMO EMAIL] Welcome to RateHound →', user.email);
+
+  showToast('🎉 Welcome to RateHound, ' + (user.name || 'there') + '!');
+  showToast('Your username is <strong>' + user.email + '</strong>.', 4200);
+  showToast('Grab the app: <a href="'+APP_LINK+'" target="_blank" rel="noopener">RateHound App</a>', 5200);
+}
 
   /* ---------- utility choice ---------- */
   const sel   = { electric:false, gas:false };
@@ -322,11 +383,20 @@ document.addEventListener('DOMContentLoaded', () => {
   eBtn.addEventListener('click', () => { sel.electric = !sel.electric; eBtn.classList.toggle('selected', sel.electric); refreshFetch(); });
   gBtn.addEventListener('click', () => { sel.gas      = !sel.gas;      gBtn.classList.toggle('selected', sel.gas);      refreshFetch(); });
 
-  signUpBtn.addEventListener('click', () => {
-    signup.classList.remove('show');
-    document.getElementById('utility').classList.add('show');
-    window.scrollTo(0,0);
-  });
+signUpBtn.addEventListener('click', () => {
+  if (signUpBtn.disabled) return;
+
+  // 1) Create shadow account (demo-only)
+  const user = createShadowAccount();
+
+  // 2) Fire demo notifications (toasts + console)
+  sendDemoWelcome(user);
+
+  // 3) Proceed to utility selection
+  signup.classList.remove('show');
+  document.getElementById('utility').classList.add('show');
+  window.scrollTo(0,0);
+});
 
   /* ---------- intake ---------- */
   const uploadPage  = document.getElementById('upload');
