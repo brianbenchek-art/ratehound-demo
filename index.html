@@ -89,21 +89,31 @@
   /* Toasts (demo notifications) */
 #toasts{
   position:fixed;
-  bottom:40px; left:50%;
+  bottom:28px; left:50%;
   transform:translateX(-50%);
-  display:flex; flex-direction:column; align-items:center; gap:10px;
+  display:flex; flex-direction:column; align-items:center; gap:8px;
   z-index:1000;
 }
+
 .toast{
-  background:#134c07; color:#fff; border-radius:12px;
-  padding:14px 18px; box-shadow:0 6px 18px rgba(0,0,0,.18);
-  font-size:16px; text-align:center;
-  max-width:min(90vw, 440px);
-  opacity:0; transform:translateY(12px);
-  transition:opacity .3s ease, transform .3s ease;
+  background:#134c07; color:#fff;
+  border-radius:999px;             /* makes them pill-shaped */
+  padding:10px 20px;               /* slimmer vertically, wider horizontally */
+  box-shadow:0 3px 10px rgba(0,0,0,.15);
+  font-size:14px; font-weight:500;
+  text-align:center; white-space:nowrap;   /* keeps it one line */
+  max-width:min(92vw, 480px);
+  opacity:0; transform:translateY(10px);
+  transition:opacity .25s ease, transform .25s ease;
 }
+
 .toast.show{ opacity:1; transform:translateY(0) }
-.toast a{ color:#fff; text-decoration:underline; font-weight:600 }
+
+.toast a{
+  color:#fff;
+  text-decoration:underline;
+  font-weight:600;
+}
 .toast a{ color:#fff; text-decoration:underline; }
   
   /* PAGE 3 — Utility choice */
