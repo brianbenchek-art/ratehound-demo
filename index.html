@@ -88,17 +88,22 @@
   .hint{color:var(--muted); font-size:12px; text-align:center; margin-top:6px}
   /* Toasts (demo notifications) */
 #toasts{
-  position:fixed; inset:auto 12px 12px auto;
-  display:flex; flex-direction:column; gap:8px; z-index:1000;
+  position:fixed;
+  bottom:40px; left:50%;
+  transform:translateX(-50%);
+  display:flex; flex-direction:column; align-items:center; gap:10px;
+  z-index:1000;
 }
 .toast{
-  background:#134c07; color:#fff; border-radius:10px;
-  padding:10px 12px; box-shadow:0 6px 18px rgba(0,0,0,.18);
-  font-size:14px; max-width:min(92vw, 420px);
-  opacity:0; transform:translateY(6px);
-  transition:opacity .25s ease, transform .25s ease;
+  background:#134c07; color:#fff; border-radius:12px;
+  padding:14px 18px; box-shadow:0 6px 18px rgba(0,0,0,.18);
+  font-size:16px; text-align:center;
+  max-width:min(90vw, 440px);
+  opacity:0; transform:translateY(12px);
+  transition:opacity .3s ease, transform .3s ease;
 }
 .toast.show{ opacity:1; transform:translateY(0) }
+.toast a{ color:#fff; text-decoration:underline; font-weight:600 }
 .toast a{ color:#fff; text-decoration:underline; }
   
   /* PAGE 3 — Utility choice */
@@ -347,7 +352,7 @@ function createShadowAccount(){
   return user;
 }
 
-function showToast(html, ms=3500){
+function showToast(html, ms=4000){
   const wrap = document.getElementById('toasts');
   if (!wrap) return;
   const t = document.createElement('div');
