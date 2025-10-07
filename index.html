@@ -263,6 +263,16 @@
 .card .subtitle{color:var(--muted); font-weight:600}
 .card hr{border:0;border-top:1px solid #e6e8eb;margin:18px 0}
 .disclaimer{margin-top:12px;font-size:14px;line-height:1.35;color:#111}
+  /* --- Chip safe-area so content never scrolls under it --- */
+:root{ --chipH: 36px }               /* chip height (tweak if you change the chip) */
+.chip{ z-index:1000; }               /* ensure it sits above everything */
+
+body.has-chip #signup .inner,
+body.has-chip #utility .inner,
+body.has-chip #upload .inner,
+body.has-chip #results .inner{
+  padding-top: calc(var(--chipH) + 8px);  /* reserve space under the chip */
+}
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js"></script>
 </head>
