@@ -120,10 +120,10 @@
   #utility{background:#fff;color:var(--ink);display:none}
   #utility.show{display:flex}
   #utility .inner{
-    margin:0 auto; width:min(92%,420px); padding:28px 16px;
-    display:flex; flex-direction:column; gap:16px; justify-content:center; min-height:100vh;
-    margin-top:-15vh;
-  }
+  margin:0 auto; width:min(92%,420px); padding:28px 16px;
+  display:flex; flex-direction:column; gap:16px; justify-content:center; min-height:100vh;
+  margin-top:5vh;                     /* was -15vh */
+}
   #utility h1{margin:0 0 12px; font-size:26px; font-weight:700; text-align:center; color:var(--ink);}
   .btn.tall{
     height:8vh; display:flex; align-items:center; justify-content:center;
@@ -276,8 +276,8 @@ body.has-chip #results .inner{
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js"></script>
 </head>
-  <div id="userChip" class="chip" hidden></div>
 <body>
+  <div id="userChip" class="chip" hidden></div>
 
 <!-- Splash -->
 <section id="splash" class="vh fade">
