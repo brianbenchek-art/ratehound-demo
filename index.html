@@ -143,10 +143,17 @@
   /* PAGE 4 — Account intake */
   #upload{background:#fff;color:var(--ink);display:none}
   #upload.show{display:flex}
-  #upload .inner{
-    margin:0 auto; width:min(92%,420px); padding:28px 16px;
-    display:flex; flex-direction:column; gap:14px; justify-content:flex-start; min-height:100vh;
-  }
+ #upload .inner{
+  margin:0 auto; 
+  width:min(92%,420px); 
+  padding:28px 16px;
+  display:flex; 
+  flex-direction:column; 
+  gap:14px; 
+  justify-content:flex-start; 
+  min-height:100vh;
+  margin-top:10vh;           /* push content down ~10% of viewport height */
+}
   #upload h1{margin:0 0 8px; font-size:26px; font-weight:700; text-align:center}
 
   .method{
