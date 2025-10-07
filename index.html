@@ -221,9 +221,29 @@
   .supplier{display:flex;align-items:center;gap:12px;margin-top:14px;padding-top:12px;border-top:1px solid #e6e8eb}
   .links a{color:#2d7cf6;text-decoration:none}
   .btn--outline{background:#fff;color:var(--brand);border:2px solid var(--brand);border-radius:999px;padding:12px 16px;font-weight:700}
+  .chip{
+  position:fixed;
+  top:14px; right:14px;
+  background:#134c07;
+  color:#fff;
+  padding:8px 14px;
+  border-radius:999px;
+  font-size:13px;
+  font-weight:600;
+  box-shadow:0 2px 6px rgba(0,0,0,.15);
+  opacity:0;
+  transform:translateY(-6px);
+  transition:opacity .3s ease, transform .3s ease;
+  z-index:1000;
+}
+.chip.show{
+  opacity:1;
+  transform:translateY(0);
+}
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js"></script>
 </head>
+  <div id="userChip" class="chip" hidden></div>
 <body>
 
 <!-- Splash -->
@@ -342,6 +362,21 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   [nameInput, phoneInput, emailInput].forEach(el => el.addEventListener('input', checkSignupFields));
   checkSignupFields();
+  renderUserChip();
+  function renderUserChip(){
+  const chip = document.getElementById('userChip');
+  try{
+    const user = JSON.parse(sessionStorage.getItem('rh_user') || '{}');
+    if (user && user.email){
+      chip.textContent = `Signed in as ${user.email}`;
+      chip.hidden = false;
+      // animate in
+      requestAnimationFrame(() => chip.classList.add('show'));
+    }
+  } catch(e){
+    // ignore
+  }
+}
   
   /* ---------- shadow account + toast helpers (demo only) ---------- */
 const APP_LINK = '#'; // replace with real store link when ready
@@ -349,16 +384,13 @@ const APP_LINK = '#'; // replace with real store link when ready
 function createShadowAccount(){
   const user = {
     id: 'demo_' + Date.now(),
-    name:  nameInput.value.trim(),
-    phone: phoneInput.value.trim(),
-    email: emailInput.value.trim(),
+    name:  document.getElementById('name')?.value.trim() || '',
+    phone: document.getElementById('phone')?.value.trim() || '',
+    email: document.getElementById('email')?.value.trim() || '',
     createdAt: new Date().toISOString()
   };
-  try {
-    sessionStorage.setItem('rh_user', JSON.stringify(user));
-  } catch(e){
-    // sessionStorage may be blocked; safe no-op for demo
-  }
+  try { sessionStorage.setItem('rh_user', JSON.stringify(user)); } catch(e){}
+  renderUserChip(); // <-- show/update chip immediately
   return user;
 }
 
