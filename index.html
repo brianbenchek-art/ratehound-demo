@@ -400,12 +400,16 @@ document.addEventListener('DOMContentLoaded', () => {
   const chip = document.getElementById('userChip');
   try{
     const user = JSON.parse(sessionStorage.getItem('rh_user') || '{}');
-    if (user && user.email){
-      chip.textContent = `Signed in as ${user.email}`;
-      chip.hidden = false;
-      // animate in
-      requestAnimationFrame(() => chip.classList.add('show'));
-    }
+  if (user && user.email) {
+  chip.textContent = `Signed in as ${user.email}`;
+  chip.hidden = false;
+
+  // Reserve space under the chip so content doesn't scroll beneath it
+  document.body.classList.add('has-chip');
+
+  // animate in
+  requestAnimationFrame(() => chip.classList.add('show'));
+}
   } catch(e){
     // ignore
   }
