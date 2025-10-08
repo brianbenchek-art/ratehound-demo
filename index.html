@@ -286,20 +286,22 @@
 }
 .chip.show{ opacity:1; transform:translateY(0); }
 
-/* --- universal chip safe-area + visible white bar --- */
-body.has-chip{
-  --safeTop: calc(var(--chipH) + 14px);
-  padding-top: var(--safeTop);
-  scroll-padding-top: var(--safeTop);
-}
+/* --- chip safe-area + visible white band (final fix) --- */
+:root{ --chipH: 36px; --safeTop: calc(var(--chipH) + 14px); }
+
 #chipSafe{
   position:fixed;
   top:0; left:0; right:0;
-  height: var(--safeTop);
-  background:#fff;              /* the white band */
-  z-index:1000;                 /* below the chip, above content */
+  height:var(--safeTop);
+  background:#fff;
   box-shadow:0 1px 0 rgba(0,0,0,.06);
-  pointer-events:none;          /* clicks pass through */
+  z-index:1000;
+  pointer-events:none;
+}
+
+/* shift all body content below the white band */
+body.has-chip{
+  padding-top:var(--safeTop);
 }
 /* keep chip above the white bar */
 .chip{ z-index:1001; }
@@ -436,8 +438,8 @@ document.addEventListener('DOMContentLoaded', () => {
   chip.hidden = false;
 
   // Reserve space under the chip so content doesn't scroll beneath it
-  document.body.classList.add('has-chip');
-
+ document.body.classList.add('has-chip');
+document.getElementById('chipSafe').hidden = false;   // unhide white safe area
   // animate in
   requestAnimationFrame(() => chip.classList.add('show'));
 }
