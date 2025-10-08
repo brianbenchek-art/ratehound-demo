@@ -119,15 +119,15 @@
   /* PAGE 3 — Utility choice */
   #utility{background:#fff;color:var(--ink);display:none}
   #utility.show{display:flex}
-  #utility .inner{
+ #utility .inner{
   margin:0 auto;
   width:min(92%,420px);
-  padding:calc(28px + var(--chipH)) 16px 28px;  /* top padding accounts for chip */
+  padding:28px 16px;                  /* body provides chip space now */
   display:flex;
   flex-direction:column;
   gap:16px;
-  justify-content:flex-start;         /* top-align content */
-  min-height:auto;                    /* no forced centering */
+  justify-content:flex-start;
+  min-height:auto;
 }
   #utility h1{margin:0 0 12px; font-size:26px; font-weight:700; text-align:center; color:var(--ink);}
   .btn.tall{
@@ -286,15 +286,28 @@
 }
 .chip.show{ opacity:1; transform:translateY(0); }
 
-/* --- universal chip safe-area --- */
+/* --- universal chip safe-area + visible white bar --- */
 body.has-chip{
-  padding-top: calc(var(--chipH) + 14px);     /* push entire viewport content down */
-  scroll-padding-top: calc(var(--chipH) + 14px);
+  --safeTop: calc(var(--chipH) + 14px);
+  padding-top: var(--safeTop);
+  scroll-padding-top: var(--safeTop);
 }
+#chipSafe{
+  position:fixed;
+  top:0; left:0; right:0;
+  height: var(--safeTop);
+  background:#fff;              /* the white band */
+  z-index:1000;                 /* below the chip, above content */
+  box-shadow:0 1px 0 rgba(0,0,0,.06);
+  pointer-events:none;          /* clicks pass through */
+}
+/* keep chip above the white bar */
+.chip{ z-index:1001; }
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js"></script>
 </head>
 <body>
+  <div id="chipSafe" hidden></div>
   <div id="userChip" class="chip" hidden></div>
 
 <!-- Splash -->
