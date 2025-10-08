@@ -120,9 +120,14 @@
   #utility{background:#fff;color:var(--ink);display:none}
   #utility.show{display:flex}
   #utility .inner{
-  margin:0 auto; width:min(92%,420px); padding:28px 16px;
-  display:flex; flex-direction:column; gap:16px; justify-content:center; min-height:100vh;
-  margin-top:5vh;                     /* was -15vh */
+  margin:0 auto;
+  width:min(92%,420px);
+  padding:calc(28px + var(--chipH)) 16px 28px;  /* top padding accounts for chip */
+  display:flex;
+  flex-direction:column;
+  gap:16px;
+  justify-content:flex-start;         /* top-align content */
+  min-height:auto;                    /* no forced centering */
 }
   #utility h1{margin:0 0 12px; font-size:26px; font-weight:700; text-align:center; color:var(--ink);}
   .btn.tall{
@@ -264,14 +269,27 @@
 .card hr{border:0;border-top:1px solid #e6e8eb;margin:18px 0}
 .disclaimer{margin-top:12px;font-size:14px;line-height:1.35;color:#111}
   /* --- Chip safe-area so content never scrolls under it --- */
-:root{ --chipH: 36px }               /* chip height (tweak if you change the chip) */
-.chip{ z-index:1000; }               /* ensure it sits above everything */
+:root{ --chipH: 36px }
 
-body.has-chip #signup .inner,
-body.has-chip #utility .inner,
-body.has-chip #upload .inner,
-body.has-chip #results .inner{
-  padding-top: calc(var(--chipH) + 8px);  /* reserve space under the chip */
+.chip{ 
+  position:fixed;
+  top:10px; right:10px;
+  background:#134c07; color:#fff;
+  border-radius:999px;
+  padding:6px 10px;
+  font-size:12px;
+  font-weight:600;
+  box-shadow:0 2px 6px rgba(0,0,0,.12);
+  z-index:1001;
+  opacity:.9;
+  transform:scale(0.9);
+}
+.chip.show{ opacity:1; transform:translateY(0); }
+
+/* --- universal chip safe-area --- */
+body.has-chip{
+  padding-top: calc(var(--chipH) + 14px);     /* push entire viewport content down */
+  scroll-padding-top: calc(var(--chipH) + 14px);
 }
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js"></script>
