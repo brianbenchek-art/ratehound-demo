@@ -225,6 +225,15 @@
   .card{background:#fff;border:1px solid var(--border);border-radius:16px;padding:20px;box-shadow:0 1px 2px rgba(0,0,0,.03)}
   .card h2{margin:0 0 8px;font-size:22px}
   .compareBox{background:#fff8cc;border-left:4px solid #f2c200;border-radius:10px;padding:10px 12px;font-weight:600}
+  .yellowBox {
+  background:#fff8cc;
+  border-left:4px solid #f2c200;
+  border-radius:10px;
+  padding:12px;
+  text-align:center;
+  font-weight:600;
+  color:#134c07;
+}
   .kv{display:flex;justify-content:space-between;align-items:center;margin:14px 0}
   .kv .big{font-size:28px;font-weight:800}
   .kv small{display:block;font-weight:600;color:var(--muted)}
@@ -692,66 +701,55 @@ function showLoaderThen(kind){
   const results = document.getElementById('results');
   const box = document.getElementById('resultsInner');
 
-  // Demo data (keep simple + static for now)
+  // Demo data
   const planName = 'ClearGuarantee9Plus';
-  const ptc = '9.39¢ / kWh';         // Price to Compare
-  const newRate = '4.79¢';            // display with ¢ like screenshot
-  const newRateUnits = 'per KWh';
+  const ptc = '9.39¢ / kWh';        // Price to Compare
+  const newRate = '4.79¢ / kWh';    // Best rate
   const term = '9 Months';
   const etf  = '$150';
-  const baseCharge = '$19.99';
-  const utilityRate = '8.72 ¢/KWh';   // baseline utility
   const estSavings = '45.1%';
 
   box.innerHTML = `
     <div class="card">
-      <h2>The best rate we found for you.</h2>
 
-      <div class="compareBox"><strong>Price to Compare:</strong> ${ptc}</div>
-
-      <hr>
-
-      <div class="subtitle">Your Selected Plan</div>
-      <h2 style="margin:4px 0 12px">${planName}</h2>
-
-      <div class="pricePill">
-        <div class="big">${newRate}</div>
-        <small class="subtitle">${newRateUnits}</small>
-      </div>
-
-      <div class="row2" style="margin-top:18px">
-        <div class="blk"><strong>Contract Term</strong><br>${term}</div>
-        <div class="blk"><strong>Early Termination Fee</strong><br>${etf}</div>
-      </div>
-
-      <div style="margin-top:18px">
-        <div class="subtitle">Base Commodity Charge</div>
-        <div style="font-weight:800;margin-top:4px">${baseCharge}</div>
-        <div class="subtitle">per billing cycle</div>
+      <!-- Top yellow box (Price to Compare + Rate) -->
+      <div class="yellowBox">
+        <div><strong>Price to Compare:</strong> ${ptc}</div>
+        <div style="font-size:28px;font-weight:800;margin-top:6px;">${newRate}</div>
       </div>
 
       <hr>
 
-      <h3 style="margin:0 0 10px">Your Estimated Savings</h3>
-      <div style="margin:8px 0">
-        <div>Your The Illuminating Company Rate: <strong>${utilityRate}</strong></div>
-        <div>Your Clearview Energy Rate: <strong>${newRate} /KWh</strong></div>
-      </div>
-      <div style="font-weight:800">Your Estimated Savings: ${estSavings}</div>
+      <h2 style="color:#134c07;text-align:center;margin:8px 0 18px;">Here's the lowest rate we found for you.</h2>
 
-      <div class="supplier">
+      <!-- Plan details -->
+      <div style="display:flex;flex-direction:column;gap:10px;margin:0 auto 10px;">
+        <div><strong>Plan:</strong> ${planName}</div>
+        <div><strong>Contract Term:</strong> ${term}</div>
+        <div><strong>Early Termination Fee:</strong> ${etf}</div>
+      </div>
+
+      <!-- Estimated Savings -->
+      <div class="yellowBox" style="margin-top:18px;">
+        <div><strong>Estimated Savings:</strong></div>
+        <div style="font-size:28px;font-weight:800;margin-top:6px;">${estSavings}</div>
+      </div>
+
+      <!-- Supplier info + links -->
+      <div class="supplier" style="margin-top:22px;">
         <img src="Clearview_logo.png" alt="Supplier Logo" style="height:40px">
-        <span>Clearview Energy</span>
+        <span style="font-weight:600;">Clearview Energy</span>
       </div>
 
-      <div class="links" style="margin-top:10px">
+      <div class="links" style="margin-top:10px;">
         <a href="#">Clearview Energy Terms &amp; Conditions</a><br>
-        <a href="#">PowerSetter Terms of Service</a>
+        <a href="#">RateHound Terms of Service</a>
       </div>
 
-      <div class="disclaimer">
-        This rate will be effective following the first billing date after successful enrollment
+      <div class="disclaimer" style="margin-top:12px;">
+        This rate will be effective following the first billing date after successful enrollment.
       </div>
+
     </div>
   `;
 
