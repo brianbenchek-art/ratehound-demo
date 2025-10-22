@@ -585,9 +585,9 @@ function sendDemoWelcome(user){
   console.log('[DEMO SMS] Welcome to RateHound,', user.name, 'Username:', user.email);
   console.log('[DEMO EMAIL] Welcome to RateHound →', user.email);
 
-  showToast('🎉 Welcome to RateHound, ' + (user.name || 'there') + '!');
-  showToast('Your username is <strong>' + user.email + '</strong>.', 3000);
-  showToast('Grab the app: <a href="'+APP_LINK+'" target="_blank" rel="noopener">RateHound App</a>', 5000);
+  showToast('Welcome to RateHound, ' + (user.name || 'there') + '!');
+  showToast('Your username is <strong>' + user.email + '</strong>.', 4000);
+  showToast('Grab the app: <a href="'+APP_LINK+'" target="_blank" rel="noopener">RateHound App</a>', 7000);
 }
 
   /* ---------- utility choice ---------- */
@@ -848,7 +848,7 @@ function showLoaderThen(kind){
   // Demo CTA
   const btn = box.querySelector('#ctaSwitch');
   btn && btn.addEventListener('click', () =>
-    (window.showToast ? showToast('👍 Great — we’ll start the switch (demo).', 4200) : alert('Great — we’ll start the switch (demo).'))
+    (window.showToast ? showToast('Great — we’ll start the switch (demo).', 4200) : alert('Great — we’ll start the switch (demo).'))
   );
 }
 });  // closes DOMContentLoaded
