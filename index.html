@@ -306,6 +306,7 @@
   border-left: 4px solid #f2c200;
   border-radius: 10px;          /* match small box */
   padding: 12px;                /* match small box */
+  display: inline-block;
   text-align: center;
   color: #134c07;
   font-weight: 700;             /* slightly less heavy for readability */
@@ -575,7 +576,7 @@ function sendDemoWelcome(user){
 
   showToast('🎉 Welcome to RateHound, ' + (user.name || 'there') + '!');
   showToast('Your username is <strong>' + user.email + '</strong>.', 3000);
-  showToast('Grab the app: <a href="'+APP_LINK+'" target="_blank" rel="noopener">RateHound App</a>', 4000);
+  showToast('Grab the app: <a href="'+APP_LINK+'" target="_blank" rel="noopener">RateHound App</a>', 5000);
 }
 
   /* ---------- utility choice ---------- */
@@ -808,10 +809,9 @@ function showLoaderThen(kind){
         <div class="blk"><div style="font-weight:800;color:#134c07">Early Termination Fee</div>${etf}</div>
       </div>
 
-      <div class="yellowBox--lg" style="margin:18px 0 6px">
-        <div style="font-size:18px;font-weight:800">Estimated Savings</div>
-        <div class="big" style="margin-top:4px">${estSavings}</div>
-      </div>
+      <div class="yellowBox--lg" style="margin:18px 0 6px; font-size:18px; font-weight:800;">
+  Estimated Savings: <span class="big" style="font-size:inherit; font-weight:inherit;">${estSavings}</span>
+</div>
 
       <button id="ctaSwitch" class="btn-cta">Switch me to this plan!</button>
 
