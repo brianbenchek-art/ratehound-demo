@@ -422,6 +422,12 @@ body.has-chip{
 .card .btn-cta{
   margin-top:18px;
 }
+  /* spacing for each pill */
+.ratePill{    margin:6px 0 16px; }
+.savingsPill{ margin:18px 0 24px; }  /* extra room above CTA */
+
+/* extra space above the CTA button */
+.card .btn-cta{ margin-top:24px; }
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js"></script>
 </head>
@@ -835,8 +841,12 @@ function showLoaderThen(kind){
         <div class="blk"><div style="font-weight:800;color:#134c07">Early Termination Fee</div>${etf}</div>
       </div>
 
-      <div class="yellowBox--lg" style="margin:18px 0 6px; font-size:18px; font-weight:800;">
-  Estimated Savings: <span class="big" style="font-size:inherit; font-weight:inherit;">${estSavings}</span>
+      <div class="yellowBox--lg ratePill">
+  <div class="big">${newRate}</div>
+</div>
+
+<div class="yellowBox--lg savingsPill">
+  Estimated Savings: <span class="big">${estSavings}</span>
 </div>
 
       <button id="ctaSwitch" class="btn-cta">Switch me to this plan!</button>
