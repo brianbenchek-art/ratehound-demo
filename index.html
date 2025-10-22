@@ -773,9 +773,72 @@ signUpBtn.addEventListener('click', () => {
       showLoaderThen(currentKind);
       if (uploadIndex + 1 < uploadQueue.length) uploadIndex++;
     }, 4000);
-  });
+  });   // <-- closes DOMContentLoaded
+ 
+function showLoaderThen(kind){
+  const results = document.getElementById('results');
+  const box     = document.getElementById('resultsInner');
 
-});
+  // Demo data
+  const planName   = 'ClearGuarantee9Plus';
+  const ptc        = '9.39¢ / kWh';
+  const newRate    = '4.79¢ / kWh';
+  const term       = '9 Months';
+  const etf        = '$150';
+  const estSavings = '45.1%';
+
+  box.innerHTML = `
+    <div class="card">
+      <div class="yellowBox--sm">Price to Compare: ${ptc}</div>
+      <hr>
+      <div class="leadGreen" style="margin:8px 0 10px">Here's the lowest rate we found for you.</div>
+
+      <div class="yellowBox--lg" style="margin:6px 0 16px">
+        <div class="big">${newRate}</div>
+      </div>
+
+      <div style="margin:10px 0 6px">
+        <div style="font-weight:800;color:#134c07">Plan:</div>
+        <div style="font-size:18px">${planName}</div>
+      </div>
+      <div class="row2" style="margin-top:8px">
+        <div class="blk"><div style="font-weight:800;color:#134c07">Contract Term</div>${term}</div>
+        <div class="blk"><div style="font-weight:800;color:#134c07">Early Termination Fee</div>${etf}</div>
+      </div>
+
+      <div class="yellowBox--lg" style="margin:18px 0 6px">
+        <div style="font-size:18px;font-weight:800">Estimated Savings</div>
+        <div class="big" style="margin-top:4px">${estSavings}</div>
+      </div>
+
+      <button id="ctaSwitch" class="btn-cta">Switch me to this plan!</button>
+
+      <hr style="margin:18px 0 10px">
+      <div class="supplier" style="margin-top:0">
+        <img src="Clearview_logo.png" alt="Supplier Logo" style="height:40px">
+        <span style="font-weight:800;color:#134c07">Clearview Energy</span>
+      </div>
+      <div class="links" style="margin-top:12px">
+        <a href="#">Clearview Energy Terms &amp; Conditions</a><br>
+        <a href="#">RateHound Terms of Service</a>
+      </div>
+      <div class="disclaimer" style="margin-top:12px">
+        This rate will be effective following the first billing date after successful enrollment.
+      </div>
+    </div>
+  `;
+
+  // Hide loader, show results
+  document.getElementById('loader').classList.remove('show');
+  results.style.display = 'flex';
+
+  // Demo CTA
+  const btn = box.querySelector('#ctaSwitch');
+  btn && btn.addEventListener('click', () =>
+    (window.showToast ? showToast('👍 Great — we’ll start the switch (demo).', 4200) : alert('Great — we’ll start the switch (demo).'))
+  );
+}
+});  // closes DOMContentLoaded
 </script>
 </body>
 </html>
