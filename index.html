@@ -403,6 +403,25 @@ body.has-chip{
 }
 /* keep chip above the white bar */
 .chip{ z-index:1001; }
+  /* Center the yellow pills & give breathing room */
+.card .yellowBox--sm,
+.card .yellowBox--lg{
+  display:block;
+  /* make the pill only as wide as its content, then center it */
+  width:max-content;           /* works everywhere */
+  margin-left:auto;
+  margin-right:auto;
+}
+
+.card .yellowBox--lg{
+  margin-top:6px;              /* small gap above */
+  margin-bottom:16px;          /* gap below so CTA isn’t crowded */
+}
+
+/* Extra space above the CTA button */
+.card .btn-cta{
+  margin-top:18px;
+}
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js"></script>
 </head>
