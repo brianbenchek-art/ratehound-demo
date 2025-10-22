@@ -268,6 +268,36 @@
   color:#134c07;
   text-align:center;
 }
+  /* yellow pills */
+.pill{
+  background:#fff8cc;
+  border-left:4px solid #f2c200;
+  border-radius:12px;
+  padding:10px 14px;
+  text-align:center;
+  color:#134c07;
+  font-weight:700;
+}
+.pill.big{ padding:18px 16px; border-radius:14px; }
+.pill .num{ display:block; font-size:32px; font-weight:800; line-height:1.1; }
+
+/* green lead line */
+.leadGreen{
+  color:#134c07;
+  font-weight:800;
+  font-size:22px;      /* same size you liked on “Estimated Savings” */
+  line-height:1.25;
+  text-align:center;
+}
+
+/* large centered CTA */
+.btn-cta{
+  background:#134c07; color:#fff; border:0;
+  border-radius:999px; font-weight:800;
+  padding:16px 18px; width:100%; margin-top:12px;
+  text-align:center; cursor:pointer;
+}
+.btn-cta:active{ transform:scale(.99); }
 
 /* big centered yellow pill for rate / savings */
 .yellowBox--lg{
@@ -744,95 +774,67 @@ signUpBtn.addEventListener('click', () => {
     }, 4000);
   });
 
-  /* ---------- results renderer (one copy only) ---------- */
-function showLoaderThen(kind){
-  const results = document.getElementById('results');
-  const box = document.getElementById('resultsInner');
+ box.innerHTML = `
+  <div class="card">
+    <!-- 1) PTC at top (small yellow pill) -->
+    <div class="compareBox" style="text-align:center">
+      <strong>Price to Compare:</strong> ${ptc}
+    </div>
 
-  // Demo data
-  const planName    = 'ClearGuarantee9Plus';
-  const ptc         = '9.39¢ / kWh';
-  const newRate     = '4.79¢ / kWh';
-  const term        = '9 Months';
-  const etf         = '$150';
-  const estSavings  = '45.1%';
+    <hr>
 
-  box.innerHTML = `
-    <div class="card">
-      <!-- 1) small PTC pill on top -->
-      <div class="yellowBox--sm">Price to Compare: ${ptc}</div>
+    <!-- 2) Lead copy in green -->
+    <p class="leadGreen" style="margin:0 0 10px">
+      Here's the lowest rate we found for you.
+    </p>
 
-      <hr>
+    <!-- 3) Rate in big yellow pill, centered -->
+    <div class="pill big" style="margin-top:6px">
+      <span class="num">${newRate} / kWh</span>
+    </div>
 
-      <!-- 2) green headline -->
-      <div class="leadGreen" style="margin:8px 0 10px">
-        Here's the lowest rate we found for you.
+    <!-- 4) Plan details (clean + clear) -->
+    <div style="margin-top:18px">
+      <div style="font-weight:800; color:#134c07; margin-bottom:6px">Plan:</div>
+      <div style="font-weight:700">${planName}</div>
+    </div>
+
+    <div class="row2" style="margin-top:14px">
+      <div class="blk">
+        <strong>Contract Term</strong><br>${term}
       </div>
-
-      <!-- 3) big rate pill -->
-      <div class="yellowBox--lg" style="margin:6px 0 16px">
-        <div class="big">${newRate}</div>
-      </div>
-
-      <!-- 4) plan details -->
-      <div style="margin:10px 0 6px">
-        <div style="font-weight:800;color:#134c07">Plan:</div>
-        <div style="font-size:18px">${planName}</div>
-      </div>
-      <div class="row2" style="margin-top:8px">
-        <div class="blk">
-          <div style="font-weight:800;color:#134c07">Contract Term</div>
-          <div>${term}</div>
-        </div>
-        <div class="blk">
-          <div style="font-weight:800;color:#134c07">Early Termination Fee</div>
-          <div>${etf}</div>
-        </div>
-      </div>
-
-      <!-- 5) savings pill -->
-      <div class="yellowBox--lg" style="margin:18px 0 6px">
-        <div style="font-size:18px;font-weight:800">Estimated Savings</div>
-        <div class="big" style="margin-top:4px">${estSavings}</div>
-      </div>
-
-      <!-- CTA -->
-      <button id="ctaSwitch" class="btn-cta">Switch me to this plan!</button>
-
-      <hr style="margin:18px 0 10px">
-
-      <!-- 6) logo + links -->
-      <div class="supplier" style="margin-top:0">
-        <img src="Clearview_logo.png" alt="Supplier Logo" style="height:40px">
-        <span style="font-weight:800;color:#134c07">Clearview Energy</span>
-      </div>
-
-      <div class="links" style="margin-top:12px">
-        <a href="#">Clearview Energy Terms &amp; Conditions</a><br>
-        <a href="#">RateHound Terms of Service</a>
-      </div>
-
-      <div class="disclaimer" style="margin-top:12px">
-        This rate will be effective following the first billing date after successful enrollment.
+      <div class="blk">
+        <strong>Early Termination Fee</strong><br>${etf}
       </div>
     </div>
-  `;
 
-  // CTA demo handler (toast if you kept the toast helper; otherwise alert)
-  const btn = box.querySelector('#ctaSwitch');
-  if (btn){
-    btn.addEventListener('click', () => {
-      if (typeof showToast === 'function') {
-        showToast('👍 Great — we’ll start the switch to Clearview Energy (demo).', 4200);
-      } else {
-        alert('Great — we’ll start the switch (demo).');
-      }
-    });
-  }
+    <!-- 5) Estimated savings (just % in big yellow pill) -->
+    <div class="pill big" style="margin-top:18px">
+      <div style="font-weight:700; margin-bottom:4px">Estimated Savings</div>
+      <span class="num">${estSavings}</span>
+    </div>
 
-  document.getElementById('loader').classList.remove('show');
-  results.style.display = 'flex';
-}
+    <!-- Big green CTA -->
+    <button class="btn-cta" id="ctaSwitch">Switch me to this plan!</button>
+
+    <hr>
+
+    <!-- 6) Supplier logo + links -->
+    <div class="supplier">
+      <img src="Clearview_logo.png" alt="Supplier Logo" style="height:40px">
+      <span style="font-weight:800;color:#134c07">Clearview Energy</span>
+    </div>
+
+    <div class="links" style="margin-top:10px">
+      <a href="#">Clearview Energy Terms &amp; Conditions</a><br>
+      <a href="#">RateHound Terms of Service</a>
+    </div>
+
+    <div class="disclaimer" style="margin-top:12px">
+      This rate will be effective following the first billing date after successful enrollment
+    </div>
+  </div>
+`;
 });
 </script>
 </body>
