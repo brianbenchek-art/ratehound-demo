@@ -159,6 +159,17 @@
   min-height:100vh;
   margin-top:5vh;           /* push content down ~5% of viewport height */
 }
+  #upload .inner {
+  gap: 16px;
+}
+
+#upload .method {
+  margin-top: 0;           /* remove extra top gap */
+}
+
+#m-upload {
+  margin-top: 8px;         /* small space between button and upload field */
+}
   #upload h1{margin:0 0 8px; font-size:26px; font-weight:700; text-align:center}
 
   .method{
@@ -473,26 +484,19 @@ body.has-chip{
     <h1 id="uploadTitle">Provide your electric account information.</h1>
 
     <!-- three vertical method choices -->
-    <button class="method" id="mBtnAI">AI Assist</button>
+   
     <button class="method" id="mBtnUpload">Upload/Take Pic Of Bill</button>
-    <button class="method" id="mBtnManual">Enter Manually</button>
+   
 
     <!-- panels (only one shown at a time) -->
-    <div id="m-manual" class="panel" hidden>
-      <input class="field" id="acctName"  placeholder="Account name">
-      <input class="field" id="acctNumber" placeholder="Account number">
-      <input class="field" id="serviceAddr" placeholder="Service address">
-    </div>
+   
 
     <div id="m-upload" class="panel" hidden>
       <input id="billFile" type="file" accept="image/*,application/pdf" aria-label="Upload bill image or PDF">
       <img id="preview" class="preview" alt="Bill preview">
     </div>
 
-    <div id="m-ai" class="panel" hidden>
-      <p class="hint">Demo only. Tapping “AI Assist” marks this step as ready.</p>
-    </div>
-
+   
     <button class="btn" id="continueUpload">Continue</button>
     <p class="hint">Demo only. No data is sent or stored.</p>
   </div>
@@ -511,14 +515,7 @@ body.has-chip{
   <!-- Toast container (for demo notifications) -->
 <div id="toasts" aria-live="polite" aria-atomic="true"></div>
   
-<!-- Manual-entry tip (electric only) -->
-<div id="manualTip" class="modal" role="dialog" aria-modal="true" aria-labelledby="tipTitle">
-  <div class="box">
-    <button class="close" aria-label="Close tip" id="tipClose">×</button>
-    <h3 id="tipTitle">Heads up</h3>
-    <p>Customer Number must begin with <strong>080</strong>.</p>
-  </div>
-</div>
+
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
@@ -640,147 +637,81 @@ signUpBtn.addEventListener('click', () => {
   window.scrollTo(0,0);
 });
 
-  /* ---------- intake ---------- */
-  const uploadPage  = document.getElementById('upload');
-  const utilityPage = document.getElementById('utility');
-  const titleEl     = document.getElementById('uploadTitle');
 
-  const mBtns = {
-    manual: document.getElementById('mBtnManual'),
-    upload: document.getElementById('mBtnUpload'),
-    ai:     document.getElementById('mBtnAI'),
-  };
-  const panels = {
-    manual: document.getElementById('m-manual'),
-    upload: document.getElementById('m-upload'),
-    ai:     document.getElementById('m-ai'),
-  };
+ /* ---------- intake ---------- */
+const uploadPage  = document.getElementById('upload');
+const utilityPage = document.getElementById('utility');
+const titleEl     = document.getElementById('uploadTitle');
 
-  const manualName  = document.getElementById('acctName');
-  const manualNum   = document.getElementById('acctNumber');
-  const manualAddr  = document.getElementById('serviceAddr');
-  const fileInput   = document.getElementById('billFile');
-  const previewEl   = document.getElementById('preview');
-  const continueBtn = document.getElementById('continueUpload');
+const mBtns = { upload: document.getElementById('mBtnUpload') };
+const panels = { upload: document.getElementById('m-upload') };
 
-  const manualTip = document.getElementById('manualTip');
-  const tipClose  = document.getElementById('tipClose');
+const fileInput   = document.getElementById('billFile');
+const previewEl   = document.getElementById('preview');
+const continueBtn = document.getElementById('continueUpload');
 
-  let uploadQueue = [];
-  let uploadIndex = 0;
-  let currentMethod = null;
-  let tipSnoozed = false;
+let uploadQueue = [];
+let uploadIndex = 0;
+let currentMethod = null;
 
-  function setUploadTitleFor(kind){
-    titleEl.textContent = (kind === 'electric')
-      ? 'Provide your electric account information.'
-      : (kind === 'gas')
-        ? 'Now provide your gas account information.'
-        : 'Upload your bill';
+function setUploadTitleFor(kind){
+  titleEl.textContent = (kind === 'electric')
+    ? 'Provide your electric account information.'
+    : (kind === 'gas')
+      ? 'Now provide your gas account information.'
+      : 'Upload your bill';
+}
+
+function enableContinue(){ continueBtn.classList.add('enabled'); continueBtn.style.opacity='1'; continueBtn.style.pointerEvents='auto'; }
+function disableContinue(){ continueBtn.classList.remove('enabled'); continueBtn.style.opacity='.5'; continueBtn.style.pointerEvents='none'; }
+
+function resetPanels(){
+  Object.values(panels).forEach(p => p.hidden = true);
+  Object.values(mBtns).forEach(b => b.classList.remove('selected'));
+  if (fileInput) fileInput.value = '';
+  if (previewEl) previewEl.style.display = 'none';
+  currentMethod = null;
+  disableContinue();
+}
+
+function selectMethod(which){
+  resetPanels();
+  currentMethod = which;
+  mBtns[which].classList.add('selected');
+  panels[which].hidden = false;
+  validateUpload();
+}
+
+mBtns.upload.addEventListener('click', () => selectMethod('upload'));
+
+function validateUpload(){
+  if (currentMethod === 'upload'){
+    const ok = !!fileInput.files?.[0];
+    return ok ? enableContinue() : disableContinue();
   }
+  disableContinue();
+}
 
-  function enableContinue(){ continueBtn.classList.add('enabled'); continueBtn.style.opacity='1'; continueBtn.style.pointerEvents='auto'; }
-  function disableContinue(){ continueBtn.classList.remove('enabled'); continueBtn.style.opacity='.5'; continueBtn.style.pointerEvents='none'; }
+fileInput?.addEventListener('change', () => {
+  const f = fileInput.files?.[0];
+  if (!f){ previewEl.style.display='none'; return validateUpload(); }
+  if (f.type.startsWith('image/')){ previewEl.src = URL.createObjectURL(f); previewEl.style.display='block'; }
+  else { previewEl.style.display='none'; }
+  validateUpload();
+});
 
-  function resetPanels(){
-    Object.values(panels).forEach(p => p.hidden = true);
-    Object.values(mBtns).forEach(b => b.classList.remove('selected'));
-    manualName.value = ''; manualNum.value = ''; manualAddr.value = '';
-    if (fileInput) fileInput.value = '';
-    if (previewEl) previewEl.style.display = 'none';
-    currentMethod = null;
-    tipSnoozed = false;
-    disableContinue();
-  }
-
-  function selectMethod(which){
-    resetPanels();
-    currentMethod = which;
-    mBtns[which].classList.add('selected');
-    panels[which].hidden = false;
-    validateUpload();
-  }
-
-  mBtns.manual.addEventListener('click', () => selectMethod('manual'));
-  mBtns.upload.addEventListener('click', () => selectMethod('upload'));
-  mBtns.ai.addEventListener('click', () => { resetPanels(); currentMethod='ai'; mBtns.ai.classList.add('selected'); panels.ai.hidden=false; enableContinue(); });
-
-  tipClose.addEventListener('click', () => {
-    manualTip.classList.remove('show');
-    document.body.classList.remove('modal-open');
-    tipSnoozed = true;
-    setTimeout(() => manualNum?.focus({ preventScroll:true }), 50);
-  });
-
-  function validateUpload(){
-    if (currentMethod === 'manual'){
-      const nameOk = manualName.value.trim();
-      const numVal = manualNum.value.trim();
-      const addrOk = manualAddr.value.trim();
-
-      let electricRuleOk = true;
-      if (uploadQueue[uploadIndex] === 'electric'){
-        const ok080 = numVal.startsWith('080');
-        electricRuleOk = ok080;
-        manualAddr.disabled = !ok080;
-      } else {
-        manualAddr.disabled = false;
-      }
-      return (nameOk && numVal && addrOk && electricRuleOk) ? enableContinue() : disableContinue();
-    }
-    if (currentMethod === 'upload'){
-      const ok = !!fileInput.files?.[0];
-      return ok ? enableContinue() : disableContinue();
-    }
-    disableContinue();
-  }
-
-  [manualName, manualNum, manualAddr].forEach(el => el?.addEventListener('input', validateUpload));
-  manualNum.addEventListener('focus', () => {
-    if (uploadQueue[uploadIndex] === 'electric' && !manualNum.value.startsWith('080') && !tipSnoozed){
-      manualTip.classList.add('show'); document.body.classList.add('modal-open');
-    }
-  });
-  manualNum.addEventListener('input', () => {
-    if (uploadQueue[uploadIndex] === 'electric'){
-      const ok = manualNum.value.startsWith('080');
-      manualAddr.disabled = !ok;
-      if (ok){ manualTip.classList.remove('show'); document.body.classList.remove('modal-open'); tipSnoozed=false; }
-      else if (!tipSnoozed && !manualTip.classList.contains('show')){ manualTip.classList.add('show'); document.body.classList.add('modal-open'); }
-    }
-    validateUpload();
-  });
-  manualNum.addEventListener('blur', () => { tipSnoozed = false; });
-
-  fileInput?.addEventListener('change', () => {
-    const f = fileInput.files?.[0];
-    if (!f){ previewEl.style.display='none'; return validateUpload(); }
-    if (f.type.startsWith('image/')){ previewEl.src = URL.createObjectURL(f); previewEl.style.display='block'; }
-    else { previewEl.style.display='none'; }
-    validateUpload();
-  });
-
-  fetchU.addEventListener('click', () => {
-    if (!(sel.electric || sel.gas)) return;
-    uploadQueue = []; if (sel.electric) uploadQueue.push('electric'); if (sel.gas) uploadQueue.push('gas');
-    uploadIndex = 0;
-    setUploadTitleFor(uploadQueue[0]);
-    continueBtn.textContent = (uploadQueue.length === 2 && uploadQueue[0] === 'electric') ? 'Continue to gas account' : 'Fetch my savings!';
-    resetPanels();
-    utilityPage.classList.remove('show'); uploadPage.classList.add('show'); window.scrollTo(0,0);
-  });
-
-  continueBtn.addEventListener('click', () => {
-    if (!continueBtn.classList.contains('enabled')) return;
-
-    uploadIndex++;
-    if (uploadIndex < uploadQueue.length){
-      setUploadTitleFor(uploadQueue[uploadIndex]);
-      continueBtn.textContent = 'Fetch my savings!';
-      resetPanels();
-      window.scrollTo(0,0);
-      return;
-    }
+document.getElementById('fetchUtilities').addEventListener('click', () => {
+  if (!(sel.electric || sel.gas)) return;
+  uploadQueue = []; if (sel.electric) uploadQueue.push('electric'); if (sel.gas) uploadQueue.push('gas');
+  uploadIndex = 0;
+  setUploadTitleFor(uploadQueue[0]);
+  continueBtn.textContent = (uploadQueue.length === 2 && uploadQueue[0] === 'electric') ? 'Continue to gas account' : 'Fetch my savings!';
+  resetPanels();
+  utilityPage.classList.remove('show');
+  uploadPage.classList.add('show');
+  selectMethod('upload');       // auto-open the only method
+  window.scrollTo(0,0);
+});
 
     // finished → show loader
     document.getElementById('manualTip')?.classList.remove('show');
