@@ -579,16 +579,7 @@ async function ocrImage(file) {
   const { data: { text } } = await Tesseract.recognize(file, 'eng', { logger: m => console.log(m) });
   return text;
 }
-function parseFields(text){
-  const t = text.replace(/\r/g,'');
-  const get = re => (t.match(re)||[])[1]||'';
-  return {
-    accountNumber:  get(/(?:Account|Customer)\s*Number[:\s]*([A-Z0-9-]+)/i),
-    serviceAddress: get(/Service\s*Address[:\s]*([^\n]+)/i),
-    priceToCompare: get(/(?:PTC|Price\s*to\s*Compare)[:\s]*([\d.]+¢?\s*\/\s*kWh)/i),
-  };
-}
-  
+
 signUpBtn.addEventListener('click', () => {
   if (signUpBtn.disabled) return;
 
@@ -652,17 +643,7 @@ mBtns.upload.addEventListener('click', () => {
   // automatically trigger the file picker
   fileInput.click();
 });
-  // ---- OCR the selected file and parse fields ----
-  try {
-    // For PDFs, Tesseract can still try, but images work best
-    const text = await ocrImage(f);
-    const fields = parseFields(text);
-    console.log('OCR raw text:', text);
-    console.log('Parsed fields:', fields);
-    // (Step 2 later: send `fields` somewhere like Google Sheets)
-  } catch (e) {
-    console.error('OCR failed:', e);
-  }
+ 
 function validateUpload(){
   if (currentMethod === 'upload'){
     const ok = !!fileInput.files?.[0];
@@ -677,6 +658,32 @@ fileInput?.addEventListener('change', async () => {
     previewEl.style.display = 'none';
     validateUpload();
     return;
+      // ---- OCR the selected file and parse fields ----
+  try {
+    const text = await ocrImage(f);
+    const parsed = parseFields(text);
+    console.log('OCR raw text:', text);
+    console.log('Parsed fields:', parsed);
+
+    // (Optional) show a quick preview on the page
+    let out = document.getElementById('parsedOut');
+    if (!out) {
+      out = document.createElement('pre');
+      out.id = 'parsedOut';
+      out.className = 'hint';
+      out.style.whiteSpace = 'pre-wrap';
+      document.getElementById('m-upload').appendChild(out);
+    }
+    out.textContent = [
+      `Customer number: ${parsed.customerNumber || '(missing)'}`,
+      `Name: ${parsed.name || ''}`,
+      `Address: ${parsed.address || ''}`,
+      `Zip: ${parsed.zip || ''}`,
+      `Bill period: ${parsed.billPeriodEnd || ''}`
+    ].join('\n');
+  } catch (e) {
+    console.error('OCR failed:', e);
+  }
   }
 
   // Clean up any prior PDF badge
