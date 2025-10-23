@@ -416,7 +416,12 @@ body.has-chip{
 .card .btn-cta{ margin-top:24px; }
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js"></script>
-  <script src="https://unpkg.com/tesseract.js@4/dist/tesseract.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.2.67/pdf.min.js"></script>
+<script>
+  pdfjsLib.GlobalWorkerOptions.workerSrc =
+    "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.2.67/pdf.worker.min.js";
+</script>
+<script src="https://unpkg.com/tesseract.js@4/dist/tesseract.min.js"></script>
 </head>
 <body>
   <div id="chipSafe" hidden></div>
@@ -457,7 +462,7 @@ body.has-chip{
    
 
     <div id="m-upload" class="panel" hidden>
-     <input id="billFile" type="file" accept="image/*,application/pdf" aria-label="Upload bill image or PDF" hidden>
+     <input id="billFile" type="file" accept="image/*,application/pdf" capture="environment" aria-label="Upload bill image or PDF" hidden>
       <img id="preview" class="preview" alt="Bill preview">
     </div>
 
@@ -575,8 +580,30 @@ function sendDemoWelcome(user){
   showToast('Grab the app: <a href="'+APP_LINK+'" target="_blank" rel="noopener">RateHound App</a>', 7000);
 }
 // ---- OCR helpers ----
-async function ocrImage(file) {
-  const { data: { text } } = await Tesseract.recognize(file, 'eng', { logger: m => console.log(m) });
+// Render first page of a PDF to an image we can OCR (and use as a thumbnail)
+async function pdfFirstPageAsImage(file, scale = 2) {
+  const buf = await file.arrayBuffer();
+  const pdf = await pdfjsLib.getDocument({ data: buf }).promise;
+  const page = await pdf.getPage(1);
+  const viewport = page.getViewport({ scale });
+
+  const canvas = document.createElement('canvas');
+  const ctx = canvas.getContext('2d');
+  canvas.width = viewport.width;
+  canvas.height = viewport.height;
+
+  await page.render({ canvasContext: ctx, viewport }).promise;
+
+  // Make a Blob for OCR and a dataURL for preview
+  const blob = await new Promise(res => canvas.toBlob(res, 'image/png', 0.95));
+  const dataUrl = canvas.toDataURL('image/png');
+  return { blob, dataUrl };
+}
+
+// OCR that accepts either an image File/Blob OR a PDF File
+async function ocrImage(fileOrBlob) {
+  const src = fileOrBlob;
+  const { data: { text } } = await Tesseract.recognize(src, 'eng', { logger: m => console.log(m) });
   return text;
 }
 
@@ -656,31 +683,43 @@ fileInput?.addEventListener('change', async () => {
   const f = fileInput.files?.[0];
   if (!f) {
     previewEl.style.display = 'none';
+    const gone = document.getElementById('pdfBadge');
+    if (gone) gone.remove();
     validateUpload();
     return;
   }
 
-  // Show thumbnail / PDF badge
+  // Show thumbnail / PDF image + decide OCR source
+  let ocrSource = f; // default: the uploaded file
   let pdfBadge = document.getElementById('pdfBadge');
   if (pdfBadge) pdfBadge.remove();
 
   if (f.type.startsWith('image/')) {
+    // Image → show thumbnail, OCR the image file
     previewEl.src = URL.createObjectURL(f);
     previewEl.style.display = 'block';
   } else if (f.type === 'application/pdf') {
-    previewEl.style.display = 'none';
-    pdfBadge = document.createElement('div');
-    pdfBadge.id = 'pdfBadge';
-    pdfBadge.style.cssText = 'margin-top:8px;padding:10px;border:1px solid var(--border);border-radius:8px;background:#f8fafc;font-weight:600;';
-    pdfBadge.textContent = `📄 ${f.name}`;
-    document.getElementById('m-upload').appendChild(pdfBadge);
+    // PDF → render first page to image for both preview + OCR
+    try {
+      const { blob, dataUrl } = await pdfFirstPageAsImage(f, 2);
+      previewEl.src = dataUrl;
+      previewEl.style.display = 'block';
+      ocrSource = blob; // OCR the rendered image for best results
+    } catch (e) {
+      console.error('PDF render failed:', e);
+      previewEl.style.display = 'none';
+      const badge = document.createElement('div');
+      badge.id = 'pdfBadge';
+      badge.style.cssText = 'margin-top:8px;padding:10px;border:1px solid var(--border);border-radius:8px;background:#f8fafc;font-weight:600;';
+      badge.textContent = `📄 ${f.name}`;
+      document.getElementById('m-upload').appendChild(badge);
+    }
   } else {
     previewEl.style.display = 'none';
   }
 
-  // ---- OCR the selected file and parse fields ----
+  // ---- OCR the selected file (image or rendered PDF) and parse fields ----
   try {
-    // Optional quick feedback
     let out = document.getElementById('parsedOut');
     if (!out) {
       out = document.createElement('pre');
@@ -691,7 +730,7 @@ fileInput?.addEventListener('change', async () => {
     }
     out.textContent = '⏳ Reading your bill...';
 
-    const text   = await ocrImage(f);
+    const text   = await ocrImage(ocrSource);
     const parsed = parseFields(text);
 
     console.log('OCR raw text:', text);
