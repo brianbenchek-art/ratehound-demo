@@ -470,10 +470,9 @@ body.has-chip{
 <!-- PAGE 3 — Utility choice -->
 <section id="utility" class="vh">
   <div class="inner">
-    <h1>Save on your...</h1>
+    <h1>Save on your electric bill</h1>
     <button class="btn tall selectable" id="chooseElectric">Electric Bill</button>
-    <button class="btn tall selectable" id="chooseGas">Gas Bill</button>
-    <p class="utilityHint">Choose one or both.</p>
+
     <button class="btn" id="fetchUtilities">Almost done!</button>
   </div>
 </section>
@@ -611,16 +610,15 @@ function sendDemoWelcome(user){
 }
 
   /* ---------- utility choice ---------- */
-  const sel   = { electric:false, gas:false };
-  const eBtn  = document.getElementById('chooseElectric');
-  const gBtn  = document.getElementById('chooseGas');
-  const fetchU= document.getElementById('fetchUtilities');
+const sel   = { electric:false };
+const eBtn  = document.getElementById('chooseElectric');
+const fetchU= document.getElementById('fetchUtilities');
 
   function refreshFetch(){
     fetchU.classList.toggle('enabled', sel.electric || sel.gas);
   }
   eBtn.addEventListener('click', () => { sel.electric = !sel.electric; eBtn.classList.toggle('selected', sel.electric); refreshFetch(); });
-  gBtn.addEventListener('click', () => { sel.gas      = !sel.gas;      gBtn.classList.toggle('selected', sel.gas);      refreshFetch(); });
+
 
 signUpBtn.addEventListener('click', () => {
   if (signUpBtn.disabled) return;
@@ -657,8 +655,7 @@ let currentMethod = null;
 function setUploadTitleFor(kind){
   titleEl.textContent = (kind === 'electric')
     ? 'Provide your electric account information.'
-    : (kind === 'gas')
-      ? 'Now provide your gas account information.'
+
       : 'Upload your bill';
 }
 
@@ -702,7 +699,7 @@ fileInput?.addEventListener('change', () => {
 
 document.getElementById('fetchUtilities').addEventListener('click', () => {
   if (!(sel.electric || sel.gas)) return;
-  uploadQueue = []; if (sel.electric) uploadQueue.push('electric'); if (sel.gas) uploadQueue.push('gas');
+  uploadQueue = ['electric'];
   uploadIndex = 0;
   setUploadTitleFor(uploadQueue[0]);
   continueBtn.textContent = (uploadQueue.length === 2 && uploadQueue[0] === 'electric') ? 'Continue to gas account' : 'Fetch my savings!';
