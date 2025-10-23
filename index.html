@@ -116,34 +116,7 @@
 }
 .toast a{ color:#fff; text-decoration:underline; }
   
-  /* PAGE 3 — Utility choice */
-  #utility{background:#fff;color:var(--ink);display:none}
-  #utility.show{display:flex}
- #utility .inner{
-  margin:0 auto;
-  width:min(92%,420px);
-  padding:28px 16px;                  /* body provides chip space now */
-  display:flex;
-  flex-direction:column;
-  gap:16px;
-  justify-content:flex-start;
-  min-height:auto;
-}
-  #utility h1{margin:0 0 12px; font-size:26px; font-weight:700; text-align:center; color:var(--ink);}
-  .btn.tall{
-    height:8vh; display:flex; align-items:center; justify-content:center;
-    border:2px solid var(--brand); background:#fff; color:var(--brand);
-    border-radius:12px; font-weight:600; font-size:18px; width:100%;
-  }
-  .btn.selectable{background:#fff;color:var(--brand);border:2px solid var(--brand)}
-  .btn.selectable.selected{background:var(--brand);color:#fff}
-
-  .utilityHint{color:var(--muted); text-align:center; margin-top:6px}
-  #fetchUtilities{
-    margin-top:16px;background:var(--brand);color:#fff;border:none;border-radius:999px;font-size:20px;padding:16px 20px;
-    opacity:.5;pointer-events:none;
-  }
-  #fetchUtilities.enabled{opacity:1;pointer-events:auto}
+  
 
   /* PAGE 4 — Account intake */
   #upload{background:#fff;color:var(--ink);display:none}
@@ -467,15 +440,7 @@ body.has-chip{
   </div>
 </section>
 
-<!-- PAGE 3 — Utility choice -->
-<section id="utility" class="vh">
-  <div class="inner">
-    <h1>Save on your electric bill</h1>
-    <button class="btn tall selectable" id="chooseElectric">Electric Bill</button>
 
-    <button class="btn" id="fetchUtilities">Almost done!</button>
-  </div>
-</section>
 
 <!-- PAGE 4 — Account intake -->
 <section id="upload" class="vh">
@@ -619,7 +584,6 @@ const fetchU= document.getElementById('fetchUtilities');
   }
   eBtn.addEventListener('click', () => { sel.electric = !sel.electric; eBtn.classList.toggle('selected', sel.electric); refreshFetch(); });
 
-
 signUpBtn.addEventListener('click', () => {
   if (signUpBtn.disabled) return;
 
@@ -629,12 +593,13 @@ signUpBtn.addEventListener('click', () => {
   // 2) Fire demo notifications (toasts + console)
   sendDemoWelcome(user);
 
-  // 3) Proceed to utility selection
+  // 3) Skip utility selection → go straight to upload
   signup.classList.remove('show');
-  document.getElementById('utility').classList.add('show');
+  document.getElementById('upload').classList.add('show');
+  setUploadTitleFor('electric');
+  selectMethod('upload');  // automatically highlight upload option
   window.scrollTo(0,0);
 });
-
 
  /* ---------- intake ---------- */
 const uploadPage  = document.getElementById('upload');
