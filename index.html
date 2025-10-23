@@ -658,14 +658,29 @@ fileInput?.addEventListener('change', async () => {
     previewEl.style.display = 'none';
     validateUpload();
     return;
-      // ---- OCR the selected file and parse fields ----
-  try {
-    const text = await ocrImage(f);
-    const parsed = parseFields(text);
-    console.log('OCR raw text:', text);
-    console.log('Parsed fields:', parsed);
+  }
 
-    // (Optional) show a quick preview on the page
+  // Show thumbnail / PDF badge
+  let pdfBadge = document.getElementById('pdfBadge');
+  if (pdfBadge) pdfBadge.remove();
+
+  if (f.type.startsWith('image/')) {
+    previewEl.src = URL.createObjectURL(f);
+    previewEl.style.display = 'block';
+  } else if (f.type === 'application/pdf') {
+    previewEl.style.display = 'none';
+    pdfBadge = document.createElement('div');
+    pdfBadge.id = 'pdfBadge';
+    pdfBadge.style.cssText = 'margin-top:8px;padding:10px;border:1px solid var(--border);border-radius:8px;background:#f8fafc;font-weight:600;';
+    pdfBadge.textContent = `📄 ${f.name}`;
+    document.getElementById('m-upload').appendChild(pdfBadge);
+  } else {
+    previewEl.style.display = 'none';
+  }
+
+  // ---- OCR the selected file and parse fields ----
+  try {
+    // Optional quick feedback
     let out = document.getElementById('parsedOut');
     if (!out) {
       out = document.createElement('pre');
@@ -674,6 +689,14 @@ fileInput?.addEventListener('change', async () => {
       out.style.whiteSpace = 'pre-wrap';
       document.getElementById('m-upload').appendChild(out);
     }
+    out.textContent = '⏳ Reading your bill...';
+
+    const text   = await ocrImage(f);
+    const parsed = parseFields(text);
+
+    console.log('OCR raw text:', text);
+    console.log('Parsed fields:', parsed);
+
     out.textContent = [
       `Customer number: ${parsed.customerNumber || '(missing)'}`,
       `Name: ${parsed.name || ''}`,
@@ -684,32 +707,9 @@ fileInput?.addEventListener('change', async () => {
   } catch (e) {
     console.error('OCR failed:', e);
   }
-  }
 
-  // Clean up any prior PDF badge
-  let pdfBadge = document.getElementById('pdfBadge');
-  if (pdfBadge) pdfBadge.remove();
-
-  if (f.type.startsWith('image/')) {
-    // Show image thumbnail
-    previewEl.src = URL.createObjectURL(f);
-    previewEl.style.display = 'block';
-  } else if (f.type === 'application/pdf') {
-    // Hide image tag, show a simple PDF badge with filename
-    previewEl.style.display = 'none';
-    pdfBadge = document.createElement('div');
-    pdfBadge.id = 'pdfBadge';
-    pdfBadge.style.cssText = 'margin-top:8px;padding:10px;border:1px solid var(--border);border-radius:8px;background:#f8fafc;font-weight:600;';
-    pdfBadge.textContent = `📄 ${f.name}`;
-    document.getElementById('m-upload').appendChild(pdfBadge);
-  } else {
-    // Unknown type → hide both
-    previewEl.style.display = 'none';
-  }
-
-  validateUpload();
+  validateUpload();  // enables Continue if a file is present
 });
-
    continueBtn.addEventListener('click', () => {
   if (!continueBtn.classList.contains('enabled')) return;
 
