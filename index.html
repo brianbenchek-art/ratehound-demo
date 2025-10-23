@@ -416,6 +416,7 @@ body.has-chip{
 .card .btn-cta{ margin-top:24px; }
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js"></script>
+  <script src="https://unpkg.com/tesseract.js@4/dist/tesseract.min.js"></script>
 </head>
 <body>
   <div id="chipSafe" hidden></div>
@@ -573,7 +574,20 @@ function sendDemoWelcome(user){
   showToast('Your username is <strong>' + user.email + '</strong>.', 4000);
   showToast('Grab the app: <a href="'+APP_LINK+'" target="_blank" rel="noopener">RateHound App</a>', 7000);
 }
-
+// ---- OCR helpers ----
+async function ocrImage(file) {
+  const { data: { text } } = await Tesseract.recognize(file, 'eng', { logger: m => console.log(m) });
+  return text;
+}
+function parseFields(text){
+  const t = text.replace(/\r/g,'');
+  const get = re => (t.match(re)||[])[1]||'';
+  return {
+    accountNumber:  get(/(?:Account|Customer)\s*Number[:\s]*([A-Z0-9-]+)/i),
+    serviceAddress: get(/Service\s*Address[:\s]*([^\n]+)/i),
+    priceToCompare: get(/(?:PTC|Price\s*to\s*Compare)[:\s]*([\d.]+¢?\s*\/\s*kWh)/i),
+  };
+}
   
 signUpBtn.addEventListener('click', () => {
   if (signUpBtn.disabled) return;
@@ -638,7 +652,17 @@ mBtns.upload.addEventListener('click', () => {
   // automatically trigger the file picker
   fileInput.click();
 });
-
+  // ---- OCR the selected file and parse fields ----
+  try {
+    // For PDFs, Tesseract can still try, but images work best
+    const text = await ocrImage(f);
+    const fields = parseFields(text);
+    console.log('OCR raw text:', text);
+    console.log('Parsed fields:', fields);
+    // (Step 2 later: send `fields` somewhere like Google Sheets)
+  } catch (e) {
+    console.error('OCR failed:', e);
+  }
 function validateUpload(){
   if (currentMethod === 'upload'){
     const ok = !!fileInput.files?.[0];
@@ -647,7 +671,7 @@ function validateUpload(){
   disableContinue();
 }
 
-fileInput?.addEventListener('change', () => {
+fileInput?.addEventListener('change', async () => {
   const f = fileInput.files?.[0];
   if (!f) {
     previewEl.style.display = 'none';
