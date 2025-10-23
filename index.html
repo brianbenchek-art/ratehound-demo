@@ -737,6 +737,38 @@ fileInput?.addEventListener('change', async () => {
 
     console.log('OCR raw text:', text);
     console.log('Parsed fields:', parsed);
+    // ---- SEND TO GOOGLE SHEETS (Apps Script web app) ----
+const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxMvT_1fW9CcFllLWuWTIRYYn07UCoIno80dzqr3WwVW5EjRvDfwe4Ei7Rxj1QRNcrq/exec';
+
+try {
+  let userEmail = '';
+  try {
+    const u = JSON.parse(sessionStorage.getItem('rh_user') || '{}');
+    userEmail = u.email || '';
+  } catch (_) {}
+
+  const payload = {
+    userEmail,
+    customerNumber: parsed.customerNumber,
+    name: parsed.name,
+    address: parsed.address,
+    zip: parsed.zip,
+    billPeriodEnd: parsed.billPeriodEnd,
+    rawText: typeof text === 'string' ? text : ''
+  };
+
+  const resp = await fetch(WEB_APP_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+
+  const json = await resp.json().catch(() => ({}));
+  if (!json.ok) console.warn('Sheet save failed:', json);
+  else console.log('✅ Saved to Google Sheets');
+} catch (err) {
+  console.error('Error sending to Sheets:', err);
+}
 
     out.textContent = [
       `Customer number: ${parsed.customerNumber || '(missing)'}`,
