@@ -574,30 +574,19 @@ function sendDemoWelcome(user){
   showToast('Grab the app: <a href="'+APP_LINK+'" target="_blank" rel="noopener">RateHound App</a>', 7000);
 }
 
-  /* ---------- utility choice ---------- */
-const sel   = { electric:false };
-const eBtn  = document.getElementById('chooseElectric');
-const fetchU= document.getElementById('fetchUtilities');
-
-  function refreshFetch(){
-    fetchU.classList.toggle('enabled', sel.electric || sel.gas);
-  }
-  eBtn.addEventListener('click', () => { sel.electric = !sel.electric; eBtn.classList.toggle('selected', sel.electric); refreshFetch(); });
-
+  
 signUpBtn.addEventListener('click', () => {
   if (signUpBtn.disabled) return;
 
-  // 1) Create shadow account (demo-only)
   const user = createShadowAccount();
-
-  // 2) Fire demo notifications (toasts + console)
   sendDemoWelcome(user);
 
-  // 3) Skip utility selection → go straight to upload
+  // go straight to upload
   signup.classList.remove('show');
   document.getElementById('upload').classList.add('show');
+  uploadQueue = ['electric'];
   setUploadTitleFor('electric');
-  selectMethod('upload');  // automatically highlight upload option
+  selectMethod('upload');
   window.scrollTo(0,0);
 });
 
@@ -662,24 +651,12 @@ fileInput?.addEventListener('change', () => {
   validateUpload();
 });
 
-document.getElementById('fetchUtilities').addEventListener('click', () => {
-  if (!(sel.electric || sel.gas)) return;
-  uploadQueue = ['electric'];
-  uploadIndex = 0;
-  setUploadTitleFor(uploadQueue[0]);
-  continueBtn.textContent = (uploadQueue.length === 2 && uploadQueue[0] === 'electric') ? 'Continue to gas account' : 'Fetch my savings!';
-  resetPanels();
-  utilityPage.classList.remove('show');
-  uploadPage.classList.add('show');
-  selectMethod('upload');       // auto-open the only method
-  window.scrollTo(0,0);
-});
 
    continueBtn.addEventListener('click', () => {
   if (!continueBtn.classList.contains('enabled')) return;
 
   // hide intake, show loader
-  document.getElementById('utility').classList.remove('show');
+/* utility page removed */
   document.getElementById('upload').classList.remove('show');
   document.getElementById('loader').classList.add('show');
 
