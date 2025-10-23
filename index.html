@@ -796,6 +796,75 @@ function showLoaderThen(kind){
     (window.showToast ? showToast('Great — we’ll start the switch (demo).', 4200) : alert('Great — we’ll start the switch (demo).'))
   );
 }
+  // ===== Paste below any existing helpers =====
+function parseFields(text){
+  const t = (text || "").replace(/\r/g, "");
+  const get = re => {
+    const m = t.match(re);
+    return m ? m.slice(1) : [];
+  };
+
+  // --- Customer number (must start 080 and be 20 digits total) ---
+  const [custNumRaw] =
+    get(/(?:Customer|Account)\s*Number[:\s]*([0][8][0]\d{17})\b/i) // strict 080 + 17 more = 20
+    || get(/\b(080\d{17})\b/); // fallback anywhere on page
+
+  const validCustomerNumber = !!(custNumRaw && /^080\d{17}$/.test(custNumRaw));
+  const customerNumber = validCustomerNumber ? custNumRaw : "";
+
+  // --- Bill for: (name, address, city/state/zip) ---
+  // Capture text after "Bill for:" up to the next blank line or a common section header
+  const billBlockMatch = t.match(/Bill\s*for[:\s]*(.+?)(?:\n{2,}|Billing\s*Period|Bill\s*Date|Account\s*Number)/is);
+  const billBlock = billBlockMatch ? billBlockMatch[1].trim() : "";
+  const lines = billBlock.split(/\n/).map(s => s.trim()).filter(Boolean);
+
+  const name   = lines[0] || "";
+  // Heuristics: address = first line that starts with a number; else next line
+  const address = (lines.find(l => /^\d+[\sA-Za-z]/.test(l)) || lines[1] || "").replace(/\s{2,}/g," ").trim();
+  // Zip: look in last 2 lines
+  const zipMatch =
+    (lines.slice(-2).join(" ").match(/\b(\d{5})(?:-\d{4})?\b/)) ||
+    (billBlock.match(/\b(\d{5})(?:-\d{4})?\b/));
+  const zip = zipMatch ? zipMatch[1] : "";
+
+  // --- Billing period: get the later date (right side) ---
+  // Examples it handles: "Billing Period: Jul 24 to Aug 22, 2025", "Billing Period Jul 24 – Aug 22, 2025"
+  const bp = t.match(/Billing\s*Period[:\s]*([A-Za-z]{3,9}\s+\d{1,2})\s*(?:to|–|-|—)\s*([A-Za-z]{3,9}\s+\d{1,2})(?:,\s*(\d{4}))?/i);
+  let billPeriodEnd = "";
+  if (bp) {
+    const left  = bp[1];                // e.g., "Jul 24"
+    const right = bp[2];                // e.g., "Aug 22"
+    const year  = bp[3] || new Date().getFullYear(); // default to current year if missing
+    // Build a Date from the right side (the later date)
+    const endDate = new Date(`${right}, ${year}`);
+    // Format as "Aug 22"
+    billPeriodEnd = endDate.toLocaleString('en-US', { month: 'short', day: 'numeric' });
+  }
+
+  return {
+    customerNumber,
+    name,
+    address,
+    zip,
+    billPeriodEnd,
+    validCustomerNumber
+  };
+}
+
+// Format exactly as requested
+function formatForOutput(p){
+  return [
+    `Customer number: ${p.customerNumber || "(missing)"}`,
+    `Name: ${p.name || ""}`,
+    `Address: ${p.address || ""}`,
+    `Zip: ${p.zip || ""}`,
+    `Bill period: ${p.billPeriodEnd || ""}`
+  ].join('\n');
+}
+
+// ---- Example usage (once you have the bill text in `ocrText`) ----
+// const parsed = parseFields(ocrText);
+// console.log(formatForOutput(parsed));
 });  // closes DOMContentLoaded
 </script>
 </body>
