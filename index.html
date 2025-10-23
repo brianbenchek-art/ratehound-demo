@@ -678,9 +678,10 @@ function validateUpload(){
   }
   disableContinue();
 }
-
+let lastThumbUrl = null;
 fileInput?.addEventListener('change', async () => {
   const f = fileInput.files?.[0];
+  if (lastThumbUrl) { URL.revokeObjectURL(lastThumbUrl); lastThumbUrl = null; }
   if (!f) {
     previewEl.style.display = 'none';
     const gone = document.getElementById('pdfBadge');
@@ -696,7 +697,8 @@ fileInput?.addEventListener('change', async () => {
 
   if (f.type.startsWith('image/')) {
     // Image → show thumbnail, OCR the image file
-    previewEl.src = URL.createObjectURL(f);
+    lastThumbUrl = URL.createObjectURL(f);
+    previewEl.src = lastThumbUrl;
     previewEl.style.display = 'block';
   } else if (f.type === 'application/pdf') {
     // PDF → render first page to image for both preview + OCR
