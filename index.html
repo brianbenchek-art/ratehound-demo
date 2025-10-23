@@ -456,7 +456,7 @@ body.has-chip{
    
 
     <div id="m-upload" class="panel" hidden>
-      <input id="billFile" type="file" accept="image/*,application/pdf" aria-label="Upload bill image or PDF">
+     <input id="billFile" type="file" accept="image/*,application/pdf" aria-label="Upload bill image or PDF" hidden>
       <img id="preview" class="preview" alt="Bill preview">
     </div>
 
@@ -633,7 +633,11 @@ function selectMethod(which){
   validateUpload();
 }
 
-mBtns.upload.addEventListener('click', () => selectMethod('upload'));
+mBtns.upload.addEventListener('click', () => {
+  selectMethod('upload');
+  // automatically trigger the file picker
+  fileInput.click();
+});
 
 function validateUpload(){
   if (currentMethod === 'upload'){
