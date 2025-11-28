@@ -11,7 +11,6 @@
   html,body{height:100%}
   body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Arial}
 
-  /* full-viewport helpers (iOS-safe) */
   .vh{height:100vh}
   @supports (height:100dvh){ .vh{height:100dvh} }
   @supports (height:100svh){ .vh{height:100svh} }
@@ -24,402 +23,75 @@
   #splash .inner{width:90%;max-width:420px;display:flex;flex-direction:column;gap:24px;align-items:center}
   .logo{width:180px;height:auto;display:block}
 
-  /* cross-fade */
   .fade{opacity:1;transition:opacity .45s ease}
   .fade.out{opacity:0;pointer-events:none}
 
-/* SIGNUP */
-#signup {
-  background:#fff; 
-  color:var(--ink); 
-  display:none;
-}
-#signup.show { display:flex }
-#signup .inner {
-  margin:0 auto; 
-  width:min(92%,420px); 
-  padding:28px 16px; 
-  display:flex; 
-  flex-direction:column; 
-  gap:14px;
-}
-#signup .inner h1 {
-  margin:0 0 12px;
-  font-size:26px;
-  font-weight:700;
-  text-align:center;
-  color:var(--ink);
-}
-.field {
-  width:100%;
-  padding:12px 14px;
-  border:2px solid var(--border);
-  border-radius:12px;
-  background:#fff;
-  color:var(--ink);
-  font-size:16px;
-  box-sizing:border-box;
-}
+  /* SIGNUP */
+  #signup{background:#fff;color:var(--ink);display:none}
+  #signup.show{display:flex}
+  #signup .inner{margin:0 auto;width:min(92%,420px);padding:28px 16px;display:flex;flex-direction:column;gap:14px}
+  #signup .inner h1{margin:0 0 12px;font-size:26px;font-weight:700;text-align:center;color:var(--ink)}
+  .field{width:100%;padding:12px 14px;border:2px solid var(--border);border-radius:12px;background:#fff;color:var(--ink);font-size:16px}
 
-/* Disabled state for Sign Up button */
-#signUpBtn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-/* Sign Up button styles */
-#signUpBtn {
-  background:var(--brand);
-  color:#fff;
-  font-size:20px;
-  padding:16px 20px;
-  border:none;
-  border-radius:999px;
-  font-weight:700;
-  text-align:center;
-  cursor:pointer;
-}
-#signUpBtn:active {
-  background:#0f3a05;
-  transform:scale(.98);
-}
-
+  #signUpBtn:disabled{opacity:.5;cursor:not-allowed}
+  #signUpBtn{background:var(--brand);color:#fff;font-size:20px;padding:16px 20px;border:none;border-radius:999px;font-weight:700;cursor:pointer}
+  #signUpBtn:active{background:#0f3a05;transform:scale(.98)}
   .btn:active{transform:scale(.99)}
-  .hint{color:var(--muted); font-size:12px; text-align:center; margin-top:6px}
-  /* Toasts (demo notifications) */
-#toasts{
-  position:fixed;
-  bottom:28px; left:50%;
-  transform:translateX(-50%);
-  display:flex; flex-direction:column; align-items:center; gap:8px;
-  z-index:1000;
-}
+  .hint{color:var(--muted);font-size:12px;text-align:center;margin-top:6px}
 
-.toast{
-  background:#134c07; color:#fff;
-  border-radius:999px;             /* makes them pill-shaped */
-  padding:10px 20px;               /* slimmer vertically, wider horizontally */
-  box-shadow:0 3px 10px rgba(0,0,0,.15);
-  font-size:14px; font-weight:500;
-  text-align:center; white-space:nowrap;   /* keeps it one line */
-  max-width:min(92vw, 480px);
-  opacity:0; transform:translateY(10px);
-  transition:opacity .25s ease, transform .25s ease;
-}
+  /* Toasts */
+  #toasts{position:fixed;bottom:28px;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:8px;z-index:1000}
+  .toast{background:#134c07;color:#fff;border-radius:999px;padding:10px 20px;box-shadow:0 3px 10px rgba(0,0,0,.15);font-size:14px;font-weight:500;white-space:nowrap;opacity:0;transform:translateY(10px);transition:opacity .25s ease,transform .25s ease}
+  .toast.show{opacity:1;transform:translateY(0)}
+  .toast a{color:#fff;text-decoration:underline;font-weight:600}
 
-.toast.show{ opacity:1; transform:translateY(0) }
-
-.toast a{
-  color:#fff;
-  text-decoration:underline;
-  font-weight:600;
-}
-.toast a{ color:#fff; text-decoration:underline; }
-  
-  
-
-  /* PAGE 4 — Account intake */
+  /* UPLOAD (Account intake) */
   #upload{background:#fff;color:var(--ink);display:none}
   #upload.show{display:flex}
- #upload .inner{
-  margin:0 auto; 
-  width:min(92%,420px); 
-  padding:28px 16px;
-  display:flex; 
-  flex-direction:column; 
-  gap:14px; 
-  justify-content:flex-start; 
-  min-height:100vh;
-  margin-top:5vh;           /* push content down ~5% of viewport height */
-}
-  #upload .inner {
-  gap: 16px;
-}
-
-#upload .method {
-  margin-top: 0;           /* remove extra top gap */
-}
-
-#m-upload {
-  margin-top: 8px;         /* small space between button and upload field */
-}
-  #upload h1{margin:0 0 8px; font-size:26px; font-weight:700; text-align:center}
-
-  .method{
-    width:100%; height:8vh; min-height:64px; display:flex; align-items:center; justify-content:center;
-    border:2px solid var(--brand); background:#fff; color:var(--brand); border-radius:12px; font-weight:600; font-size:18px; margin-top:10px;
-  }
+  #upload .inner{margin:0 auto;width:min(92%,420px);padding:28px 16px;display:flex;flex-direction:column;gap:16px;justify-content:flex-start;min-height:100vh;margin-top:5vh}
+  #upload h1{margin:0 0 8px;font-size:26px;font-weight:700;text-align:center}
+  .method{width:100%;height:8vh;min-height:64px;display:flex;align-items:center;justify-content:center;border:2px solid var(--brand);background:#fff;color:var(--brand);border-radius:12px;font-weight:600;font-size:18px;margin-top:10px}
   .method.selected{background:var(--brand);color:#fff}
-
   .panel[hidden]{display:none}
-  .preview{display:none; width:100%; max-height:300px; object-fit:contain; border:1px solid var(--border); border-radius:8px}
+  .preview{display:none;width:100%;max-height:300px;object-fit:contain;border:1px solid var(--border);border-radius:8px}
+  #continueUpload{background:var(--brand);color:#fff;border:none;border-radius:999px;font-size:20px;padding:16px 20px;opacity:.5;pointer-events:none}
+  #continueUpload.enabled{opacity:1;pointer-events:auto}
 
-  #continueUpload{
-    background:var(--brand); color:#fff; border:none; border-radius:999px;
-    font-size:20px; padding:16px 20px; opacity:.5; pointer-events:none;
-  }
-  #continueUpload.enabled{opacity:1; pointer-events:auto}
+  /* Loader page */
+  #loader{position:fixed;inset:0;z-index:999;background:var(--brand)!important;display:none;justify-content:center;align-items:center;width:100%;height:100svh}
+  #loader.show{display:flex}
+  #lottieContainer, #lottieContainer>div, #lottieContainer canvas, #lottieContainer svg{background:transparent!important;width:100%!important;height:100%!important;display:block}
 
-  /* Modal tip */
-  .modal{
-    position:fixed; inset:0; display:none; place-items:center; background:#0008; z-index:50; opacity:0; transition:opacity .3s ease;
-  }
-  .modal.show{display:grid;opacity:1}
-  .modal .box{
-    background:#fff; color:var(--ink); width:min(92%,420px); border-radius:12px; padding:16px 16px 12px; border:2px solid var(--border); position:relative;
-  }
-  .modal .close{
-    position:absolute; top:10px; right:12px; border:0; background:transparent; font-size:22px; line-height:1; cursor:pointer; color:var(--ink);
-  }
-  .modal h3{margin:0 0 8px; font-size:18px}
-  body.modal-open{overflow:hidden}
-/* Loader page */
-#loader{
-  position: fixed;
-  inset: 0;                /* top:0; right:0; bottom:0; left:0 */
-  z-index: 999;            /* keep loader above all other sections */
-  background: var(--brand) !important;   /* your green behind the animation */
-  display: none;
-  justify-content: center;
-  align-items: center;
-  width: 100%;
-  height: 100svh;          /* full, safe viewport height */
-}
-#loader.show{ display:flex; }
-
-/* Lottie wrappers + svg must be transparent */
-#lottieContainer,
-#lottieContainer > div,
-#lottieContainer canvas,
-#lottieContainer svg {
-  background: transparent !important;
-  width: 100% !important;
-  height: 100% !important;
-  display: block;
-}
-
-/* PAGE 5 – Offer */
-#offer {
-  background:#f6f7f8;
-  color:var(--ink);
-  display:none
-}
-  #offer.show{display:flex}
-  #offer .inner{margin:0 auto;width:min(92%,420px);padding:28px 16px;display:flex;flex-direction:column;gap:16px;min-height:100vh}
+  /* RESULTS card */
+  #results{background:#f6f7f8;color:var(--ink);display:none}
+  #results .inner{margin:5vh auto 0;width:min(92%,420px);padding:28px 16px;display:flex;flex-direction:column;gap:16px}
   .card{background:#fff;border:1px solid var(--border);border-radius:16px;padding:20px;box-shadow:0 1px 2px rgba(0,0,0,.03)}
   .card h2{margin:0 0 8px;font-size:22px}
-  .compareBox{background:#fff8cc;border-left:4px solid #f2c200;border-radius:10px;padding:10px 12px;font-weight:600}
-  .yellowBox {
-  background:#fff8cc;
-  border-left:4px solid #f2c200;
-  border-radius:10px;
-  padding:12px;
-  text-align:center;
-  font-weight:600;
-  color:#134c07;
-}
-  .kv{display:flex;justify-content:space-between;align-items:center;margin:14px 0}
-  .kv .big{font-size:28px;font-weight:800}
-  .kv small{display:block;font-weight:600;color:var(--muted)}
+  .links a{color:#2d7cf6;text-decoration:none}
+  .disclaimer{margin-top:12px;font-size:14px;line-height:1.35;color:#111}
+
+  .yellowBox--sm,.yellowBox--lg{background:#fff8cc;border-left:4px solid #f2c200;border-radius:10px;padding:12px;text-align:center;color:#134c07;font-weight:700;display:block;width:max-content;margin:0 auto}
+  .yellowBox--lg .big{font-size:18px;font-weight:700;line-height:1.2}
+  .leadGreen{color:#134c07;font-weight:800;font-size:24px;line-height:1.25;text-align:center}
   .row2{display:flex;gap:20px;margin-top:8px}
   .row2 .blk{flex:1}
-  .supplier{display:flex;align-items:center;gap:12px;margin-top:14px;padding-top:12px;border-top:1px solid #e6e8eb}
-  .links a{color:#2d7cf6;text-decoration:none}
-  .btn--outline{background:#fff;color:var(--brand);border:2px solid var(--brand);border-radius:999px;padding:12px 16px;font-weight:700}
- .chip{
-  position:fixed;
-  top:10px; right:10px;
-  background:#134c07; color:#fff;
-  border-radius:999px;
-  padding:6px 10px;               /* smaller padding */
-  font-size:12px;                 /* smaller text */
-  font-weight:600;
-  box-shadow:0 2px 6px rgba(0,0,0,.12);
-  z-index:1001;
-  opacity:.9;
-  transform:scale(0.9);           /* subtle shrink */
-}
-.chip.show{
-  opacity:1;
-  transform:translateY(0);
-}
 
-  /* yellow pills */
-.pill{
-  background:#fff8cc;
-  border-left:4px solid #f2c200;
-  border-radius:12px;
-  padding:10px 14px;
-  text-align:center;
-  color:#134c07;
-  font-weight:700;
-}
-.pill.big{ padding:18px 16px; border-radius:14px; }
-.pill .num{ display:block; font-size:32px; font-weight:800; line-height:1.1; }
-/* unified yellow box styling (for both small + large) */
-.yellowBox--sm,
-.yellowBox--lg {
-  background: #fff8cc;
-  border-left: 4px solid #f2c200;
-  border-radius: 10px;
-  padding: 12px;
-  text-align: center;
-  color: #134c07;
-  font-weight: 700;
-  display: block;
-  width: max-content;
-  margin: 0 auto; /* centers in card */
-}
+  .btn-cta{background:#134c07;color:#fff;border:none;border-radius:999px;font-weight:800;padding:14px 18px;width:100%;margin-top:12px;cursor:pointer}
+  .btn-cta:active{transform:scale(.99)}
 
-/* slightly smaller font for the smaller pill */
-.yellowBox--sm {
-  font-size: 16px;
-  padding: 10px 12px;
-}
-
-/* font adjustments for big numbers in .yellowBox--lg */
-.yellowBox--lg .big {
-  font-size: 18px;
-  font-weight: 700;
-  line-height: 1.2;
-}
-/* green lead line */
-.leadGreen{
-  color:#134c07;
-  font-weight:800;
-  font-size:22px;      /* same size you liked on “Estimated Savings” */
-  line-height:1.25;
-  text-align:center;
-}
-
-/* large centered CTA */
-.btn-cta{
-  background:#134c07; color:#fff; border:0;
-  border-radius:999px; font-weight:800; font-size:20px;    
-  padding:16px 18px; width:100%; margin-top:12px;
-  text-align:center; cursor:pointer;
-}
-.btn-cta:active{ transform:scale(.99); }
-
-
-/* add spacing between main sections (except plan + footer details) */
-.card > *:not(.row2):not(.supplier):not(.links):not(.disclaimer) {
-  margin-bottom: 18px;
-}
-/* Add breathing room below the results card */
-#results .inner {
-  padding-bottom: 60px;   /* extra space at bottom of screen */
-}
-
-/* green headline under the divider */
-.leadGreen{
-  color:#134c07;
-  font-weight:800;
-  font-size:24px;
-  line-height:1.25;
-  text-align:center;
-}
-
-/* CTA */
-.btn-cta{
-  background:#134c07;
-  color:#fff;
-  border:none;
-  border-radius:999px;
-  font-weight:800;
-  padding:14px 18px;
-  width:100%;
-  margin-top:12px;
-  cursor:pointer;
-}
-.btn-cta:active{ transform:scale(.99) }
-
-  /* RESULTS */
-#results{background:#f6f7f8;color:var(--ink);display:none}
-#results .inner{
-  margin:5vh auto 0;              /* pushes content down like intake pages */
-  width:min(92%,420px);
-  padding:28px 16px;
-  display:flex;flex-direction:column;gap:16px;
-}
-
-/* small helpers for the redesigned card */
-.card .pricePill{
-  background:#eef0f2; border-radius:12px;
-  padding:18px 22px; display:inline-flex; flex-direction:column; align-items:center;
-}
-.card .pricePill .big{font-size:32px;font-weight:800}
-.card .subtitle{color:var(--muted); font-weight:600}
-.card hr{border:0;border-top:1px solid #e6e8eb;margin:18px 0}
-.disclaimer{margin-top:12px;font-size:14px;line-height:1.35;color:#111}
-  /* --- Chip safe-area so content never scrolls under it --- */
-:root{ --chipH: 36px }
-
-.chip{ 
-  position:fixed;
-  top:10px; right:10px;
-  background:#134c07; color:#fff;
-  border-radius:999px;
-  padding:6px 10px;
-  font-size:12px;
-  font-weight:600;
-  box-shadow:0 2px 6px rgba(0,0,0,.12);
-  z-index:1001;
-  opacity:.9;
-  transform:scale(0.9);
-}
-.chip.show{ opacity:1; transform:translateY(0); }
-
-/* --- chip safe-area + visible white band (final fix) --- */
-:root{ --chipH: 36px; --safeTop: calc(var(--chipH) + 14px); }
-
-#chipSafe{
-  position:fixed;
-  top:0; left:0; right:0;
-  height:var(--safeTop);
-  background:#fff;
-  box-shadow:0 1px 0 rgba(0,0,0,.06);
-  z-index:1000;
-  pointer-events:none;
-}
-
-/* shift all body content below the white band */
-body.has-chip{
-  padding-top:var(--safeTop);
-}
-/* keep chip above the white bar */
-.chip{ z-index:1001; }
-  /* Center the yellow pills & give breathing room */
-.card .yellowBox--sm,
-.card .yellowBox--lg{
-  display:block;
-  /* make the pill only as wide as its content, then center it */
-  width:max-content;           /* works everywhere */
-  margin-left:auto;
-  margin-right:auto;
-}
-
-.card .yellowBox--lg{
-  margin-top:6px;              /* small gap above */
-  margin-bottom:16px;          /* gap below so CTA isn’t crowded */
-}
-
-/* Extra space above the CTA button */
-.card .btn-cta{
-  margin-top:18px;
-}
-  /* spacing for each pill */
-.ratePill{    margin:6px 0 16px; }
-.savingsPill{ margin:18px 0 24px; }  /* extra room above CTA */
-
-/* extra space above the CTA button */
-.card .btn-cta{ margin-top:24px; }
+  /* User chip + safe area */
+  :root{--chipH:36px;--safeTop:calc(var(--chipH) + 14px)}
+  #chipSafe{position:fixed;top:0;left:0;right:0;height:var(--safeTop);background:#fff;box-shadow:0 1px 0 rgba(0,0,0,.06);z-index:1000;pointer-events:none}
+  body.has-chip{padding-top:var(--safeTop)}
+  .chip{position:fixed;top:10px;right:10px;background:#134c07;color:#fff;border-radius:999px;padding:6px 10px;font-size:12px;font-weight:600;box-shadow:0 2px 6px rgba(0,0,0,.12);z-index:1001;opacity:.9;transform:scale(.9)}
+  .chip.show{opacity:1;transform:translateY(0)}
 </style>
+
+<!-- libs -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.2.67/pdf.min.js"></script>
 <script>
-  pdfjsLib.GlobalWorkerOptions.workerSrc =
-    "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.2.67/pdf.worker.min.js";
+  pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.2.67/pdf.worker.min.js";
 </script>
 <script src="https://unpkg.com/tesseract.js@4/dist/tesseract.min.js"></script>
 </head>
@@ -427,65 +99,55 @@ body.has-chip{
   <div id="chipSafe" hidden></div>
   <div id="userChip" class="chip" hidden></div>
 
-<!-- Splash -->
-<section id="splash" class="vh fade">
-  <div class="inner">
-    <img class="logo" src="logo.png" alt="RateHound">
-  </div>
-</section>
-
-<!-- Signup landing -->
-<section id="signup" class="vh">
-  <div class="inner">
-    <h1>Get ready to save on your electric bill!</h1>
-    <input class="field" id="name" placeholder="Full name" autocomplete="name" inputmode="text">
-    <input class="field" id="phone" placeholder="Phone" autocomplete="tel" inputmode="tel">
-    <input class="field" id="email" placeholder="Email" type="email" autocomplete="email">
-    <button class="btn" id="signUpBtn" disabled>Sign up</button>
-    <p class="hint">Demo only. No data is sent or stored.</p>
-  </div>
-</section>
-
-
-
-<!-- PAGE 4 — Account intake -->
-<section id="upload" class="vh">
-  <div class="inner">
-    <h1 id="uploadTitle">Provide a copy of your most recent electric bill.</h1>
-
-    <!-- three vertical method choices -->
-   
-    <button class="method" id="mBtnUpload">Upload/Take Pic Of Bill</button>
-   
-
-    <!-- panels (only one shown at a time) -->
-   
-
-    <div id="m-upload" class="panel" hidden>
-     <input id="billFile" type="file" accept="image/*,application/pdf" capture="environment" aria-label="Upload bill image or PDF" hidden>
-      <img id="preview" class="preview" alt="Bill preview">
+  <!-- Splash -->
+  <section id="splash" class="vh fade">
+    <div class="inner">
+      <img class="logo" src="logo.png" alt="RateHound">
     </div>
+  </section>
 
-   
-    <button class="btn" id="continueUpload">Continue</button>
-    <p class="hint">Demo only. No data is sent or stored.</p>
-  </div>
-</section>
+  <!-- Signup landing -->
+  <section id="signup" class="vh">
+    <div class="inner">
+      <h1>Get ready to save on your electric bill!</h1>
+      <input class="field" id="name"  placeholder="Full name" autocomplete="name"  inputmode="text">
+      <input class="field" id="phone" placeholder="Phone"     autocomplete="tel"   inputmode="tel">
+      <input class="field" id="email" placeholder="Email"     type="email"         autocomplete="email">
+      <button class="btn" id="signUpBtn" disabled>Sign up</button>
+      <p class="hint">Demo only. No data is sent or stored.</p>
+    </div>
+  </section>
 
-<!-- RESULTS (replaces #offer) -->
-<section id="results" class="vh" style="display:none">
-  <div class="inner" id="resultsInner"></div>
-</section>
+  <!-- PAGE — Account intake -->
+  <section id="upload" class="vh">
+    <div class="inner">
+      <h1 id="uploadTitle">Provide a copy of your most recent electric bill.</h1>
 
-<!-- Loader Page -->
-<section id="loader" class="vh">
-  <div id="lottieContainer"></div>
-</section>
-  
-  <!-- Toast container (for demo notifications) -->
-<div id="toasts" aria-live="polite" aria-atomic="true"></div>
-  
+      <button class="method" id="mBtnUpload">Upload / Take Photo</button>
 
+      <div id="m-upload" class="panel" hidden>
+        <!-- NO 'capture' attribute → allows both file picker and camera -->
+        <input id="billFile" type="file" accept="image/*,application/pdf" aria-label="Upload bill image or PDF" hidden>
+        <img id="preview" class="preview" alt="Bill preview">
+      </div>
+
+      <button class="btn" id="continueUpload">Continue</button>
+      <p class="hint">Demo only. No data is sent or stored.</p>
+    </div>
+  </section>
+
+  <!-- RESULTS -->
+  <section id="results" class="vh" style="display:none">
+    <div class="inner" id="resultsInner"></div>
+  </section>
+
+  <!-- Loader Page -->
+  <section id="loader" class="vh">
+    <div id="lottieContainer"></div>
+  </section>
+
+  <!-- Toasts -->
+  <div id="toasts" aria-live="polite" aria-atomic="true"></div>
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
@@ -495,21 +157,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
   setTimeout(() => {
     splash.classList.add('out');
-    setTimeout(() => {
-      splash.style.display = 'none';
-      signup.classList.add('show');
-    }, 450);
+    setTimeout(() => { splash.style.display = 'none'; signup.classList.add('show'); }, 450);
   }, 2300);
 
   splash.addEventListener('click', () => {
     splash.classList.add('out');
-    setTimeout(() => {
-      splash.style.display = 'none';
-      signup.classList.add('show');
-    }, 250);
+    setTimeout(() => { splash.style.display = 'none'; signup.classList.add('show'); }, 250);
   });
 
-  /* ---------- signup btn enable ---------- */
+  /* ---------- signup enable ---------- */
   const signUpBtn  = document.getElementById('signUpBtn');
   const nameInput  = document.getElementById('name');
   const phoneInput = document.getElementById('phone');
@@ -520,432 +176,386 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   [nameInput, phoneInput, emailInput].forEach(el => el.addEventListener('input', checkSignupFields));
   checkSignupFields();
+
   renderUserChip();
+
   function renderUserChip(){
-  const chip = document.getElementById('userChip');
-  try{
-    const user = JSON.parse(sessionStorage.getItem('rh_user') || '{}');
-  if (user && user.email) {
-  chip.textContent = `Signed in as ${user.email}`;
-  chip.hidden = false;
-
-  // Reserve space under the chip so content doesn't scroll beneath it
- document.body.classList.add('has-chip');
-document.getElementById('chipSafe').hidden = false;   // unhide white safe area
-  // animate in
-  requestAnimationFrame(() => chip.classList.add('show'));
-}
-  } catch(e){
-    // ignore
-  }
-}
-  
-  /* ---------- shadow account + toast helpers (demo only) ---------- */
-const APP_LINK = '#'; // replace with real store link when ready
-
-function createShadowAccount(){
-  const user = {
-    id: 'demo_' + Date.now(),
-    name:  document.getElementById('name')?.value.trim() || '',
-    phone: document.getElementById('phone')?.value.trim() || '',
-    email: document.getElementById('email')?.value.trim() || '',
-    createdAt: new Date().toISOString()
-  };
-  try { sessionStorage.setItem('rh_user', JSON.stringify(user)); } catch(e){}
-  renderUserChip(); // <-- show/update chip immediately
-  return user;
-}
-
-function showToast(html, ms=4000){
-  const wrap = document.getElementById('toasts');
-  if (!wrap) return;
-  const t = document.createElement('div');
-  t.className = 'toast';
-  t.innerHTML = html;
-  wrap.appendChild(t);
-  requestAnimationFrame(() => t.classList.add('show'));
-  setTimeout(() => {
-    t.classList.remove('show');
-    setTimeout(() => t.remove(), 250);
-  }, ms);
-}
-
-function sendDemoWelcome(user){
-  // Simulate SMS/Email with toasts (and console for devs)
-  console.log('[DEMO SMS] Welcome to RateHound,', user.name, 'Username:', user.email);
-  console.log('[DEMO EMAIL] Welcome to RateHound →', user.email);
-
-  showToast('Welcome to RateHound, ' + (user.name || 'there') + '!');
-  showToast('Your username is <strong>' + user.email + '</strong>.', 4000);
-  showToast('Grab the app: <a href="'+APP_LINK+'" target="_blank" rel="noopener">RateHound App</a>', 7000);
-}
-// ---- OCR helpers ----
-// Render first page of a PDF to an image we can OCR (and use as a thumbnail)
-async function pdfFirstPageAsImage(file, scale = 2) {
-  const buf = await file.arrayBuffer();
-  const pdf = await pdfjsLib.getDocument({ data: buf }).promise;
-  const page = await pdf.getPage(1);
-  const viewport = page.getViewport({ scale });
-
-  const canvas = document.createElement('canvas');
-  const ctx = canvas.getContext('2d');
-  canvas.width = viewport.width;
-  canvas.height = viewport.height;
-
-  await page.render({ canvasContext: ctx, viewport }).promise;
-
-  // Make a Blob for OCR and a dataURL for preview
-  const blob = await new Promise(res => canvas.toBlob(res, 'image/png', 0.95));
-  const dataUrl = canvas.toDataURL('image/png');
-  return { blob, dataUrl };
-}
-
-// OCR that accepts either an image File/Blob OR a PDF File
-async function ocrImage(fileOrBlob) {
-  const src = fileOrBlob;
-  const { data: { text } } = await Tesseract.recognize(src, 'eng', { logger: m => console.log(m) });
-  return text;
-}
-
-signUpBtn.addEventListener('click', () => {
-  if (signUpBtn.disabled) return;
-
-  const user = createShadowAccount();
-  sendDemoWelcome(user);
-
-  // go straight to upload
-  signup.classList.remove('show');
-  document.getElementById('upload').classList.add('show');
-  uploadQueue = ['electric'];
-  setUploadTitleFor('electric');
-  selectMethod('upload');
-  window.scrollTo(0,0);
-});
-
- /* ---------- intake ---------- */
-const uploadPage  = document.getElementById('upload');
-const utilityPage = document.getElementById('utility');
-const titleEl     = document.getElementById('uploadTitle');
-
-const mBtns = { upload: document.getElementById('mBtnUpload') };
-const panels = { upload: document.getElementById('m-upload') };
-
-const fileInput   = document.getElementById('billFile');
-const previewEl   = document.getElementById('preview');
-const continueBtn = document.getElementById('continueUpload');
-
-let uploadQueue = [];
-let uploadIndex = 0;
-let currentMethod = null;
-
-function setUploadTitleFor(kind){
-  titleEl.textContent = (kind === 'electric')
-    ? 'Provide your electric account information.'
-
-      : 'Upload your bill';
-}
-
-function enableContinue(){ continueBtn.classList.add('enabled'); continueBtn.style.opacity='1'; continueBtn.style.pointerEvents='auto'; }
-function disableContinue(){ continueBtn.classList.remove('enabled'); continueBtn.style.opacity='.5'; continueBtn.style.pointerEvents='none'; }
-
-function resetPanels(){
-  Object.values(panels).forEach(p => p.hidden = true);
-  Object.values(mBtns).forEach(b => b.classList.remove('selected'));
-  if (fileInput) fileInput.value = '';
-  if (previewEl) previewEl.style.display = 'none';
-  currentMethod = null;
-  disableContinue();
-}
-
-function selectMethod(which){
-  resetPanels();
-  currentMethod = which;
-  mBtns[which].classList.add('selected');
-  panels[which].hidden = false;
-  validateUpload();
-}
-
-mBtns.upload.addEventListener('click', () => {
-  selectMethod('upload');
-  // automatically trigger the file picker
-  fileInput.click();
-});
- 
-function validateUpload(){
-  if (currentMethod === 'upload'){
-    const ok = !!fileInput.files?.[0];
-    return ok ? enableContinue() : disableContinue();
-  }
-  disableContinue();
-}
-let lastThumbUrl = null;
-fileInput?.addEventListener('change', async () => {
-  const f = fileInput.files?.[0];
-  if (lastThumbUrl) { URL.revokeObjectURL(lastThumbUrl); lastThumbUrl = null; }
-  if (!f) {
-    previewEl.style.display = 'none';
-    const gone = document.getElementById('pdfBadge');
-    if (gone) gone.remove();
-    validateUpload();
-    return;
+    const chip = document.getElementById('userChip');
+    try{
+      const user = JSON.parse(sessionStorage.getItem('rh_user') || '{}');
+      if (user && user.email) {
+        chip.textContent = `Signed in as ${user.email}`;
+        chip.hidden = false;
+        document.body.classList.add('has-chip');
+        document.getElementById('chipSafe').hidden = false;
+        requestAnimationFrame(() => chip.classList.add('show'));
+      }
+    } catch(e){}
   }
 
-  // Show thumbnail / PDF image + decide OCR source
-  let ocrSource = f; // default: the uploaded file
-  let pdfBadge = document.getElementById('pdfBadge');
-  if (pdfBadge) pdfBadge.remove();
+  /* ---------- shadow account + toasts (demo) ---------- */
+  const APP_LINK = '#';
 
-  if (f.type.startsWith('image/')) {
-    // Image → show thumbnail, OCR the image file
-    lastThumbUrl = URL.createObjectURL(f);
-    previewEl.src = lastThumbUrl;
-    previewEl.style.display = 'block';
-  } else if (f.type === 'application/pdf') {
-    // PDF → render first page to image for both preview + OCR
-    try {
-      const { blob, dataUrl } = await pdfFirstPageAsImage(f, 2);
-      previewEl.src = dataUrl;
-      previewEl.style.display = 'block';
-      ocrSource = blob; // OCR the rendered image for best results
-    } catch (e) {
-      console.error('PDF render failed:', e);
-      previewEl.style.display = 'none';
-      const badge = document.createElement('div');
-      badge.id = 'pdfBadge';
-      badge.style.cssText = 'margin-top:8px;padding:10px;border:1px solid var(--border);border-radius:8px;background:#f8fafc;font-weight:600;';
-      badge.textContent = `📄 ${f.name}`;
-      document.getElementById('m-upload').appendChild(badge);
-    }
-  } else {
-    previewEl.style.display = 'none';
+  function createShadowAccount(){
+    const user = {
+      id: 'demo_' + Date.now(),
+      name:  document.getElementById('name')?.value.trim() || '',
+      phone: document.getElementById('phone')?.value.trim() || '',
+      email: document.getElementById('email')?.value.trim() || '',
+      createdAt: new Date().toISOString()
+    };
+    try { sessionStorage.setItem('rh_user', JSON.stringify(user)); } catch(e){}
+    renderUserChip();
+    return user;
   }
 
-  // ---- OCR the selected file (image or rendered PDF) and parse fields ----
-  try {
-    let out = document.getElementById('parsedOut');
-    if (!out) {
-      out = document.createElement('pre');
-      out.id = 'parsedOut';
-      out.className = 'hint';
-      out.style.whiteSpace = 'pre-wrap';
-      document.getElementById('m-upload').appendChild(out);
-    }
-    out.textContent = '⏳ Reading your bill...';
+  function showToast(html, ms=4000){
+    const wrap = document.getElementById('toasts');
+    if (!wrap) return;
+    const t = document.createElement('div');
+    t.className = 'toast';
+    t.innerHTML = html;
+    wrap.appendChild(t);
+    requestAnimationFrame(() => t.classList.add('show'));
+    setTimeout(() => {
+      t.classList.remove('show');
+      setTimeout(() => t.remove(), 250);
+    }, ms);
+  }
 
-    const text   = await ocrImage(ocrSource);
-    const parsed = parseFields(text);
+  function sendDemoWelcome(user){
+    console.log('[DEMO SMS] Welcome to RateHound,', user.name, 'Username:', user.email);
+    console.log('[DEMO EMAIL] Welcome to RateHound →', user.email);
+    showToast('Welcome to RateHound, ' + (user.name || 'there') + '!');
+    showToast('Your username is <strong>' + user.email + '</strong>.', 4000);
+    showToast('Grab the app: <a href="'+APP_LINK+'" target="_blank" rel="noopener">RateHound App</a>', 7000);
+  }
 
-    console.log('OCR raw text:', text);
-    console.log('Parsed fields:', parsed);
-    // ---- SEND TO GOOGLE SHEETS (Apps Script web app) ----
-const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxMvT_1fW9CcFllLWuWTIRYYn07UCoIno80dzqr3WwVW5EjRvDfwe4Ei7Rxj1QRNcrq/exec';
+  // --- PDF → first-page image for preview & OCR
+  async function pdfFirstPageAsImage(file, scale = 2) {
+    const buf = await file.arrayBuffer();
+    const pdf = await pdfjsLib.getDocument({ data: buf }).promise;
+    const page = await pdf.getPage(1);
+    const viewport = page.getViewport({ scale });
 
-try {
-  let userEmail = '';
-  try {
-    const u = JSON.parse(sessionStorage.getItem('rh_user') || '{}');
-    userEmail = u.email || '';
-  } catch (_) {}
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    canvas.width = viewport.width;
+    canvas.height = viewport.height;
 
-  const payload = {
-    userEmail,
-    customerNumber: parsed.customerNumber,
-    name: parsed.name,
-    address: parsed.address,
-    zip: parsed.zip,
-    billPeriodEnd: parsed.billPeriodEnd,
-    rawText: typeof text === 'string' ? text : ''
-  };
+    await page.render({ canvasContext: ctx, viewport }).promise;
+    const blob = await new Promise(res => canvas.toBlob(res, 'image/png', 0.95));
+    const dataUrl = canvas.toDataURL('image/png');
+    return { blob, dataUrl };
+  }
 
-  const resp = await fetch(WEB_APP_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload),
+  // --- OCR helper
+  async function ocrImage(fileOrBlob) {
+    const { data: { text } } = await Tesseract.recognize(fileOrBlob, 'eng', { logger: m => console.log(m) });
+    return text;
+  }
+
+  // Go to upload page after signup
+  signUpBtn.addEventListener('click', () => {
+    if (signUpBtn.disabled) return;
+    const user = createShadowAccount();
+    sendDemoWelcome(user);
+
+    signup.classList.remove('show');
+    document.getElementById('upload').classList.add('show');
+    uploadQueue = ['electric'];
+    setUploadTitleFor('electric');
+    selectMethod('upload');
+    window.scrollTo(0,0);
   });
 
-  const json = await resp.json().catch(() => ({}));
-  if (!json.ok) console.warn('Sheet save failed:', json);
-  else console.log('✅ Saved to Google Sheets');
-} catch (err) {
-  console.error('Error sending to Sheets:', err);
-}
+  /* ---------- intake ---------- */
+  const uploadPage  = document.getElementById('upload');
+  const titleEl     = document.getElementById('uploadTitle');
 
-    out.textContent = [
-      `Customer number: ${parsed.customerNumber || '(missing)'}`,
-      `Name: ${parsed.name || ''}`,
-      `Address: ${parsed.address || ''}`,
-      `Zip: ${parsed.zip || ''}`,
-      `Bill period: ${parsed.billPeriodEnd || ''}`
-    ].join('\n');
-  } catch (e) {
-    console.error('OCR failed:', e);
+  const mBtns   = { upload: document.getElementById('mBtnUpload') };
+  const panels  = { upload: document.getElementById('m-upload') };
+
+  const fileInput   = document.getElementById('billFile');
+  const previewEl   = document.getElementById('preview');
+  const continueBtn = document.getElementById('continueUpload');
+
+  let uploadQueue = [];
+  let uploadIndex = 0;
+  let currentMethod = null;
+  let lastThumbUrl = null;
+
+  function setUploadTitleFor(kind){
+    titleEl.textContent = (kind === 'electric')
+      ? 'Provide your electric account information.'
+      : 'Upload your bill';
   }
 
-  validateUpload();  // enables Continue if a file is present
+  function enableContinue(){ continueBtn.classList.add('enabled'); continueBtn.style.opacity='1'; continueBtn.style.pointerEvents='auto'; }
+  function disableContinue(){ continueBtn.classList.remove('enabled'); continueBtn.style.opacity='.5'; continueBtn.style.pointerEvents='none'; }
+
+  function resetPanels(){
+    Object.values(panels).forEach(p => p.hidden = true);
+    Object.values(mBtns).forEach(b => b.classList.remove('selected'));
+    if (fileInput) fileInput.value = '';
+    if (previewEl) previewEl.style.display = 'none';
+    currentMethod = null;
+    disableContinue();
+  }
+
+  function selectMethod(which){
+    resetPanels();
+    currentMethod = which;
+    mBtns[which].classList.add('selected');
+    panels[which].hidden = false;
+    validateUpload();
+    // immediately open picker for convenience
+    if (which === 'upload') fileInput.click();
+  }
+
+  mBtns.upload.addEventListener('click', () => selectMethod('upload'));
+
+  function validateUpload(){
+    if (currentMethod === 'upload'){
+      const ok = !!fileInput.files?.[0];
+      return ok ? enableContinue() : disableContinue();
+    }
+    disableContinue();
+  }
+
+  fileInput?.addEventListener('change', async () => {
+    const f = fileInput.files?.[0];
+
+    if (lastThumbUrl) { URL.revokeObjectURL(lastThumbUrl); lastThumbUrl = null; }
+
+    if (!f) {
+      previewEl.style.display = 'none';
+      const gone = document.getElementById('pdfBadge');
+      if (gone) gone.remove();
+      validateUpload();
+      return;
+    }
+
+    // Decide OCR source + show thumbnail
+    let ocrSource = f;
+    let pdfBadge = document.getElementById('pdfBadge');
+    if (pdfBadge) pdfBadge.remove();
+
+    if (f.type.startsWith('image/')) {
+      lastThumbUrl = URL.createObjectURL(f);
+      previewEl.src = lastThumbUrl;
+      previewEl.style.display = 'block';
+    } else if (f.type === 'application/pdf') {
+      try {
+        const { blob, dataUrl } = await pdfFirstPageAsImage(f, 2);
+        previewEl.src = dataUrl;
+        previewEl.style.display = 'block';
+        ocrSource = blob;
+      } catch (e) {
+        console.error('PDF render failed:', e);
+        previewEl.style.display = 'none';
+        const badge = document.createElement('div');
+        badge.id = 'pdfBadge';
+        badge.style.cssText = 'margin-top:8px;padding:10px;border:1px solid var(--border);border-radius:8px;background:#f8fafc;font-weight:600;';
+        badge.textContent = `📄 ${f.name}`;
+        document.getElementById('m-upload').appendChild(badge);
+      }
+    } else {
+      previewEl.style.display = 'none';
+    }
+
+    // OCR + parse + send to Google Sheets
+    try {
+      let out = document.getElementById('parsedOut');
+      if (!out) {
+        out = document.createElement('pre');
+        out.id = 'parsedOut';
+        out.className = 'hint';
+        out.style.whiteSpace = 'pre-wrap';
+        document.getElementById('m-upload').appendChild(out);
+      }
+      out.textContent = '⏳ Reading your bill...';
+
+      const text   = await ocrImage(ocrSource);
+      const parsed = parseFields(text);
+
+      console.log('OCR raw text:', text);
+      console.log('Parsed fields:', parsed);
+
+      // Send to Apps Script (which can also call GPT server-side)
+      const WEB_APP_URL = 'YOUR_WEB_APP_URL_HERE';
+
+      try {
+        let userEmail = '';
+        try {
+          const u = JSON.parse(sessionStorage.getItem('rh_user') || '{}');
+          userEmail = u.email || '';
+        } catch (_) {}
+
+        const payload = {
+          userEmail,
+          customerNumber: parsed.customerNumber,
+          name: parsed.name,
+          address: parsed.address,
+          zip: parsed.zip,
+          billPeriodEnd: parsed.billPeriodEnd,
+          rawText: typeof text === 'string' ? text : ''
+        };
+
+        const resp = await fetch(WEB_APP_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+
+        const json = await resp.json().catch(() => ({}));
+        if (!json.ok) console.warn('Sheet save failed:', json);
+        else console.log('✅ Saved to Google Sheets');
+      } catch (err) {
+        console.error('Error sending to Sheets:', err);
+      }
+
+      out.textContent = [
+        `Customer number: ${parsed.customerNumber || '(missing)'}`,
+        `Name: ${parsed.name || ''}`,
+        `Address: ${parsed.address || ''}`,
+        `Zip: ${parsed.zip || ''}`,
+        `Bill period: ${parsed.billPeriodEnd || ''}`
+      ].join('\n');
+
+    } catch (e) {
+      console.error('OCR failed:', e);
+    }
+
+    validateUpload();
+  });
+
+  continueBtn.addEventListener('click', () => {
+    if (!continueBtn.classList.contains('enabled')) return;
+
+    // hide intake, show loader
+    document.getElementById('upload').classList.remove('show');
+    document.getElementById('loader').classList.add('show');
+
+    if (window.lottie && !window.__loaderAnim){
+      window.__loaderAnim = lottie.loadAnimation({
+        container: document.getElementById('lottieContainer'),
+        renderer: 'svg',
+        loop: true,
+        autoplay: true,
+        path: 'loader.json'   // ensure this exists in your repo
+      });
+    } else if (window.__loaderAnim){
+      window.__loaderAnim.play();
+      window.__loaderAnim.resize && window.__loaderAnim.resize();
+    }
+
+    window.scrollTo(0,0);
+
+    setTimeout(() => {
+      const currentKind = uploadQueue[uploadIndex] || 'electric';
+      showLoaderThen(currentKind);
+    }, 4000);
+  });
+
+  function showLoaderThen(kind){
+    const results = document.getElementById('results');
+    const box     = document.getElementById('resultsInner');
+
+    // Demo data
+    const planName   = 'ClearGuarantee9Plus';
+    const ptc        = '9.39¢ / kWh';
+    const newRate    = '4.79¢ / kWh';
+    const term       = '9 Months';
+    const etf        = '$150';
+    const estSavings = '45.1%';
+
+    box.innerHTML = `
+      <div class="card">
+        <div class="yellowBox--sm">Price to Compare: ${ptc}</div>
+        <hr>
+        <div class="leadGreen" style="margin:8px 0 10px">Here's the lowest rate we found for you.</div>
+
+        <div class="yellowBox--lg ratePill">
+          <div class="big">${newRate}</div>
+        </div>
+
+        <div style="margin:10px 0 6px">
+          <div style="font-weight:800;color:#134c07">Plan:</div>
+          <div style="font-size:18px">${planName}</div>
+        </div>
+
+        <div class="row2" style="margin-top:8px">
+          <div class="blk"><div style="font-weight:800;color:#134c07">Contract Term</div>${term}</div>
+          <div class="blk"><div style="font-weight:800;color:#134c07">Early Termination Fee</div>${etf}</div>
+        </div>
+
+        <div class="yellowBox--lg savingsPill">
+          Estimated Savings: <span class="big">${estSavings}</span>
+        </div>
+
+        <button id="ctaSwitch" class="btn-cta">Switch me to this plan!</button>
+
+        <hr style="margin:18px 0 10px">
+        <div class="supplier" style="margin-top:0;display:flex;align-items:center;gap:12px;padding-top:12px;border-top:1px solid #e6e8eb">
+          <img src="clearwater logo.png" alt="clearwater logo" style="height:40px">
+          <span style="font-weight:800;color:#134c07">Clearview Energy</span>
+        </div>
+        <div class="links" style="margin-top:12px">
+          <a href="#">Clearview Energy Terms &amp; Conditions</a><br>
+          <a href="#">RateHound Terms of Service</a>
+        </div>
+        <div class="disclaimer" style="margin-top:12px">
+          This rate will be effective following the first billing date after successful enrollment.
+        </div>
+      </div>
+    `;
+
+    document.getElementById('loader').classList.remove('show');
+    results.style.display = 'flex';
+
+    const btn = box.querySelector('#ctaSwitch');
+    btn && btn.addEventListener('click', () =>
+      (window.showToast ? showToast('Great — we’ll start the switch (demo).', 4200) : alert('Great — we’ll start the switch (demo).'))
+    );
+  }
+
+  /* ---- Parsing helpers (client-side fallback) ---- */
+  function parseFields(text){
+    const t = (text || "").replace(/\r/g, "");
+    const get = re => { const m = t.match(re); return m ? m.slice(1) : []; };
+
+    const [custNumRaw] =
+      get(/(?:Customer|Account)\s*Number[:\s]*([0][8][0]\d{17})\b/i) ||
+      get(/\b(080\d{17})\b/);
+
+    const validCustomerNumber = !!(custNumRaw && /^080\d{17}$/.test(custNumRaw));
+    const customerNumber = validCustomerNumber ? custNumRaw : "";
+
+    const billBlockMatch = t.match(/Bill\s*for[:\s]*(.+?)(?:\n{2,}|Billing\s*Period|Bill\s*Date|Account\s*Number)/is);
+    const billBlock = billBlockMatch ? billBlockMatch[1].trim() : "";
+    const lines = billBlock.split(/\n/).map(s => s.trim()).filter(Boolean);
+
+    const name   = lines[0] || "";
+    const address = (lines.find(l => /^\d+[\sA-Za-z]/.test(l)) || lines[1] || "").replace(/\s{2,}/g," ").trim();
+
+    const zipMatch =
+      (lines.slice(-2).join(" ").match(/\b(\d{5})(?:-\d{4})?\b/)) ||
+      (billBlock.match(/\b(\d{5})(?:-\d{4})?\b/));
+    const zip = zipMatch ? zipMatch[1] : "";
+
+    const bp = t.match(/Billing\s*Period[:\s]*([A-Za-z]{3,9}\s+\d{1,2})\s*(?:to|–|-|—)\s*([A-Za-z]{3,9}\s+\d{1,2})(?:,\s*(\d{4}))?/i);
+    let billPeriodEnd = "";
+    if (bp) {
+      const right = bp[2];
+      const year  = bp[3] || new Date().getFullYear();
+      const endDate = new Date(`${right}, ${year}`);
+      billPeriodEnd = endDate.toLocaleString('en-US', { month: 'short', day: 'numeric' });
+    }
+
+    return { customerNumber, name, address, zip, billPeriodEnd, validCustomerNumber };
+  }
 });
-   continueBtn.addEventListener('click', () => {
-  if (!continueBtn.classList.contains('enabled')) return;
-
-  // hide intake, show loader
-/* utility page removed */
-  document.getElementById('upload').classList.remove('show');
-  document.getElementById('loader').classList.add('show');
-
-  // init lottie once
-  if (window.lottie && !window.__loaderAnim){
-    window.__loaderAnim = lottie.loadAnimation({
-      container: document.getElementById('lottieContainer'),
-      renderer: 'svg',
-      loop: true,
-      autoplay: true,
-      path: 'loader.json'
-    });
-  } else if (window.__loaderAnim){
-    window.__loaderAnim.play();
-    window.__loaderAnim.resize && window.__loaderAnim.resize();
-  }
-
-  window.scrollTo(0,0);
-
-  setTimeout(() => {
-    const currentKind = uploadQueue[uploadIndex] || 'electric';
-    showLoaderThen(currentKind);
-  }, 4000);
-});
- 
-function showLoaderThen(kind){
-  const results = document.getElementById('results');
-  const box     = document.getElementById('resultsInner');
-
-  // Demo data
-  const planName   = 'ClearGuarantee9Plus';
-  const ptc        = '9.39¢ / kWh';
-  const newRate    = '4.79¢ / kWh';
-  const term       = '9 Months';
-  const etf        = '$150';
-  const estSavings = '45.1%';
-
-  box.innerHTML = `
-    <div class="card">
-      <div class="yellowBox--sm">Price to Compare: ${ptc}</div>
-      <hr>
-      <div class="leadGreen" style="margin:8px 0 10px">Here's the lowest rate we found for you.</div>
-
-      <div class="yellowBox--lg ratePill">
-  <div class="big">${newRate}</div>
-</div>
-
-      <div style="margin:10px 0 6px">
-        <div style="font-weight:800;color:#134c07">Plan:</div>
-        <div style="font-size:18px">${planName}</div>
-      </div>
-      <div class="row2" style="margin-top:8px">
-        <div class="blk"><div style="font-weight:800;color:#134c07">Contract Term</div>${term}</div>
-        <div class="blk"><div style="font-weight:800;color:#134c07">Early Termination Fee</div>${etf}</div>
-      </div>
-
-
-<div class="yellowBox--lg savingsPill">
-  Estimated Savings: <span class="big">${estSavings}</span>
-</div>
-
-      <button id="ctaSwitch" class="btn-cta">Switch me to this plan!</button>
-
-      <hr style="margin:18px 0 10px">
-      <div class="supplier" style="margin-top:0">
-        <img src="clearwater logo.png" alt="clearwater logo.png" style="height:40px">
-        <span style="font-weight:800;color:#134c07">Clearview Energy</span>
-      </div>
-      <div class="links" style="margin-top:12px">
-        <a href="#">Clearview Energy Terms &amp; Conditions</a><br>
-        <a href="#">RateHound Terms of Service</a>
-      </div>
-      <div class="disclaimer" style="margin-top:12px">
-        This rate will be effective following the first billing date after successful enrollment.
-      </div>
-    </div>
-  `;
-
-  // Hide loader, show results
-  document.getElementById('loader').classList.remove('show');
-  results.style.display = 'flex';
-
-  // Demo CTA
-  const btn = box.querySelector('#ctaSwitch');
-  btn && btn.addEventListener('click', () =>
-    (window.showToast ? showToast('Great — we’ll start the switch (demo).', 4200) : alert('Great — we’ll start the switch (demo).'))
-  );
-}
-  // ===== Paste below any existing helpers =====
-function parseFields(text){
-  const t = (text || "").replace(/\r/g, "");
-  const get = re => {
-    const m = t.match(re);
-    return m ? m.slice(1) : [];
-  };
-
-  // --- Customer number (must start 080 and be 20 digits total) ---
-  const [custNumRaw] =
-    get(/(?:Customer|Account)\s*Number[:\s]*([0][8][0]\d{17})\b/i) // strict 080 + 17 more = 20
-    || get(/\b(080\d{17})\b/); // fallback anywhere on page
-
-  const validCustomerNumber = !!(custNumRaw && /^080\d{17}$/.test(custNumRaw));
-  const customerNumber = validCustomerNumber ? custNumRaw : "";
-
-  // --- Bill for: (name, address, city/state/zip) ---
-  // Capture text after "Bill for:" up to the next blank line or a common section header
-  const billBlockMatch = t.match(/Bill\s*for[:\s]*(.+?)(?:\n{2,}|Billing\s*Period|Bill\s*Date|Account\s*Number)/is);
-  const billBlock = billBlockMatch ? billBlockMatch[1].trim() : "";
-  const lines = billBlock.split(/\n/).map(s => s.trim()).filter(Boolean);
-
-  const name   = lines[0] || "";
-  // Heuristics: address = first line that starts with a number; else next line
-  const address = (lines.find(l => /^\d+[\sA-Za-z]/.test(l)) || lines[1] || "").replace(/\s{2,}/g," ").trim();
-  // Zip: look in last 2 lines
-  const zipMatch =
-    (lines.slice(-2).join(" ").match(/\b(\d{5})(?:-\d{4})?\b/)) ||
-    (billBlock.match(/\b(\d{5})(?:-\d{4})?\b/));
-  const zip = zipMatch ? zipMatch[1] : "";
-
-  // --- Billing period: get the later date (right side) ---
-  // Examples it handles: "Billing Period: Jul 24 to Aug 22, 2025", "Billing Period Jul 24 – Aug 22, 2025"
-  const bp = t.match(/Billing\s*Period[:\s]*([A-Za-z]{3,9}\s+\d{1,2})\s*(?:to|–|-|—)\s*([A-Za-z]{3,9}\s+\d{1,2})(?:,\s*(\d{4}))?/i);
-  let billPeriodEnd = "";
-  if (bp) {
-    const left  = bp[1];                // e.g., "Jul 24"
-    const right = bp[2];                // e.g., "Aug 22"
-    const year  = bp[3] || new Date().getFullYear(); // default to current year if missing
-    // Build a Date from the right side (the later date)
-    const endDate = new Date(`${right}, ${year}`);
-    // Format as "Aug 22"
-    billPeriodEnd = endDate.toLocaleString('en-US', { month: 'short', day: 'numeric' });
-  }
-
-  return {
-    customerNumber,
-    name,
-    address,
-    zip,
-    billPeriodEnd,
-    validCustomerNumber
-  };
-}
-
-// Format exactly as requested
-function formatForOutput(p){
-  return [
-    `Customer number: ${p.customerNumber || "(missing)"}`,
-    `Name: ${p.name || ""}`,
-    `Address: ${p.address || ""}`,
-    `Zip: ${p.zip || ""}`,
-    `Bill period: ${p.billPeriodEnd || ""}`
-  ].join('\n');
-}
-
-// ---- Example usage (once you have the bill text in `ocrText`) ----
-// const parsed = parseFields(ocrText);
-// console.log(formatForOutput(parsed));
-});  // closes DOMContentLoaded
 </script>
 </body>
 </html>
