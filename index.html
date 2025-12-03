@@ -316,7 +316,10 @@ function selectMethod(which){
   validateUpload();
 }
 
-  mBtns.upload.addEventListener('click', () => selectMethod('upload'));
+mBtns.upload.addEventListener('click', () => {
+  selectMethod('upload');   // shows the panel
+  fileInput.click();        // opens camera/file picker on user tap
+});
 
   function validateUpload(){
     if (currentMethod === 'upload'){
