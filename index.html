@@ -308,15 +308,13 @@ document.addEventListener('DOMContentLoaded', () => {
     disableContinue();
   }
 
-  function selectMethod(which){
-    resetPanels();
-    currentMethod = which;
-    mBtns[which].classList.add('selected');
-    panels[which].hidden = false;
-    validateUpload();
-    // immediately open picker for convenience
-    if (which === 'upload') fileInput.click();
-  }
+function selectMethod(which){
+  resetPanels();
+  currentMethod = which;
+  mBtns[which].classList.add('selected');
+  panels[which].hidden = false;
+  validateUpload();
+}
 
   mBtns.upload.addEventListener('click', () => selectMethod('upload'));
 
