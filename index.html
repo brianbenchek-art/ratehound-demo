@@ -127,7 +127,12 @@
 
       <div id="m-upload" class="panel" hidden>
         <!-- NO 'capture' attribute → allows both file picker and camera -->
-        <input id="billFile" type="file" accept="image/*,application/pdf" aria-label="Upload bill image or PDF" hidden>
+        <input id="billFile"
+       type="file"
+       accept="image/*,application/pdf"
+       capture="environment"
+       aria-label="Upload or take a photo of your bill"
+       hidden>
         <img id="preview" class="preview" alt="Bill preview">
       </div>
 
@@ -323,112 +328,74 @@ document.addEventListener('DOMContentLoaded', () => {
     disableContinue();
   }
 
-  fileInput?.addEventListener('change', async () => {
-    const f = fileInput.files?.[0];
+fileInput?.addEventListener('change', async () => {
+  const f = fileInput.files?.[0];
+  if (lastThumbUrl) { URL.revokeObjectURL(lastThumbUrl); lastThumbUrl = null; }
 
-    if (lastThumbUrl) { URL.revokeObjectURL(lastThumbUrl); lastThumbUrl = null; }
+  if (!f) {
+    previewEl.style.display = 'none';
+    document.getElementById('parsedOut')?.remove();
+    disableContinue();
+    return;
+  }
 
-    if (!f) {
+  let ocrSource = f;
+  if (f.type === 'application/pdf') {
+    try {
+      const { blob, dataUrl } = await pdfFirstPageAsImage(f, 2);
+      previewEl.src = dataUrl;
+      previewEl.style.display = 'block';
+      ocrSource = blob;
+    } catch (e) {
+      console.error('PDF render failed:', e);
       previewEl.style.display = 'none';
-      const gone = document.getElementById('pdfBadge');
-      if (gone) gone.remove();
-      validateUpload();
+    }
+  } else {
+    lastThumbUrl = URL.createObjectURL(f);
+    previewEl.src = lastThumbUrl;
+    previewEl.style.display = 'block';
+  }
+
+  let out = document.getElementById('parsedOut');
+  if (!out) {
+    out = document.createElement('pre');
+    out.id = 'parsedOut';
+    out.className = 'hint';
+    out.style.whiteSpace = 'pre-wrap';
+    document.getElementById('m-upload').appendChild(out);
+  }
+  out.textContent = '⏳ Reading your bill...';
+
+  const timeout = new Promise((_, rej) =>
+    setTimeout(() => rej(new Error('OCR timeout')), 30000)
+  );
+
+  try {
+    const text = await Promise.race([ocrImage(ocrSource), timeout]);
+    const parsed = parseFields(text);
+    console.log('Parsed:', parsed);
+
+    if (!parsed.customerNumber && !parsed.name) {
+      out.textContent = '❌ Could not read bill details. Please retake or upload a clearer photo.';
+      disableContinue();
       return;
     }
 
-    // Decide OCR source + show thumbnail
-    let ocrSource = f;
-    let pdfBadge = document.getElementById('pdfBadge');
-    if (pdfBadge) pdfBadge.remove();
+    out.textContent = [
+      `Customer number: ${parsed.customerNumber || '(missing)'}`,
+      `Name: ${parsed.name || ''}`,
+      `Address: ${parsed.address || ''}`,
+      `Zip: ${parsed.zip || ''}`,
+      `Bill period: ${parsed.billPeriodEnd || ''}`
+    ].join('\n');
 
-    if (f.type.startsWith('image/')) {
-      lastThumbUrl = URL.createObjectURL(f);
-      previewEl.src = lastThumbUrl;
-      previewEl.style.display = 'block';
-    } else if (f.type === 'application/pdf') {
-      try {
-        const { blob, dataUrl } = await pdfFirstPageAsImage(f, 2);
-        previewEl.src = dataUrl;
-        previewEl.style.display = 'block';
-        ocrSource = blob;
-      } catch (e) {
-        console.error('PDF render failed:', e);
-        previewEl.style.display = 'none';
-        const badge = document.createElement('div');
-        badge.id = 'pdfBadge';
-        badge.style.cssText = 'margin-top:8px;padding:10px;border:1px solid var(--border);border-radius:8px;background:#f8fafc;font-weight:600;';
-        badge.textContent = `📄 ${f.name}`;
-        document.getElementById('m-upload').appendChild(badge);
-      }
-    } else {
-      previewEl.style.display = 'none';
-    }
-
-    // OCR + parse + send to Google Sheets
-    try {
-      let out = document.getElementById('parsedOut');
-      if (!out) {
-        out = document.createElement('pre');
-        out.id = 'parsedOut';
-        out.className = 'hint';
-        out.style.whiteSpace = 'pre-wrap';
-        document.getElementById('m-upload').appendChild(out);
-      }
-      out.textContent = '⏳ Reading your bill...';
-
-      const text   = await ocrImage(ocrSource);
-      const parsed = parseFields(text);
-
-      console.log('OCR raw text:', text);
-      console.log('Parsed fields:', parsed);
-
-      // Send to Apps Script (which can also call GPT server-side)
-      const WEB_APP_URL = 'YOUR_WEB_APP_URL_HERE';
-
-      try {
-        let userEmail = '';
-        try {
-          const u = JSON.parse(sessionStorage.getItem('rh_user') || '{}');
-          userEmail = u.email || '';
-        } catch (_) {}
-
-        const payload = {
-          userEmail,
-          customerNumber: parsed.customerNumber,
-          name: parsed.name,
-          address: parsed.address,
-          zip: parsed.zip,
-          billPeriodEnd: parsed.billPeriodEnd,
-          rawText: typeof text === 'string' ? text : ''
-        };
-
-        const resp = await fetch(WEB_APP_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload),
-        });
-
-        const json = await resp.json().catch(() => ({}));
-        if (!json.ok) console.warn('Sheet save failed:', json);
-        else console.log('✅ Saved to Google Sheets');
-      } catch (err) {
-        console.error('Error sending to Sheets:', err);
-      }
-
-      out.textContent = [
-        `Customer number: ${parsed.customerNumber || '(missing)'}`,
-        `Name: ${parsed.name || ''}`,
-        `Address: ${parsed.address || ''}`,
-        `Zip: ${parsed.zip || ''}`,
-        `Bill period: ${parsed.billPeriodEnd || ''}`
-      ].join('\n');
-
-    } catch (e) {
-      console.error('OCR failed:', e);
-    }
-
-    validateUpload();
-  });
+    enableContinue();
+  } catch (err) {
+    console.error('OCR failed:', err);
+    out.textContent = '❌ Failed to read bill. Try again with better lighting or a PDF scan.';
+    disableContinue();
+  }
+});
 
   continueBtn.addEventListener('click', () => {
     if (!continueBtn.classList.contains('enabled')) return;
