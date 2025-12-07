@@ -505,9 +505,9 @@ function extract080x20(text) {
       </div>`;
     document.getElementById('loader').classList.remove('show');
     results.style.display = 'flex';
-    box.querySelector('#ctaSwitch')?.addEventListener('click', () =>
-      (window.showToast ? showToast('Great — we’ll start the switch (demo).', 4200) : alert('Great — we’ll start the switch (demo).'))
-    );
+   box.querySelector('#ctaSwitch')?.addEventListener('click', () =>
+  showToast('Great — we’ll start the switch (demo).', 4200)
+);
   }
 
   /* ---- client-side parsing fallback ---- */
