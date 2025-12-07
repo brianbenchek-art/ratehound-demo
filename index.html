@@ -257,6 +257,64 @@ const RH_SHARED_SECRET = '';
     const dataUrl = canvas.toDataURL('image/png');
     return { blob, dataUrl };
   }
+  // Convert Blob → data URL
+async function blobToDataUrl(blob) {
+  return new Promise((res, rej) => {
+    const fr = new FileReader();
+    fr.onload = () => res(fr.result);
+    fr.onerror = rej;
+    fr.readAsDataURL(blob);
+  });
+}
+
+// Downscale large images to keep payload small (~0.3–1.0 MB)
+async function downscaleImageBlob(blob, maxDim = 2000, mime = 'image/jpeg', quality = 0.85) {
+  const img = document.createElement('img');
+  const url = URL.createObjectURL(blob);
+  await new Promise(r => { img.onload = r; img.src = url; });
+
+  const w = img.naturalWidth, h = img.naturalHeight;
+  let nw = w, nh = h;
+  if (Math.max(w, h) > maxDim) {
+    const k = maxDim / Math.max(w, h);
+    nw = Math.round(w * k);
+    nh = Math.round(h * k);
+  }
+
+  const c = document.createElement('canvas');
+  c.width = nw; c.height = nh;
+  const ctx = c.getContext('2d');
+  ctx.drawImage(img, 0, 0, nw, nh);
+
+  return new Promise(res => {
+    c.toBlob(b => {
+      URL.revokeObjectURL(url);
+      res(b || blob);
+    }, mime, quality);
+  });
+}
+
+// Send to Apps Script Vision endpoint
+async function sendToAppsScriptVision({ imageBlob, userEmail }) {
+  // compress if big
+  const compact = imageBlob.size > 900000 ? await downscaleImageBlob(imageBlob) : imageBlob;
+  const imageDataUrl = await blobToDataUrl(compact);
+
+  const headers = { 'Content-Type': 'application/json' };
+  if (typeof RH_SHARED_SECRET === 'string' && RH_SHARED_SECRET.length > 0) {
+    headers['X-RH-Token'] = RH_SHARED_SECRET;
+  }
+
+  const resp = await fetch(GAS_URL, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify({ userEmail, imageDataUrl })
+  });
+
+  const json = await resp.json().catch(() => ({ ok:false, error:'Invalid JSON from server' }));
+  if (!json.ok) throw new Error(json.error || 'Apps Script error');
+  return json.fields; // { customerNumber, name, address, zip, billPeriodEnd }
+}
 
   // --- OCR helper
   async function ocrImage(fileOrBlob) {
