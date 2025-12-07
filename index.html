@@ -301,9 +301,6 @@ async function sendToAppsScriptVision({ imageBlob, userEmail }) {
   const imageDataUrl = await blobToDataUrl(compact);
 
   const headers = { 'Content-Type': 'application/json' };
-  if (typeof RH_SHARED_SECRET === 'string' && RH_SHARED_SECRET.length > 0) {
-    headers['X-RH-Token'] = RH_SHARED_SECRET;
-  }
 
   const resp = await fetch(GAS_URL, {
     method: 'POST',
