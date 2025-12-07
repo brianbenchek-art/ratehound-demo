@@ -427,35 +427,42 @@ fileInput?.addEventListener('change', async () => {
     out.style.whiteSpace = 'pre-wrap';
     document.getElementById('m-upload').appendChild(out);
   }
-  out.textContent = '⏳ Reading your bill...';
+   out.textContent = '⏳ Reading your bill...';
 
   const timeout = new Promise((_, rej) =>
-    setTimeout(() => rej(new Error('OCR timeout')), 30000)
+    setTimeout(() => rej(new Error('Vision timeout')), 30000)
   );
 
   try {
-    const text = await Promise.race([ocrImage(ocrSource), timeout]);
-    const parsed = parseFields(text);
-    console.log('Parsed:', parsed);
+    const user = JSON.parse(sessionStorage.getItem('rh_user') || '{}');
+    const userEmail = user && user.email ? String(user.email) : '';
 
-    if (!parsed.customerNumber && !parsed.name) {
+    const fields = await Promise.race([
+      sendToAppsScriptVision({ imageBlob: ocrSource, userEmail }),
+      timeout
+    ]);
+
+    if (!fields || (!fields.customerNumber && !fields.name)) {
       out.textContent = '❌ Could not read bill details. Please retake or upload a clearer photo.';
       disableContinue();
       return;
     }
 
     out.textContent = [
-      `Customer number: ${parsed.customerNumber || '(missing)'}`,
-      `Name: ${parsed.name || ''}`,
-      `Address: ${parsed.address || ''}`,
-      `Zip: ${parsed.zip || ''}`,
-      `Bill period: ${parsed.billPeriodEnd || ''}`
+      `Customer number: ${fields.customerNumber || '(missing)'}`,
+      `Name: ${fields.name || ''}`,
+      `Address: ${fields.address || ''}`,
+      `Zip: ${fields.zip || ''}`,
+      `Bill period: ${fields.billPeriodEnd || ''}`
     ].join('\n');
+
+    // Save for later use on the results screen (optional)
+    window.__rh_fields = fields;
 
     enableContinue();
   } catch (err) {
-    console.error('OCR failed:', err);
-    out.textContent = '❌ Failed to read bill. Try again with better lighting or a PDF scan.';
+    console.error('Vision parse failed:', err);
+    out.textContent = '❌ Failed to read bill via Vision. Try again with better lighting or a PDF scan.';
     disableContinue();
   }
 });
