@@ -500,12 +500,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const t = (text || "").replace(/\r/g, "");
     const get = re => { const m = t.match(re); return m ? m.slice(1) : []; };
 
-    const [custNumRaw] =
-      get(/(?:Customer|Account)\s*Number[:\s]*([0][8][0]\d{17})\b/i) ||
-      get(/\b(080\d{17})\b/);
+   // Customer/Account Number: allow a space between 10+10 digit halves (e.g., "0804018172 4000024155")
+const [custNumRaw] =
+  get(/(?:Customer|Account)\s*Number[:\s]*((?:080\d{7,9})\s?\d{9,10})\b/i) ||
+  get(/\b(080\d{7,9}\s?\d{9,10})\b/);
 
-    const validCustomerNumber = !!(custNumRaw && /^080\d{17}$/.test(custNumRaw));
-    const customerNumber = validCustomerNumber ? custNumRaw : "";
+// normalize and validate to strict 20 digits starting with 080
+const normalized = (custNumRaw || '').replace(/\s+/g, '');
+const validCustomerNumber = /^080\d{17}$/.test(normalized);
+const customerNumber = validCustomerNumber ? normalized : '';
 
     const billBlockMatch = t.match(/Bill\s*for[:\s]*(.+?)(?:\n{2,}|Billing\s*Period|Bill\s*Date|Account\s*Number)/is);
     const billBlock = billBlockMatch ? billBlockMatch[1].trim() : "";
