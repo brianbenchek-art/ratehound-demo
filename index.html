@@ -591,25 +591,6 @@ fileInput?.addEventListener('change', async () => {
   }
 });
 </script>
-
-<!-- Ping button for testing -->
-<button id="pingBtn"
-  style="position:fixed;left:10px;bottom:10px;z-index:9999;
-         background:#134c07;color:#fff;border:none;border-radius:999px;
-         padding:8px 16px;font-weight:600">
-  Ping
-</button>
-<script>
-document.getElementById('pingBtn')?.addEventListener('click', async () => {
-  try {
-    const resp = await fetch('https://script.google.com/macros/s/AKfycbzBrrVkP9Ogv8UmZsmq5vxB8bkrnCzS1w5VU8XFEt6R8BgOMYuKGykFQfvJx1tf8YYn/exec');
-    const data = await resp.json();
-    alert(`✅ Ping OK\n\n${data.msg || JSON.stringify(data, null, 2)}`);
-  } catch (err) {
-    alert(`❌ Ping failed:\n${err}`);
-  }
-});
-</script>
 </body>
 </html>
 
