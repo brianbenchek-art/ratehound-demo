@@ -90,9 +90,7 @@
 <!-- libs -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.2.67/pdf.min.js"></script>
-<script>
-  pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.2.67/pdf.worker.min.js";
-</script>
+<script>pdfjsLib.GlobalWorkerOptions.workerSrc="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.2.67/pdf.worker.min.js";</script>
 <script src="https://unpkg.com/tesseract.js@4/dist/tesseract.min.js"></script>
 </head>
 <body>
@@ -126,13 +124,7 @@
       <button class="method" id="mBtnUpload">Upload / Take Photo</button>
 
       <div id="m-upload" class="panel" hidden>
-        <!-- NO 'capture' attribute → allows both file picker and camera -->
-        <input id="billFile"
-       type="file"
-       accept="image/*,application/pdf"
-       
-       aria-label="Upload or take a photo of your bill"
-       hidden>
+        <input id="billFile" type="file" accept="image/*,application/pdf" aria-label="Upload or take a photo of your bill" hidden>
         <img id="preview" class="preview" alt="Bill preview">
       </div>
 
@@ -183,7 +175,6 @@ document.addEventListener('DOMContentLoaded', () => {
   checkSignupFields();
 
   renderUserChip();
-
   function renderUserChip(){
     const chip = document.getElementById('userChip');
     try{
@@ -200,10 +191,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
   /* ---------- shadow account + toasts (demo) ---------- */
   const APP_LINK = '#';
-  // Google Apps Script Web App endpoint
-const GAS_URL = 'https://script.google.com/macros/s/AKfycbzBrrVkP9Ogv8UmZsmq5vxB8bkrnCzS1w5VU8XFEt6R8BgOMYuKGykFQfvJx1tf8YYn/exec';
-// Optional shared secret (must match RH_SHARED_SECRET in Script Properties, or leave blank)
-const RH_SHARED_SECRET = '9c7e51dff93b4c42ae4cdb1e8c4b9d21';
+  // GAS endpoint + optional shared secret
+  const GAS_URL = 'https://script.google.com/macros/s/AKfycbzBrrVkP9Ogv8UmZsmq5vxB8bkrnCzS1w5VU8XFEt6R8BgOMYuKGykFQfvJx1tf8YYn/exec';
+  const RH_SHARED_SECRET = '9c7e51dff93b4c42ae4cdb1e8c4b9d21';
 
   function createShadowAccount(){
     const user = {
@@ -226,10 +216,7 @@ const RH_SHARED_SECRET = '9c7e51dff93b4c42ae4cdb1e8c4b9d21';
     t.innerHTML = html;
     wrap.appendChild(t);
     requestAnimationFrame(() => t.classList.add('show'));
-    setTimeout(() => {
-      t.classList.remove('show');
-      setTimeout(() => t.remove(), 250);
-    }, ms);
+    setTimeout(() => { t.classList.remove('show'); setTimeout(() => t.remove(), 250); }, ms);
   }
 
   function sendDemoWelcome(user){
@@ -240,91 +227,71 @@ const RH_SHARED_SECRET = '9c7e51dff93b4c42ae4cdb1e8c4b9d21';
     showToast('Grab the app: <a href="'+APP_LINK+'" target="_blank" rel="noopener">RateHound App</a>', 7000);
   }
 
-  // --- PDF → first-page image for preview & OCR
-  async function pdfFirstPageAsImage(file, scale = 2) {
+  /* ---------- helpers (PDF/Images) ---------- */
+  async function pdfFirstPageAsImage(file, scale = 1.4) {
     const buf = await file.arrayBuffer();
     const pdf = await pdfjsLib.getDocument({ data: buf }).promise;
     const page = await pdf.getPage(1);
     const viewport = page.getViewport({ scale });
-
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
-    canvas.width = viewport.width;
-    canvas.height = viewport.height;
-
+    canvas.width = viewport.width; canvas.height = viewport.height;
     await page.render({ canvasContext: ctx, viewport }).promise;
     const blob = await new Promise(res => canvas.toBlob(res, 'image/png', 0.95));
     const dataUrl = canvas.toDataURL('image/png');
     return { blob, dataUrl };
   }
-  // Convert Blob → data URL
-async function blobToDataUrl(blob) {
-  return new Promise((res, rej) => {
-    const fr = new FileReader();
-    fr.onload = () => res(fr.result);
-    fr.onerror = rej;
-    fr.readAsDataURL(blob);
-  });
-}
 
-// Downscale large images to keep payload small (~0.3–1.0 MB)
-async function downscaleImageBlob(blob, maxDim = 2000, mime = 'image/jpeg', quality = 0.85) {
-  const img = document.createElement('img');
-  const url = URL.createObjectURL(blob);
-  await new Promise(r => { img.onload = r; img.src = url; });
-
-  const w = img.naturalWidth, h = img.naturalHeight;
-  let nw = w, nh = h;
-  if (Math.max(w, h) > maxDim) {
-    const k = maxDim / Math.max(w, h);
-    nw = Math.round(w * k);
-    nh = Math.round(h * k);
+  async function blobToDataUrl(blob){
+    return new Promise((res, rej) => {
+      const fr = new FileReader();
+      fr.onload = () => res(fr.result);
+      fr.onerror = rej;
+      fr.readAsDataURL(blob);
+    });
   }
 
-  const c = document.createElement('canvas');
-  c.width = nw; c.height = nh;
-  const ctx = c.getContext('2d');
-  ctx.drawImage(img, 0, 0, nw, nh);
+  async function downscaleImageBlob(blob, maxDim=1600, mime='image/jpeg', quality=0.82){
+    const img = document.createElement('img');
+    const url = URL.createObjectURL(blob);
+    await new Promise(r => { img.onload = r; img.src = url; });
+    const w=img.naturalWidth, h=img.naturalHeight;
+    let nw=w, nh=h;
+    if (Math.max(w,h)>maxDim){ const k=maxDim/Math.max(w,h); nw=Math.round(w*k); nh=Math.round(h*k); }
+    const c=document.createElement('canvas'); c.width=nw; c.height=nh;
+    c.getContext('2d').drawImage(img,0,0,nw,nh);
+    return new Promise(res => c.toBlob(b => { URL.revokeObjectURL(url); res(b||blob); }, mime, quality));
+  }
 
-  return new Promise(res => {
-    c.toBlob(b => {
-      URL.revokeObjectURL(url);
-      res(b || blob);
-    }, mime, quality);
-  });
-}
+  // Send to Apps Script Vision endpoint (text-first error reporting)
+  async function sendToAppsScriptVision({ imageBlob, userEmail }) {
+    const compact = imageBlob.size > 900000 ? await downscaleImageBlob(imageBlob) : imageBlob;
+    const imageDataUrl = await blobToDataUrl(compact);
 
-// Send to Apps Script Vision endpoint
-async function sendToAppsScriptVision({ imageBlob, userEmail }) {
-  // compress if big
-  const compact = imageBlob.size > 900000 ? await downscaleImageBlob(imageBlob) : imageBlob;
-  const imageDataUrl = await blobToDataUrl(compact);
+    const resp = await fetch(GAS_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userEmail, imageDataUrl, token: RH_SHARED_SECRET })
+    });
 
-  const headers = { 'Content-Type': 'application/json' };
+    const text = await resp.text();        // read text first
+    let json;
+    try { json = JSON.parse(text); }
+    catch { throw new Error(`Server returned non-JSON (${resp.status}): ${text.slice(0,180)}`); }
+    if (!json.ok) throw new Error(json.error || `Unknown server error (${resp.status})`);
+    return json.fields;
+  }
 
-  const resp = await fetch(GAS_URL, {
-    method: 'POST',
-    headers,
-    body: JSON.stringify({ userEmail, imageDataUrl, token: RH_SHARED_SECRET })
-  });
-
-  const json = await resp.json().catch(() => ({ ok:false, error:'Invalid JSON from server' }));
-  if (!json.ok) throw new Error('Server: ' + (json.error || 'Apps Script error'));
-  return json.fields; // { customerNumber, name, address, zip, billPeriodEnd }
-}
-
-  // --- OCR helper
-  async function ocrImage(fileOrBlob) {
-    const { data: { text } } = await Tesseract.recognize(fileOrBlob, 'eng', { logger: m => console.log(m) });
+  async function ocrImage(fileOrBlob){
+    const { data:{text} } = await Tesseract.recognize(fileOrBlob, 'eng', { logger:m=>console.log(m) });
     return text;
   }
 
-  // Go to upload page after signup
+  /* ---------- intake flow ---------- */
   signUpBtn.addEventListener('click', () => {
     if (signUpBtn.disabled) return;
     const user = createShadowAccount();
     sendDemoWelcome(user);
-
     signup.classList.remove('show');
     document.getElementById('upload').classList.add('show');
     uploadQueue = ['electric'];
@@ -333,13 +300,9 @@ async function sendToAppsScriptVision({ imageBlob, userEmail }) {
     window.scrollTo(0,0);
   });
 
-  /* ---------- intake ---------- */
-  const uploadPage  = document.getElementById('upload');
-  const titleEl     = document.getElementById('uploadTitle');
-
+  const titleEl = document.getElementById('uploadTitle');
   const mBtns   = { upload: document.getElementById('mBtnUpload') };
   const panels  = { upload: document.getElementById('m-upload') };
-
   const fileInput   = document.getElementById('billFile');
   const previewEl   = document.getElementById('preview');
   const continueBtn = document.getElementById('continueUpload');
@@ -354,10 +317,8 @@ async function sendToAppsScriptVision({ imageBlob, userEmail }) {
       ? 'Provide your electric account information.'
       : 'Upload your bill';
   }
-
   function enableContinue(){ continueBtn.classList.add('enabled'); continueBtn.style.opacity='1'; continueBtn.style.pointerEvents='auto'; }
   function disableContinue(){ continueBtn.classList.remove('enabled'); continueBtn.style.opacity='.5'; continueBtn.style.pointerEvents='none'; }
-
   function resetPanels(){
     Object.values(panels).forEach(p => p.hidden = true);
     Object.values(mBtns).forEach(b => b.classList.remove('selected'));
@@ -366,20 +327,14 @@ async function sendToAppsScriptVision({ imageBlob, userEmail }) {
     currentMethod = null;
     disableContinue();
   }
-
-function selectMethod(which){
-  resetPanels();
-  currentMethod = which;
-  mBtns[which].classList.add('selected');
-  panels[which].hidden = false;
-  validateUpload();
-}
-
-mBtns.upload.addEventListener('click', () => {
-  selectMethod('upload');   // shows the panel
-  fileInput.click();        // opens camera/file picker on user tap
-});
-
+  function selectMethod(which){
+    resetPanels();
+    currentMethod = which;
+    mBtns[which].classList.add('selected');
+    panels[which].hidden = false;
+    validateUpload();
+  }
+  mBtns.upload.addEventListener('click', () => { selectMethod('upload'); fileInput.click(); });
   function validateUpload(){
     if (currentMethod === 'upload'){
       const ok = !!fileInput.files?.[0];
@@ -388,96 +343,108 @@ mBtns.upload.addEventListener('click', () => {
     disableContinue();
   }
 
-fileInput?.addEventListener('change', async () => {
-  const f = fileInput.files?.[0];
-  if (lastThumbUrl) { URL.revokeObjectURL(lastThumbUrl); lastThumbUrl = null; }
+  fileInput?.addEventListener('change', async () => {
+    const f = fileInput.files?.[0];
+    if (lastThumbUrl) { URL.revokeObjectURL(lastThumbUrl); lastThumbUrl = null; }
 
-  if (!f) {
-    previewEl.style.display = 'none';
-    document.getElementById('parsedOut')?.remove();
-    disableContinue();
-    return;
-  }
-
-  let ocrSource = f;
-  if (f.type === 'application/pdf') {
-    try {
-      const { blob, dataUrl } = await pdfFirstPageAsImage(f, 1.4);
-      previewEl.src = dataUrl;
-      previewEl.style.display = 'block';
-      ocrSource = blob;
-    } catch (e) {
-      console.error('PDF render failed:', e);
+    if (!f) {
       previewEl.style.display = 'none';
-    }
-  } else {
-    lastThumbUrl = URL.createObjectURL(f);
-    previewEl.src = lastThumbUrl;
-    previewEl.style.display = 'block';
-  }
-
-  let out = document.getElementById('parsedOut');
-  if (!out) {
-    out = document.createElement('pre');
-    out.id = 'parsedOut';
-    out.className = 'hint';
-    out.style.whiteSpace = 'pre-wrap';
-    document.getElementById('m-upload').appendChild(out);
-  }
-   out.textContent = '⏳ Reading your bill...';
-
-  const timeout = new Promise((_, rej) =>
-    setTimeout(() => rej(new Error('Vision timeout')), 30000)
-  );
-
-  try {
-    const user = JSON.parse(sessionStorage.getItem('rh_user') || '{}');
-    const userEmail = user && user.email ? String(user.email) : '';
-
-    const fields = await Promise.race([
-      sendToAppsScriptVision({ imageBlob: ocrSource, userEmail }),
-      timeout
-    ]);
-
-    if (!fields || (!fields.customerNumber && !fields.name)) {
-      out.textContent = '❌ Could not read bill details. Please retake or upload a clearer photo.';
+      document.getElementById('parsedOut')?.remove();
       disableContinue();
       return;
     }
 
-    out.textContent = [
-      `Customer number: ${fields.customerNumber || '(missing)'}`,
-      `Name: ${fields.name || ''}`,
-      `Address: ${fields.address || ''}`,
-      `Zip: ${fields.zip || ''}`,
-      `Bill period: ${fields.billPeriodEnd || ''}`
-    ].join('\n');
+    let ocrSource = f;
+    if (f.type === 'application/pdf') {
+      try {
+        const { blob, dataUrl } = await pdfFirstPageAsImage(f, 1.4);
+        previewEl.src = dataUrl; previewEl.style.display = 'block';
+        ocrSource = blob;
+      } catch (e) {
+        console.error('PDF render failed:', e);
+        previewEl.style.display = 'none';
+      }
+    } else {
+      lastThumbUrl = URL.createObjectURL(f);
+      previewEl.src = lastThumbUrl; previewEl.style.display = 'block';
+    }
 
-    // Save for later use on the results screen (optional)
-    window.__rh_fields = fields;
+    let out = document.getElementById('parsedOut');
+    if (!out) {
+      out = document.createElement('pre');
+      out.id = 'parsedOut';
+      out.className = 'hint';
+      out.style.whiteSpace = 'pre-wrap';
+      document.getElementById('m-upload').appendChild(out);
+    }
+    out.textContent = '⏳ Reading your bill...';
 
-    enableContinue();
- } catch (err) {
-  console.error('Vision parse failed:', err);
-  out.textContent = '❌ ' + (err && err.message ? err.message : 'Failed to read bill via Vision.');
-  disableContinue();
-}
-});
+    const timeout = new Promise((_, rej) => setTimeout(() => rej(new Error('Vision timeout')), 30000));
 
+    try {
+      const user = JSON.parse(sessionStorage.getItem('rh_user') || '{}');
+      const userEmail = user && user.email ? String(user.email) : '';
+
+      const fields = await Promise.race([
+        sendToAppsScriptVision({ imageBlob: ocrSource, userEmail }),
+        timeout
+      ]);
+
+      if (!fields || (!fields.customerNumber && !fields.name)) {
+        out.textContent = '❌ Could not read bill details. Please retake or upload a clearer photo.';
+        disableContinue();
+        return;
+      }
+
+      out.textContent = [
+        `Customer number: ${fields.customerNumber || '(missing)'}`,
+        `Name: ${fields.name || ''}`,
+        `Address: ${fields.address || ''}`,
+        `Zip: ${fields.zip || ''}`,
+        `Bill period: ${fields.billPeriodEnd || ''}`
+      ].join('\n');
+
+      window.__rh_fields = fields;
+      enableContinue();
+
+    } catch (err) {
+      console.error('Vision parse failed:', err);
+
+      // Fallback: on-device OCR + regex parse
+      try {
+        const fallbackText = await ocrImage(ocrSource);
+        const guess = parseFields(fallbackText);
+        if (guess && (guess.customerNumber || guess.name || guess.zip)) {
+          out.textContent = [
+            '⚠️ Server failed; used on-device OCR.',
+            `Customer number: ${guess.customerNumber || '(missing)'}`,
+            `Name: ${guess.name || ''}`,
+            `Address: ${guess.address || ''}`,
+            `Zip: ${guess.zip || ''}`,
+            `Bill period: ${guess.billPeriodEnd || ''}`
+          ].join('\n');
+          window.__rh_fields = guess;
+          enableContinue();
+          return;
+        }
+      } catch (e2) { console.warn('Fallback OCR failed:', e2); }
+
+      out.textContent = '❌ ' + (err && err.message ? err.message : 'Failed to read bill via Vision.');
+      disableContinue();
+    }
+  });
+
+  /* ---------- fake results screen ---------- */
   continueBtn.addEventListener('click', () => {
     if (!continueBtn.classList.contains('enabled')) return;
-
-    // hide intake, show loader
     document.getElementById('upload').classList.remove('show');
     document.getElementById('loader').classList.add('show');
 
     if (window.lottie && !window.__loaderAnim){
       window.__loaderAnim = lottie.loadAnimation({
         container: document.getElementById('lottieContainer'),
-        renderer: 'svg',
-        loop: true,
-        autoplay: true,
-        path: 'loader.json'   // ensure this exists in your repo
+        renderer: 'svg', loop: true, autoplay: true,
+        path: 'loader.json'
       });
     } else if (window.__loaderAnim){
       window.__loaderAnim.play();
@@ -485,51 +452,31 @@ fileInput?.addEventListener('change', async () => {
     }
 
     window.scrollTo(0,0);
-
-    setTimeout(() => {
-      const currentKind = uploadQueue[uploadIndex] || 'electric';
-      showLoaderThen(currentKind);
-    }, 4000);
+    setTimeout(() => showLoaderThen(uploadQueue[uploadIndex] || 'electric'), 4000);
   });
 
   function showLoaderThen(kind){
     const results = document.getElementById('results');
     const box     = document.getElementById('resultsInner');
 
-    // Demo data
-    const planName   = 'ClearGuarantee9Plus';
-    const ptc        = '9.39¢ / kWh';
-    const newRate    = '4.79¢ / kWh';
-    const term       = '9 Months';
-    const etf        = '$150';
-    const estSavings = '45.1%';
+    const planName='ClearGuarantee9Plus', ptc='9.39¢ / kWh', newRate='4.79¢ / kWh', term='9 Months', etf='$150', estSavings='45.1%';
 
     box.innerHTML = `
       <div class="card">
         <div class="yellowBox--sm">Price to Compare: ${ptc}</div>
         <hr>
         <div class="leadGreen" style="margin:8px 0 10px">Here's the lowest rate we found for you.</div>
-
-        <div class="yellowBox--lg ratePill">
-          <div class="big">${newRate}</div>
-        </div>
-
+        <div class="yellowBox--lg ratePill"><div class="big">${newRate}</div></div>
         <div style="margin:10px 0 6px">
           <div style="font-weight:800;color:#134c07">Plan:</div>
           <div style="font-size:18px">${planName}</div>
         </div>
-
         <div class="row2" style="margin-top:8px">
           <div class="blk"><div style="font-weight:800;color:#134c07">Contract Term</div>${term}</div>
           <div class="blk"><div style="font-weight:800;color:#134c07">Early Termination Fee</div>${etf}</div>
         </div>
-
-        <div class="yellowBox--lg savingsPill">
-          Estimated Savings: <span class="big">${estSavings}</span>
-        </div>
-
+        <div class="yellowBox--lg savingsPill">Estimated Savings: <span class="big">${estSavings}</span></div>
         <button id="ctaSwitch" class="btn-cta">Switch me to this plan!</button>
-
         <hr style="margin:18px 0 10px">
         <div class="supplier" style="margin-top:0;display:flex;align-items:center;gap:12px;padding-top:12px;border-top:1px solid #e6e8eb">
           <img src="clearwater logo.png" alt="clearwater logo" style="height:40px">
@@ -539,22 +486,16 @@ fileInput?.addEventListener('change', async () => {
           <a href="#">Clearview Energy Terms &amp; Conditions</a><br>
           <a href="#">RateHound Terms of Service</a>
         </div>
-        <div class="disclaimer" style="margin-top:12px">
-          This rate will be effective following the first billing date after successful enrollment.
-        </div>
-      </div>
-    `;
-
+        <div class="disclaimer" style="margin-top:12px">This rate will be effective following the first billing date after successful enrollment.</div>
+      </div>`;
     document.getElementById('loader').classList.remove('show');
     results.style.display = 'flex';
-
-    const btn = box.querySelector('#ctaSwitch');
-    btn && btn.addEventListener('click', () =>
+    box.querySelector('#ctaSwitch')?.addEventListener('click', () =>
       (window.showToast ? showToast('Great — we’ll start the switch (demo).', 4200) : alert('Great — we’ll start the switch (demo).'))
     );
   }
 
-  /* ---- Parsing helpers (client-side fallback) ---- */
+  /* ---- client-side parsing fallback ---- */
   function parseFields(text){
     const t = (text || "").replace(/\r/g, "");
     const get = re => { const m = t.match(re); return m ? m.slice(1) : []; };
@@ -593,4 +534,3 @@ fileInput?.addEventListener('change', async () => {
 </script>
 </body>
 </html>
-
