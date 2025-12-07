@@ -286,7 +286,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const { data:{text} } = await Tesseract.recognize(fileOrBlob, 'eng', { logger:m=>console.log(m) });
     return text;
   }
-
+// -------- Customer number: 20 digits starting with 080 --------
+// Accepts spaces/newlines/OCR gaps between digits, then normalizes
+function extract080x20(text) {
+  const m = (text || '').match(/0\s*8\s*0(?:\s*\d){17}/i);
+  if (!m) return '';
+  const digits = m[0].replace(/\D/g, '');
+  return /^080\d{17}$/.test(digits) ? digits : '';
+}
   /* ---------- intake flow ---------- */
   signUpBtn.addEventListener('click', () => {
     if (signUpBtn.disabled) return;
@@ -510,12 +517,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // -------- Customer number: 20 digits starting with 080 --------
 // Accepts spaces, newlines, or OCR gaps between digits
-function extract080x20(text) {
-  const m = text.match(/0\s*8\s*0(?:\s*\d){17}/i);
-  if (!m) return '';
-  const digits = m[0].replace(/\D/g, '');
-  return /^080\d{17}$/.test(digits) ? digits : '';
-}
 
 const customerNumber = extract080x20(t);
 const validCustomerNumber = !!customerNumber;
