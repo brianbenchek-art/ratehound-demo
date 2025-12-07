@@ -305,7 +305,7 @@ async function sendToAppsScriptVision({ imageBlob, userEmail }) {
   const resp = await fetch(GAS_URL, {
     method: 'POST',
     headers,
-    body: JSON.stringify({ userEmail, imageDataUrl })
+    body: JSON.stringify({ userEmail, imageDataUrl, token: RH_SHARED_SECRET })
   });
 
   const json = await resp.json().catch(() => ({ ok:false, error:'Invalid JSON from server' }));
