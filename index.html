@@ -408,29 +408,37 @@ document.addEventListener('DOMContentLoaded', () => {
       enableContinue();
 
     } catch (err) {
-      console.error('Vision parse failed:', err);
-
-      // Fallback: on-device OCR + regex parse
-      try {
-        const fallbackText = await ocrImage(ocrSource);
-        const guess = parseFields(fallbackText);
-        if (guess && (guess.customerNumber || guess.name || guess.zip)) {
-          out.textContent = [
-            '⚠️ Server failed; used on-device OCR.',
-            `Customer number: ${guess.customerNumber || '(missing)'}`,
-            `Name: ${guess.name || ''}`,
-            `Address: ${guess.address || ''}`,
-            `Zip: ${guess.zip || ''}`,
-            `Bill period: ${guess.billPeriodEnd || ''}`
-          ].join('\n');
-          window.__rh_fields = guess;
-          enableContinue();
-          return;
-        }
-      } catch (e2) { console.warn('Fallback OCR failed:', e2); }
-
-      out.textContent = '❌ ' + (err && err.message ? err.message : 'Failed to read bill via Vision.');
+  console.warn('Vision parse failed, using on-device OCR:', err);
+  out.textContent = '⚠️ Server failed; using on-device OCR...';
+  try {
+    const text = await ocrImage(ocrSource);
+    const num = extract080x20(text);
+    if (!num) {
+      out.textContent += '\n❌ Could not find a valid 080xxxxxxxxxxxxxxxxx number.';
       disableContinue();
+      return;
+    }
+
+    const local = { 
+      customerNumber: num,
+      ...parseFields(text)
+    };
+
+    out.textContent = [
+      `Customer number: ${local.customerNumber}`,
+      `Name: ${local.name || ''}`,
+      `Address: ${local.address || ''}`,
+      `Zip: ${local.zip || ''}`,
+      `Bill period: ${local.billPeriodEnd || ''}`
+    ].join('\n');
+
+    window.__rh_fields = local;
+    enableContinue();
+  } catch (e2) {
+    out.textContent = '❌ Could not read the bill.';
+    disableContinue();
+  }
+    return; // prevent any old fallthrough code from running
     }
   });
 
@@ -500,16 +508,17 @@ document.addEventListener('DOMContentLoaded', () => {
     const t = (text || "").replace(/\r/g, "");
     const get = re => { const m = t.match(re); return m ? m.slice(1) : []; };
 
-   // Customer/Account Number: allow a space between 10+10 digit halves (e.g., "0804018172 4000024155")
-const [custNumRaw] =
-  get(/(?:Customer|Account)\s*Number[:\s]*((?:080\d{7,9})\s?\d{9,10})\b/i) ||
-  get(/\b(080\d{7,9}\s?\d{9,10})\b/);
+  // -------- Customer number: 20 digits starting with 080 --------
+// Accepts spaces, newlines, or OCR gaps between digits
+function extract080x20(text) {
+  const m = text.match(/0\s*8\s*0(?:\s*\d){17}/i);
+  if (!m) return '';
+  const digits = m[0].replace(/\D/g, '');
+  return /^080\d{17}$/.test(digits) ? digits : '';
+}
 
-// normalize and validate to strict 20 digits starting with 080
-const normalized = (custNumRaw || '').replace(/\s+/g, '');
-const validCustomerNumber = /^080\d{17}$/.test(normalized);
-const customerNumber = validCustomerNumber ? normalized : '';
-
+const customerNumber = extract080x20(t);
+const validCustomerNumber = !!customerNumber;
     const billBlockMatch = t.match(/Bill\s*for[:\s]*(.+?)(?:\n{2,}|Billing\s*Period|Bill\s*Date|Account\s*Number)/is);
     const billBlock = billBlockMatch ? billBlockMatch[1].trim() : "";
     const lines = billBlock.split(/\n/).map(s => s.trim()).filter(Boolean);
