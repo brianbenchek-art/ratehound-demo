@@ -200,6 +200,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
   /* ---------- shadow account + toasts (demo) ---------- */
   const APP_LINK = '#';
+  // Google Apps Script Web App endpoint
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbzBrrVkP9Ogv8UmZsmq5vxB8bkrnCzS1w5VU8XFEt6R8BgOMYuKGykFQfvJx1tf8YYn/exec';
+// Optional shared secret (must match RH_SHARED_SECRET in Script Properties, or leave blank)
+const RH_SHARED_SECRET = '';
 
   function createShadowAccount(){
     const user = {
