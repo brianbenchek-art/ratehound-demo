@@ -312,7 +312,7 @@ async function sendToAppsScriptVision({ imageBlob, userEmail }) {
   });
 
   const json = await resp.json().catch(() => ({ ok:false, error:'Invalid JSON from server' }));
-  if (!json.ok) throw new Error(json.error || 'Apps Script error');
+  if (!json.ok) throw new Error('Server: ' + (json.error || 'Apps Script error'));
   return json.fields; // { customerNumber, name, address, zip, billPeriodEnd }
 }
 
@@ -405,7 +405,7 @@ fileInput?.addEventListener('change', async () => {
   let ocrSource = f;
   if (f.type === 'application/pdf') {
     try {
-      const { blob, dataUrl } = await pdfFirstPageAsImage(f, 2);
+      const { blob, dataUrl } = await pdfFirstPageAsImage(f, 1.4);
       previewEl.src = dataUrl;
       previewEl.style.display = 'block';
       ocrSource = blob;
@@ -460,11 +460,11 @@ fileInput?.addEventListener('change', async () => {
     window.__rh_fields = fields;
 
     enableContinue();
-  } catch (err) {
-    console.error('Vision parse failed:', err);
-    out.textContent = '❌ Failed to read bill via Vision. Try again with better lighting or a PDF scan.';
-    disableContinue();
-  }
+ } catch (err) {
+  console.error('Vision parse failed:', err);
+  out.textContent = '❌ ' + (err && err.message ? err.message : 'Failed to read bill via Vision.');
+  disableContinue();
+}
 });
 
   continueBtn.addEventListener('click', () => {
