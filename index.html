@@ -513,7 +513,7 @@ function extract080x20(text) {
   /* ---- client-side parsing fallback ---- */
   function parseFields(text){
     const t = (text || "").replace(/\r/g, "");
-    const get = re => { const m = t.match(re); return m ? m.slice(1) : []; };
+  
 
   // -------- Customer number: 20 digits starting with 080 --------
 // Accepts spaces, newlines, or OCR gaps between digits
