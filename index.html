@@ -265,27 +265,36 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Send to Apps Script Vision endpoint (text-first error reporting)
   async function sendToAppsScriptVision({ imageBlob, userEmail }) {
-    const compact = imageBlob.size > 900000 ? await downscaleImageBlob(imageBlob) : imageBlob;
-    const imageDataUrl = await blobToDataUrl(compact);
+  // Downscale if large, then convert to data URL
+  const compact = imageBlob.size > 900000 ? await downscaleImageBlob(imageBlob) : imageBlob;
+  const imageDataUrl = await blobToDataUrl(compact);
 
-    const resp = await fetch(GAS_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ userEmail, imageDataUrl, token: RH_SHARED_SECRET })
-    });
+  const payload = { userEmail, imageDataUrl, token: RH_SHARED_SECRET };
 
-    const text = await resp.text();        // read text first
-    let json;
-    try { json = JSON.parse(text); }
-    catch { throw new Error(`Server returned non-JSON (${resp.status}): ${text.slice(0,180)}`); }
-    if (!json.ok) throw new Error(json.error || `Unknown server error (${resp.status})`);
-    return json.fields;
+  // Use text/plain to avoid CORS preflight
+  const resp = await fetch(GAS_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify(payload)
+  });
+
+  const text = await resp.text(); // read text first for better errors
+  let json;
+  try {
+    json = JSON.parse(text);
+  } catch (e) {
+    console.error('Apps Script returned non-JSON:', { status: resp.status, text });
+    throw new Error(`Server returned non-JSON (${resp.status}): ${text.slice(0,200)}`);
   }
 
-  async function ocrImage(fileOrBlob){
-    const { data:{text} } = await Tesseract.recognize(fileOrBlob, 'eng', { logger:m=>console.log(m) });
-    return text;
+  if (!json.ok) {
+    console.error('Apps Script error payload:', json);
+    throw new Error(json.error || `Unknown server error (${resp.status})`);
   }
+
+  console.log('Apps Script fields:', json.fields);
+  return json.fields;
+}
 // -------- Customer number: 20 digits starting with 080 --------
 // Accepts spaces/newlines/OCR gaps between digits, then normalizes
 function extract080x20(text) {
