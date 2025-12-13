@@ -298,7 +298,6 @@ document.addEventListener('DOMContentLoaded', () => {
     return json.fields;
   }
 
-  // 20-digit number starting with 080 (allow spacing)
   function extract080x20(text) {
     const m = (text || '').match(/0\s*8\s*0(?:\s*\d){17}/i);
     if (!m) return '';
@@ -315,7 +314,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('upload').classList.add('show');
     uploadQueue = ['electric'];
     setUploadTitleFor('electric');
-    selectMethod('upload');
+    // DO NOT auto-select or auto-open anything here.
     window.scrollTo(0,0);
   });
 
@@ -324,7 +323,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const panels  = { upload: document.getElementById('m-upload') };
   const fileInput   = document.getElementById('billFile');
   const previewEl   = document.getElementById('preview');
-  const continueBtnEl = document.getElementById('continueUpload'); /* renamed */
+  const continueBtnEl = document.getElementById('continueUpload');
 
   let uploadQueue = [];
   let uploadIndex = 0;
@@ -352,10 +351,14 @@ document.addEventListener('DOMContentLoaded', () => {
     mBtns[which].classList.add('selected');
     panels[which].hidden = false;
     validateUpload();
-    if (which === 'upload') fileInput.click();
+    // Do NOT auto-open file dialog here.
   }
 
-  mBtns.upload.addEventListener('click', () => { selectMethod('upload'); });
+  // Only open the file picker when user taps the button
+  mBtns.upload.addEventListener('click', () => { 
+    selectMethod('upload'); 
+    fileInput.click(); 
+  });
 
   function validateUpload(){
     if (currentMethod === 'upload'){
@@ -465,6 +468,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   /* ---------- fake results screen ---------- */
+  const continueBtnEl = document.getElementById('continueUpload');
   continueBtnEl.addEventListener('click', () => {
     if (!continueBtnEl.classList.contains('enabled')) return;
     document.getElementById('upload').classList.remove('show'); 
