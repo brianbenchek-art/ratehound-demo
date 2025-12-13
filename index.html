@@ -180,7 +180,7 @@ document.addEventListener('DOMContentLoaded', () => {
     try{
       const user = JSON.parse(sessionStorage.getItem('rh_user') || '{}');
       if (user && user.email) {
-        chip.textContent = `Signed in as ${user.email}`;
+        chip.textContent = Signed in as ${user.email};
         chip.hidden = false;
         document.body.classList.add('has-chip');
         document.getElementById('chipSafe').hidden = false;
@@ -192,7 +192,7 @@ document.addEventListener('DOMContentLoaded', () => {
   /* ---------- shadow account + toasts (demo) ---------- */
   const APP_LINK = '#';
   // GAS endpoint + optional shared secret
-  const GAS_URL = 'https://script.google.com/macros/s/AKfycbx1h5yCp1NoQQ_YnB1IOQfgJLX6JA312BcEjEXLS2JUovvKL6-paN3u2SPSiceYk3Jt/exec';     
+  const GAS_URL = 'https://script.google.com/macros/s/AKfycbyl5HwDc0MzkKZZsz1guTyvX0rOvjzMpB83ufmLtBmBVhqL5Wh3VBSaq-LCIJ7_hxsv/exec';     
   const RH_SHARED_SECRET = '9c7e51dff93b4c42ae4cdb1e8c4b9d21'; 
 
   function createShadowAccount(){
@@ -284,12 +284,12 @@ document.addEventListener('DOMContentLoaded', () => {
     json = JSON.parse(text);
   } catch (e) {
     console.error('Apps Script returned non-JSON:', { status: resp.status, text });
-    throw new Error(`Server returned non-JSON (${resp.status}): ${text.slice(0,200)}`);
+    throw new Error(Server returned non-JSON (${resp.status}): ${text.slice(0,200)});
   }
 
   if (!json.ok) {
     console.error('Apps Script error payload:', json);
-    throw new Error(json.error || `Unknown server error (${resp.status})`);
+    throw new Error(json.error || Unknown server error (${resp.status}));
   }
 
   console.log('Apps Script fields:', json.fields);
@@ -413,11 +413,11 @@ function extract080x20(text) {
       }
 
       out.textContent = [
-        `Customer number: ${fields.customerNumber || '(missing)'}`,
-        `Name: ${fields.name || ''}`,
-        `Address: ${fields.address || ''}`,
-        `Zip: ${fields.zip || ''}`,
-        `Bill period: ${fields.billPeriodEnd || ''}`
+        Customer number: ${fields.customerNumber || '(missing)'},
+        Name: ${fields.name || ''},
+        Address: ${fields.address || ''},
+        Zip: ${fields.zip || ''},
+        Bill period: ${fields.billPeriodEnd || ''}
       ].join('\n');
 
       window.__rh_fields = fields;
@@ -441,11 +441,11 @@ function extract080x20(text) {
     };
 
     out.textContent = [
-      `Customer number: ${local.customerNumber}`,
-      `Name: ${local.name || ''}`,
-      `Address: ${local.address || ''}`,
-      `Zip: ${local.zip || ''}`,
-      `Bill period: ${local.billPeriodEnd || ''}`
+      Customer number: ${local.customerNumber},
+      Name: ${local.name || ''},
+      Address: ${local.address || ''},
+      Zip: ${local.zip || ''},
+      Bill period: ${local.billPeriodEnd || ''}
     ].join('\n');
 
     window.__rh_fields = local;
@@ -485,7 +485,7 @@ function extract080x20(text) {
 
     const planName='ClearGuarantee9Plus', ptc='9.39¢ / kWh', newRate='4.79¢ / kWh', term='9 Months', etf='$150', estSavings='45.1%';
 
-    box.innerHTML = `
+    box.innerHTML = 
       <div class="card">
         <div class="yellowBox--sm">Price to Compare: ${ptc}</div>
         <hr>
@@ -511,7 +511,7 @@ function extract080x20(text) {
           <a href="#">RateHound Terms of Service</a>
         </div>
         <div class="disclaimer" style="margin-top:12px">This rate will be effective following the first billing date after successful enrollment.</div>
-      </div>`;
+      </div>;
     document.getElementById('loader').classList.remove('show');
     results.style.display = 'flex';
    box.querySelector('#ctaSwitch')?.addEventListener('click', () =>
@@ -546,7 +546,7 @@ const validCustomerNumber = !!customerNumber;
     if (bp) {
       const right = bp[2];
       const year  = bp[3] || new Date().getFullYear();
-      const endDate = new Date(`${right}, ${year}`);
+      const endDate = new Date(${right}, ${year});
       billPeriodEnd = endDate.toLocaleString('en-US', { month: 'short', day: 'numeric' });
     }
 
