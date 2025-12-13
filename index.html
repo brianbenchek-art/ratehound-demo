@@ -280,8 +280,16 @@ async function pdfFirstPageAsImage(file, scale = 1.4) {
   const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
   return { blob, dataUrl };
 }
-  }
-
+  
+// Convert Blob -> data: URL
+async function blobToDataUrl(blob){
+  return new Promise((res, rej) => {
+    const fr = new FileReader();
+    fr.onload = () => res(fr.result);
+    fr.onerror = rej;
+    fr.readAsDataURL(blob);
+  });
+}
   async function downscaleImageBlob(blob, maxDim=1600, mime='image/jpeg', quality=0.82){
     const img = document.createElement('img');
     const url = URL.createObjectURL(blob);
@@ -413,31 +421,44 @@ async function pdfFirstPageAsImage(file, scale = 1.4) {
     ? '⏳ Rendering PDF…'
     : '⏳ Reading your bill…';
 
-    // handle both images and PDFs
+
+// handle both images and PDFs
+console.log('Selected file:', f?.name, f?.type, f?.size);
 let ocrSource = f;
-if (f.type === 'application/pdf' || /\.pdf$/i.test(f.name)) {
+
+// broader check: accept real PDFs and .pdf extensions
+const looksPdf = f && (f.type === 'application/pdf' || /\.pdf$/i.test(f.name));
+
+if (looksPdf) {
   try {
+    console.log('Rendering first page of PDF…');
     const { blob, dataUrl } = await pdfFirstPageAsImage(f, 1.4);
     previewEl.src = dataUrl;
     previewEl.style.display = 'block';
     ocrSource = blob;
+    console.log('✅ PDF rendered, blob size:', blob.size);
   } catch (err) {
-  console.error('PDF render failed:', err);
-  previewEl.style.display = 'none';
+    console.error('❌ PDF render failed:', err?.name, err?.message, err);
+    previewEl.style.display = 'none';
 
-  let out = document.getElementById('parsedOut');
-  if (!out) {
-    out = document.createElement('pre');
-    out.id = 'parsedOut';
-    out.className = 'hint';
-    out.style.whiteSpace = 'pre-wrap';
-    document.getElementById('m-upload').appendChild(out);
+    let out = document.getElementById('parsedOut');
+    if (!out) {
+      out = document.createElement('pre');
+      out.id = 'parsedOut';
+      out.className = 'hint';
+      out.style.whiteSpace = 'pre-wrap';
+      document.getElementById('m-upload').appendChild(out);
+    }
+    out.textContent = `❌ Could not open that PDF (${err?.name || 'Error'}). ${err?.message || ''}`;
+    disableContinue();
+    return;
   }
-  out.textContent = `❌ Could not open that PDF (${err?.name || 'Error'}). ${err?.message || ''}`;
-  disableContinue();
-  return;
-}
 } else {
+  console.log('Treating as image file');
+  lastThumbUrl = URL.createObjectURL(f);
+  previewEl.src = lastThumbUrl;
+  previewEl.style.display = 'block';
+}
   lastThumbUrl = URL.createObjectURL(f);
   previewEl.src = lastThumbUrl;
   previewEl.style.display = 'block';
