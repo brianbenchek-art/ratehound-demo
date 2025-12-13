@@ -473,7 +473,7 @@ document.addEventListener('DOMContentLoaded', () => {
   /* ---------- fake results screen ---------- */
 continueBtn.addEventListener('click', () => {
   if (!continueBtn.classList.contains('enabled')) return;
-  document.getElementById('upload').classList.remove('show');
+  document.getElementById('upload').classList.remove('show'); 
   document.getElementById('loader').classList.add('show');
 
   if (window.lottie && !window.__loaderAnim){
