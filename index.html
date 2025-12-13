@@ -90,7 +90,6 @@
 <!-- libs -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.2.67/pdf.min.js"></script>
-<script>pdfjsLib.GlobalWorkerOptions.workerSrc="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.2.67/pdf.worker.min.js";</script>
 <script src="https://unpkg.com/tesseract.js@4/dist/tesseract.min.js"></script>
 </head>
 <body>
@@ -148,6 +147,15 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
+  /* ---------- PDF.js guarded bootstrap ---------- */
+  const PDFJS = window.pdfjsLib || window['pdfjs-dist/build/pdf'] || null;
+  if (PDFJS && PDFJS.GlobalWorkerOptions) {
+    PDFJS.GlobalWorkerOptions.workerSrc =
+      "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.2.67/pdf.worker.min.js";
+  } else {
+    console.warn('PDF.js not available; PDF uploads will be skipped.');
+  }
+
   /* ---------- splash → signup ---------- */
   const splash = document.getElementById('splash');
   const signup = document.getElementById('signup');
@@ -191,7 +199,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
   /* ---------- shadow account + toasts (demo) ---------- */
   const APP_LINK = '#';
-  // GAS endpoint + optional shared secret
   const GAS_URL = 'https://script.google.com/macros/s/AKfycbyl5HwDc0MzkKZZsz1guTyvX0rOvjzMpB83ufmLtBmBVhqL5Wh3VBSaq-LCIJ7_hxsv/exec';
   const RH_SHARED_SECRET = '9c7e51dff93b4c42ae4cdb1e8c4b9d21';
 
@@ -228,18 +235,16 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   /* ---------- helpers (PDF/Images) ---------- */
-
-  // PDF → first-page JPEG data (smaller than PNG)
   async function pdfFirstPageAsImage(file, scale = 1.4) {
+    if (!PDFJS) throw new Error('PDF.js not loaded');
     const buf = await file.arrayBuffer();
-    const pdf = await pdfjsLib.getDocument({ data: buf }).promise;
+    const pdf = await PDFJS.getDocument({ data: buf }).promise;
     const page = await pdf.getPage(1);
     const viewport = page.getViewport({ scale });
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d', { willReadFrequently: true });
     canvas.width = viewport.width; canvas.height = viewport.height;
     await page.render({ canvasContext: ctx, viewport }).promise;
-    // JPEG for size; ~0.9 quality strikes a balance
     const blob = await new Promise(res => canvas.toBlob(res, 'image/jpeg', 0.9));
     const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
     return { blob, dataUrl };
@@ -266,15 +271,11 @@ document.addEventListener('DOMContentLoaded', () => {
     return new Promise(res => c.toBlob(b => { URL.revokeObjectURL(url); res(b||blob); }, mime, quality));
   }
 
-  // On-device OCR fallback (Tesseract.js)
   async function ocrImage(blob) {
-    const { data } = await Tesseract.recognize(blob, 'eng', {
-      // logger: m => console.debug('[tesseract]', m)  // optional
-    });
+    const { data } = await Tesseract.recognize(blob, 'eng', {});
     return (data && data.text) ? data.text : '';
   }
 
-  // Send to Apps Script Vision endpoint (server OCR → OpenAI)
   async function sendToAppsScriptVision({ imageBlob, userEmail }) {
     const compact = imageBlob.size > 900000 ? await downscaleImageBlob(imageBlob) : imageBlob;
     const imageDataUrl = await blobToDataUrl(compact);
@@ -289,22 +290,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const text = await resp.text();
     let json;
-    try {
-      json = JSON.parse(text);
-    } catch (e) {
+    try { json = JSON.parse(text); } catch {
       console.error('Apps Script returned non-JSON:', { status: resp.status, text });
-      throw new Error(`Server returned non-JSON (${resp.status}): ${text.slice(0,200)}`);
+      throw new Error(`Server returned non-JSON (${resp.status})`);
     }
-
-    if (!json.ok) {
-      console.error('Apps Script error payload:', json);
-      throw new Error(json.error || `Unknown server error (${resp.status})`);
-    }
-
+    if (!json.ok) throw new Error(json.error || `Unknown server error (${resp.status})`);
     return json.fields;
   }
 
-  // -------- Customer number extractor: 20 digits starting with 080 --------
+  // 20-digit number starting with 080 (allow spacing)
   function extract080x20(text) {
     const m = (text || '').match(/0\s*8\s*0(?:\s*\d){17}/i);
     if (!m) return '';
@@ -330,7 +324,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const panels  = { upload: document.getElementById('m-upload') };
   const fileInput   = document.getElementById('billFile');
   const previewEl   = document.getElementById('preview');
-  const continueBtn = document.getElementById('continueUpload');
+  const continueBtnEl = document.getElementById('continueUpload'); /* renamed */
 
   let uploadQueue = [];
   let uploadIndex = 0;
@@ -342,8 +336,8 @@ document.addEventListener('DOMContentLoaded', () => {
       ? 'Provide your electric account information.'
       : 'Upload your bill';
   }
-  function enableContinue(){ continueBtn.classList.add('enabled'); continueBtn.style.opacity='1'; continueBtn.style.pointerEvents='auto'; }
-  function disableContinue(){ continueBtn.classList.remove('enabled'); continueBtn.style.opacity='.5'; continueBtn.style.pointerEvents='none'; }
+  function enableContinue(){ continueBtnEl.classList.add('enabled'); continueBtnEl.style.opacity='1'; continueBtnEl.style.pointerEvents='auto'; }
+  function disableContinue(){ continueBtnEl.classList.remove('enabled'); continueBtnEl.style.opacity='.5'; continueBtnEl.style.pointerEvents='none'; }
   function resetPanels(){
     Object.values(panels).forEach(p => p.hidden = true);
     Object.values(mBtns).forEach(b => b.classList.remove('selected'));
@@ -471,25 +465,25 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   /* ---------- fake results screen ---------- */
-continueBtn.addEventListener('click', () => {
-  if (!continueBtn.classList.contains('enabled')) return;
-  document.getElementById('upload').classList.remove('show'); 
-  document.getElementById('loader').classList.add('show');
+  continueBtnEl.addEventListener('click', () => {
+    if (!continueBtnEl.classList.contains('enabled')) return;
+    document.getElementById('upload').classList.remove('show'); 
+    document.getElementById('loader').classList.add('show');
 
-  if (window.lottie && !window.__loaderAnim){
-    window.__loaderAnim = lottie.loadAnimation({
-      container: document.getElementById('lottieContainer'),
-      renderer: 'svg', loop: true, autoplay: true,
-      path: 'loader.json'
-    });
-  } else if (window.__loaderAnim){
-    window.__loaderAnim.play();
-    window.__loaderAnim.resize && window.__loaderAnim.resize();
-  }
+    if (window.lottie && !window.__loaderAnim){
+      window.__loaderAnim = lottie.loadAnimation({
+        container: document.getElementById('lottieContainer'),
+        renderer: 'svg', loop: true, autoplay: true,
+        path: 'loader.json'
+      });
+    } else if (window.__loaderAnim){
+      window.__loaderAnim.play();
+      window.__loaderAnim.resize && window.__loaderAnim.resize();
+    }
 
-  window.scrollTo(0,0);
-  setTimeout(() => showLoaderThen(uploadQueue[uploadIndex] || 'electric'), 4000);
-});
+    window.scrollTo(0,0);
+    setTimeout(() => showLoaderThen(uploadQueue[uploadIndex] || 'electric'), 4000);
+  });
 
   function showLoaderThen(kind){
     const results = document.getElementById('results');
@@ -535,7 +529,6 @@ continueBtn.addEventListener('click', () => {
   function parseFields(text){
     const t = (text || "").replace(/\r/g, "");
 
-    // normalize customer number (already extracted separately)
     const customerNumber = extract080x20(t);
     const validCustomerNumber = !!customerNumber;
 
