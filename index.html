@@ -89,7 +89,14 @@
 
 <!-- libs -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js"></script>
-<!-- Removed pdf.js for this revert -->
+
+<!-- Add pdf.js just below lottie -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.2.67/pdf.min.js"></script>
+<script>
+  pdfjsLib.GlobalWorkerOptions.workerSrc =
+    "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.2.67/pdf.worker.min.js";
+</script>
+
 <script src="https://unpkg.com/tesseract.js@4/dist/tesseract.min.js"></script>
 </head>
 <body>
@@ -225,7 +232,22 @@ document.addEventListener('DOMContentLoaded', () => {
     showToast('Your username is <strong>' + user.email + '</strong>.', 4000);
     showToast('Grab the app: <a href="'+APP_LINK+'" target="_blank" rel="noopener">RateHound App</a>', 7000);
   }
-
+/* ---------- helpers (PDF/Images) ---------- */
+// PDF → first-page JPEG blob + data URL
+async function pdfFirstPageAsImage(file, scale = 1.4) {
+  const buf = await file.arrayBuffer();
+  const pdf = await pdfjsLib.getDocument({ data: buf }).promise;
+  const page = await pdf.getPage(1);
+  const viewport = page.getViewport({ scale });
+  const canvas = document.createElement('canvas');
+  const ctx = canvas.getContext('2d', { willReadFrequently: true });
+  canvas.width = viewport.width;
+  canvas.height = viewport.height;
+  await page.render({ canvasContext: ctx, viewport }).promise;
+  const blob = await new Promise(res => canvas.toBlob(res, 'image/jpeg', 0.9));
+  const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
+  return { blob, dataUrl };
+}
   /* ---------- helpers (images only) ---------- */
   async function blobToDataUrl(blob){
     return new Promise((res, rej) => {
@@ -355,9 +377,26 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    // images only in this revert
-    lastThumbUrl = URL.createObjectURL(f);
-    previewEl.src = lastThumbUrl; previewEl.style.display = 'block';
+    // handle both images and PDFs
+let ocrSource = f;
+
+if (f.type === 'application/pdf') {
+  try {
+    const { blob, dataUrl } = await pdfFirstPageAsImage(f, 1.4);
+    previewEl.src = dataUrl;
+    previewEl.style.display = 'block';
+    ocrSource = blob;
+  } catch (err) {
+    console.error('PDF render failed:', err);
+    previewEl.style.display = 'none';
+    disableContinue();
+    return;
+  }
+} else {
+  lastThumbUrl = URL.createObjectURL(f);
+  previewEl.src = lastThumbUrl;
+  previewEl.style.display = 'block';
+}
 
     let out = document.getElementById('parsedOut');
     if (!out) {
