@@ -271,7 +271,7 @@ async function pdfFirstPageAsImage(file, scale = 1.4) {
   }
 
   // Send to Apps Script Vision endpoint
-  async function sendToAppsScriptVision({ imageBlob: ocrSource, userEmail }), {
+  async function sendToAppsScriptVision({ imageBlob, userEmail }) {
     const compact = imageBlob.size > 900000 ? await downscaleImageBlob(imageBlob) : imageBlob;
     const imageDataUrl = await blobToDataUrl(compact);
 
@@ -415,7 +415,7 @@ if (f.type === 'application/pdf') {
       const userEmail = user && user.email ? String(user.email) : '';
 
       const fields = await Promise.race([
-        sendToAppsScriptVision({ imageBlob: f, userEmail }),
+        sendToAppsScriptVision({ imageBlob: ocrSource, userEmail }),
         timeout
       ]);
 
