@@ -1,10 +1,10 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>RateHound</title>
-<meta name="theme-color" content="#134c07">
+<meta name="theme-color" content="#134c07" />
 <style>
   :root{--brand:#134c07;--ink:#134c07;--muted:#6b7280;--border:#134c07}
   *{box-sizing:border-box}
@@ -12,17 +12,13 @@
   body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Arial}
 
   .vh{height:100vh}
-  @supports (height:100dvh){ .vh{height:100dvh} }
-  @supports (height:100svh){ .vh{height:100svh} }
+  @supports(height:100dvh){.vh{height:100dvh}}
+  @supports(height:100svh){.vh{height:100svh}}
 
   /* SPLASH */
-  #splash{
-    background:var(--brand); color:#fff;
-    display:flex; align-items:center; justify-content:center; text-align:center;
-  }
+  #splash{background:var(--brand);color:#fff;display:flex;align-items:center;justify-content:center;text-align:center}
   #splash .inner{width:90%;max-width:420px;display:flex;flex-direction:column;gap:24px;align-items:center}
   .logo{width:180px;height:auto;display:block}
-
   .fade{opacity:1;transition:opacity .45s ease}
   .fade.out{opacity:0;pointer-events:none}
 
@@ -32,7 +28,6 @@
   #signup .inner{margin:0 auto;width:min(92%,420px);padding:28px 16px;display:flex;flex-direction:column;gap:14px}
   #signup .inner h1{margin:0 0 12px;font-size:26px;font-weight:700;text-align:center;color:var(--ink)}
   .field{width:100%;padding:12px 14px;border:2px solid var(--border);border-radius:12px;background:#fff;color:var(--ink);font-size:16px}
-
   #signUpBtn:disabled{opacity:.5;cursor:not-allowed}
   #signUpBtn{background:var(--brand);color:#fff;font-size:20px;padding:16px 20px;border:none;border-radius:999px;font-weight:700;cursor:pointer}
   #signUpBtn:active{background:#0f3a05;transform:scale(.98)}
@@ -45,24 +40,24 @@
   .toast.show{opacity:1;transform:translateY(0)}
   .toast a{color:#fff;text-decoration:underline;font-weight:600}
 
-  /* UPLOAD (Account intake) */
+  /* UPLOAD */
   #upload{background:#fff;color:var(--ink);display:none}
   #upload.show{display:flex}
   #upload .inner{margin:0 auto;width:min(92%,420px);padding:28px 16px;display:flex;flex-direction:column;gap:16px;justify-content:flex-start;min-height:100vh;margin-top:5vh}
   #upload h1{margin:0 0 8px;font-size:26px;font-weight:700;text-align:center}
-  .method{width:100%;height:8vh;min-height:64px;display:flex;align-items:center;justify-content:center;border:2px solid var(--brand);background:#fff;color:var(--brand);border-radius:12px;font-weight:600;font-size:18px;margin-top:10px}
+  .method{width:100%;height:8vh;min-height:64px;display:flex;align-items:center;justify-content:center;border:2px solid var(--brand);background:#fff;color:var(--brand);border-radius:12px;font-weight:600;font-size:18px;margin-top:10px;cursor:pointer}
   .method.selected{background:var(--brand);color:#fff}
   .panel[hidden]{display:none}
   .preview{display:none;width:100%;max-height:300px;object-fit:contain;border:1px solid var(--border);border-radius:8px}
   #continueUpload{background:var(--brand);color:#fff;border:none;border-radius:999px;font-size:20px;padding:16px 20px;opacity:.5;pointer-events:none}
   #continueUpload.enabled{opacity:1;pointer-events:auto}
 
-  /* Loader page */
+  /* Loader */
   #loader{position:fixed;inset:0;z-index:999;background:var(--brand)!important;display:none;justify-content:center;align-items:center;width:100%;height:100svh}
   #loader.show{display:flex}
   #lottieContainer, #lottieContainer>div, #lottieContainer canvas, #lottieContainer svg{background:transparent!important;width:100%!important;height:100%!important;display:block}
 
-  /* RESULTS card */
+  /* RESULTS */
   #results{background:#f6f7f8;color:var(--ink);display:none}
   #results .inner{margin:5vh auto 0;width:min(92%,420px);padding:28px 16px;display:flex;flex-direction:column;gap:16px}
   .card{background:#fff;border:1px solid var(--border);border-radius:16px;padding:20px;box-shadow:0 1px 2px rgba(0,0,0,.03)}
@@ -90,7 +85,7 @@
 <!-- libs -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.2.67/pdf.min.js"></script>
-<script>pdfjsLib.GlobalWorkerOptions.workerSrc="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.2.67/pdf.worker.min.js";</script>
+<!-- no inline workerSrc here; set safely in JS after load -->
 <script src="https://unpkg.com/tesseract.js@4/dist/tesseract.min.js"></script>
 </head>
 <body>
@@ -100,23 +95,23 @@
   <!-- Splash -->
   <section id="splash" class="vh fade">
     <div class="inner">
-      <img class="logo" src="logo.png" alt="RateHound">
+      <img class="logo" src="logo.png" alt="RateHound" />
     </div>
   </section>
 
-  <!-- Signup landing -->
+  <!-- Signup -->
   <section id="signup" class="vh">
     <div class="inner">
       <h1>Get ready to save on your electric bill!</h1>
-      <input class="field" id="name"  placeholder="Full name" autocomplete="name"  inputmode="text">
-      <input class="field" id="phone" placeholder="Phone"     autocomplete="tel"   inputmode="tel">
-      <input class="field" id="email" placeholder="Email"     type="email"         autocomplete="email">
+      <input class="field" id="name"  placeholder="Full name" autocomplete="name" inputmode="text" />
+      <input class="field" id="phone" placeholder="Phone" autocomplete="tel" inputmode="tel" />
+      <input class="field" id="email" placeholder="Email" type="email" autocomplete="email" />
       <button class="btn" id="signUpBtn" disabled>Sign up</button>
       <p class="hint">Demo only. No data is sent or stored.</p>
     </div>
   </section>
 
-  <!-- PAGE — Account intake -->
+  <!-- Upload -->
   <section id="upload" class="vh">
     <div class="inner">
       <h1 id="uploadTitle">Provide a copy of your most recent electric bill.</h1>
@@ -124,8 +119,8 @@
       <button class="method" id="mBtnUpload">Upload / Take Photo</button>
 
       <div id="m-upload" class="panel" hidden>
-        <input id="billFile" type="file" accept="image/*,application/pdf" aria-label="Upload or take a photo of your bill" hidden>
-        <img id="preview" class="preview" alt="Bill preview">
+        <input id="billFile" type="file" accept="image/*,application/pdf" aria-label="Upload or take a photo of your bill" hidden />
+        <img id="preview" class="preview" alt="Bill preview" />
       </div>
 
       <button class="btn" id="continueUpload">Continue</button>
@@ -133,12 +128,12 @@
     </div>
   </section>
 
-  <!-- RESULTS -->
+  <!-- Results -->
   <section id="results" class="vh" style="display:none">
     <div class="inner" id="resultsInner"></div>
   </section>
 
-  <!-- Loader Page -->
+  <!-- Loader -->
   <section id="loader" class="vh">
     <div id="lottieContainer"></div>
   </section>
@@ -148,6 +143,14 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
+  /* ---------- PDF.js guarded init ---------- */
+  const PDFJS = window.pdfjsLib || window['pdfjs-dist/build/pdf'] || null;
+  if (PDFJS && PDFJS.GlobalWorkerOptions) {
+    PDFJS.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.2.67/pdf.worker.min.js";
+  } else {
+    console.warn('PDF.js not available; PDF uploads will be skipped.');
+  }
+
   /* ---------- splash → signup ---------- */
   const splash = document.getElementById('splash');
   const signup = document.getElementById('signup');
@@ -155,7 +158,7 @@ document.addEventListener('DOMContentLoaded', () => {
   setTimeout(() => {
     splash.classList.add('out');
     setTimeout(() => { splash.style.display = 'none'; signup.classList.add('show'); }, 450);
-  }, 2300);
+  }, 1200);
 
   splash.addEventListener('click', () => {
     splash.classList.add('out');
@@ -180,7 +183,7 @@ document.addEventListener('DOMContentLoaded', () => {
     try{
       const user = JSON.parse(sessionStorage.getItem('rh_user') || '{}');
       if (user && user.email) {
-        chip.textContent = Signed in as ${user.email};
+        chip.textContent = `Signed in as ${user.email}`;
         chip.hidden = false;
         document.body.classList.add('has-chip');
         document.getElementById('chipSafe').hidden = false;
@@ -191,9 +194,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
   /* ---------- shadow account + toasts (demo) ---------- */
   const APP_LINK = '#';
-  // GAS endpoint + optional shared secret
-  const GAS_URL = 'https://script.google.com/macros/s/AKfycbyl5HwDc0MzkKZZsz1guTyvX0rOvjzMpB83ufmLtBmBVhqL5Wh3VBSaq-LCIJ7_hxsv/exec';      
-  const RH_SHARED_SECRET = '9c7e51dff93b4c42ae4cdb1e8c4b9d21'; 
+  const GAS_URL = 'https://script.google.com/macros/s/AKfycbyl5HwDc0MzkKZZsz1guTyvX0rOvjzMpB83ufmLtBmBVhqL5Wh3VBSaq-LCIJ7_hxsv/exec';
+  const RH_SHARED_SECRET = '9c7e51dff93b4c42ae4cdb1e8c4b9d21';
 
   function createShadowAccount(){
     const user = {
@@ -227,18 +229,19 @@ document.addEventListener('DOMContentLoaded', () => {
     showToast('Grab the app: <a href="'+APP_LINK+'" target="_blank" rel="noopener">RateHound App</a>', 7000);
   }
 
-  /* ---------- helpers (PDF/Images) ---------- */
+  /* ---------- helpers (PDF/Images/OCR) ---------- */
   async function pdfFirstPageAsImage(file, scale = 1.4) {
+    if (!PDFJS) throw new Error('PDF.js not loaded');
     const buf = await file.arrayBuffer();
-    const pdf = await pdfjsLib.getDocument({ data: buf }).promise;
+    const pdf = await PDFJS.getDocument({ data: buf }).promise;
     const page = await pdf.getPage(1);
     const viewport = page.getViewport({ scale });
     const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d');
+    const ctx = canvas.getContext('2d', { willReadFrequently: true });
     canvas.width = viewport.width; canvas.height = viewport.height;
     await page.render({ canvasContext: ctx, viewport }).promise;
-    const blob = await new Promise(res => canvas.toBlob(res, 'image/png', 0.95));
-    const dataUrl = canvas.toDataURL('image/png');
+    const blob = await new Promise(res => canvas.toBlob(res, 'image/jpeg', 0.9));
+    const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
     return { blob, dataUrl };
   }
 
@@ -263,46 +266,41 @@ document.addEventListener('DOMContentLoaded', () => {
     return new Promise(res => c.toBlob(b => { URL.revokeObjectURL(url); res(b||blob); }, mime, quality));
   }
 
-  // Send to Apps Script Vision endpoint (text-first error reporting)
+  async function ocrImage(blob) {
+    const { data } = await Tesseract.recognize(blob, 'eng');
+    return (data && data.text) ? data.text : '';
+  }
+
   async function sendToAppsScriptVision({ imageBlob, userEmail }) {
-  // Downscale if large, then convert to data URL
-  const compact = imageBlob.size > 900000 ? await downscaleImageBlob(imageBlob) : imageBlob;
-  const imageDataUrl = await blobToDataUrl(compact);
+    const compact = imageBlob.size > 900000 ? await downscaleImageBlob(imageBlob) : imageBlob;
+    const imageDataUrl = await blobToDataUrl(compact);
 
-  const payload = { userEmail, imageDataUrl, token: RH_SHARED_SECRET };
+    const payload = { userEmail, imageDataUrl, token: RH_SHARED_SECRET };
 
-  // Use text/plain to avoid CORS preflight
-  const resp = await fetch(GAS_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-    body: JSON.stringify(payload)
-  });
+    const resp = await fetch(GAS_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify(payload)
+    });
 
-  const text = await resp.text(); // read text first for better errors
-  let json;
-  try {
-    json = JSON.parse(text);
-  } catch (e) {
-    console.error('Apps Script returned non-JSON:', { status: resp.status, text });
-    throw new Error(Server returned non-JSON (${resp.status}): ${text.slice(0,200)});
+    const text = await resp.text();
+    let json;
+    try { json = JSON.parse(text); }
+    catch {
+      console.error('Apps Script returned non-JSON:', { status: resp.status, text });
+      throw new Error(`Server returned non-JSON (${resp.status})`);
+    }
+    if (!json.ok) throw new Error(json.error || 'Server error');
+    return json.fields;
   }
 
-  if (!json.ok) {
-    console.error('Apps Script error payload:', json);
-    throw new Error(json.error || Unknown server error (${resp.status}));
+  function extract080x20(text) {
+    const m = (text || '').match(/0\s*8\s*0(?:\s*\d){17}/i);
+    if (!m) return '';
+    const digits = m[0].replace(/\D/g, '');
+    return /^080\d{17}$/.test(digits) ? digits : '';
   }
 
-  console.log('Apps Script fields:', json.fields);
-  return json.fields;
-}
-// -------- Customer number: 20 digits starting with 080 --------
-// Accepts spaces/newlines/OCR gaps between digits, then normalizes
-function extract080x20(text) {
-  const m = (text || '').match(/0\s*8\s*0(?:\s*\d){17}/i);
-  if (!m) return '';
-  const digits = m[0].replace(/\D/g, '');
-  return /^080\d{17}$/.test(digits) ? digits : '';
-}
   /* ---------- intake flow ---------- */
   signUpBtn.addEventListener('click', () => {
     if (signUpBtn.disabled) return;
@@ -312,13 +310,13 @@ function extract080x20(text) {
     document.getElementById('upload').classList.add('show');
     uploadQueue = ['electric'];
     setUploadTitleFor('electric');
-    selectMethod('upload');
+    /* no auto-select on load */
     window.scrollTo(0,0);
   });
 
-  const titleEl = document.getElementById('uploadTitle');
-  const mBtns   = { upload: document.getElementById('mBtnUpload') };
-  const panels  = { upload: document.getElementById('m-upload') };
+  const titleEl     = document.getElementById('uploadTitle');
+  const mBtns       = { upload: document.getElementById('mBtnUpload') };
+  const panels      = { upload: document.getElementById('m-upload') };
   const fileInput   = document.getElementById('billFile');
   const previewEl   = document.getElementById('preview');
   const continueBtn = document.getElementById('continueUpload');
@@ -350,7 +348,10 @@ function extract080x20(text) {
     panels[which].hidden = false;
     validateUpload();
   }
+
+  // Only this click opens the file picker
   mBtns.upload.addEventListener('click', () => { selectMethod('upload'); fileInput.click(); });
+
   function validateUpload(){
     if (currentMethod === 'upload'){
       const ok = !!fileInput.files?.[0];
@@ -371,7 +372,7 @@ function extract080x20(text) {
     }
 
     let ocrSource = f;
-    if (f.type === 'application/pdf') {
+    if (f.type === 'application/pdf' && PDFJS) {
       try {
         const { blob, dataUrl } = await pdfFirstPageAsImage(f, 1.4);
         previewEl.src = dataUrl; previewEl.style.display = 'block';
@@ -413,52 +414,46 @@ function extract080x20(text) {
       }
 
       out.textContent = [
-        Customer number: ${fields.customerNumber || '(missing)'},
-        Name: ${fields.name || ''},
-        Address: ${fields.address || ''},
-        Zip: ${fields.zip || ''},
-        Bill period: ${fields.billPeriodEnd || ''}
+        `Customer number: ${fields.customerNumber || '(missing)'}`,
+        `Name: ${fields.name || ''}`,
+        `Address: ${fields.address || ''}`,
+        `Zip: ${fields.zip || ''}`,
+        `Bill period: ${fields.billPeriodEnd || ''}`
       ].join('\n');
 
       window.__rh_fields = fields;
       enableContinue();
 
     } catch (err) {
-  console.warn('Vision parse failed, using on-device OCR:', err);
-  out.textContent = '⚠️ Server failed; using on-device OCR...';
-  try {
-    const text = await ocrImage(ocrSource);
-    const num = extract080x20(text);
-    if (!num) {
-      out.textContent += '\n❌ Could not find a valid 080xxxxxxxxxxxxxxxxx number.';
-      disableContinue();
+      console.warn('Vision parse failed, using on-device OCR:', err);
+      out.textContent = '⚠️ Server failed; using on-device OCR...';
+      try {
+        const text = await ocrImage(ocrSource);
+        const num = extract080x20(text);
+        if (!num) {
+          out.textContent += '\n❌ Could not find a valid 080xxxxxxxxxxxxxxxxx number.';
+          disableContinue();
+          return;
+        }
+        const local = { customerNumber: num, ...parseFields(text) };
+        out.textContent = [
+          `Customer number: ${local.customerNumber}`,
+          `Name: ${local.name || ''}`,
+          `Address: ${local.address || ''}`,
+          `Zip: ${local.zip || ''}`,
+          `Bill period: ${local.billPeriodEnd || ''}`
+        ].join('\n');
+        window.__rh_fields = local;
+        enableContinue();
+      } catch (e2) {
+        out.textContent = '❌ Could not read the bill.';
+        disableContinue();
+      }
       return;
-    }
-
-    const local = { 
-      customerNumber: num,
-      ...parseFields(text)
-    };
-
-    out.textContent = [
-      Customer number: ${local.customerNumber},
-      Name: ${local.name || ''},
-      Address: ${local.address || ''},
-      Zip: ${local.zip || ''},
-      Bill period: ${local.billPeriodEnd || ''}
-    ].join('\n');
-
-    window.__rh_fields = local;
-    enableContinue();
-  } catch (e2) {
-    out.textContent = '❌ Could not read the bill.';
-    disableContinue();
-  }
-    return; // prevent any old fallthrough code from running
     }
   });
 
-  /* ---------- fake results screen ---------- */
+  /* ---------- continue → fake results ---------- */
   continueBtn.addEventListener('click', () => {
     if (!continueBtn.classList.contains('enabled')) return;
     document.getElementById('upload').classList.remove('show');
@@ -476,7 +471,7 @@ function extract080x20(text) {
     }
 
     window.scrollTo(0,0);
-    setTimeout(() => showLoaderThen(uploadQueue[uploadIndex] || 'electric'), 4000);
+    setTimeout(() => showLoaderThen(uploadQueue[uploadIndex] || 'electric'), 1200);
   });
 
   function showLoaderThen(kind){
@@ -485,7 +480,7 @@ function extract080x20(text) {
 
     const planName='ClearGuarantee9Plus', ptc='9.39¢ / kWh', newRate='4.79¢ / kWh', term='9 Months', etf='$150', estSavings='45.1%';
 
-    box.innerHTML = 
+    box.innerHTML = `
       <div class="card">
         <div class="yellowBox--sm">Price to Compare: ${ptc}</div>
         <hr>
@@ -503,32 +498,27 @@ function extract080x20(text) {
         <button id="ctaSwitch" class="btn-cta">Switch me to this plan!</button>
         <hr style="margin:18px 0 10px">
         <div class="supplier" style="margin-top:0;display:flex;align-items:center;gap:12px;padding-top:12px;border-top:1px solid #e6e8eb">
-          <img src="clearwater logo.png" alt="clearwater logo" style="height:40px">
+          <img src="clearwater logo.png" alt="clearwater logo" style="height:40px" />
           <span style="font-weight:800;color:#134c07">Clearview Energy</span>
         </div>
         <div class="links" style="margin-top:12px">
-          <a href="#">Clearview Energy Terms &amp; Conditions</a><br>
+          <a href="#">Clearview Energy Terms &amp; Conditions</a><br />
           <a href="#">RateHound Terms of Service</a>
         </div>
         <div class="disclaimer" style="margin-top:12px">This rate will be effective following the first billing date after successful enrollment.</div>
-      </div>;
+      </div>`;
     document.getElementById('loader').classList.remove('show');
     results.style.display = 'flex';
-   box.querySelector('#ctaSwitch')?.addEventListener('click', () =>
-  showToast('Great — we’ll start the switch (demo).', 4200)
-);
+    box.querySelector('#ctaSwitch')?.addEventListener('click', () =>
+      showToast('Great — we’ll start the switch (demo).', 4200)
+    );
   }
 
   /* ---- client-side parsing fallback ---- */
   function parseFields(text){
     const t = (text || "").replace(/\r/g, "");
-  
+    const customerNumber = extract080x20(t);
 
-  // -------- Customer number: 20 digits starting with 080 --------
-// Accepts spaces, newlines, or OCR gaps between digits
-
-const customerNumber = extract080x20(t);
-const validCustomerNumber = !!customerNumber;
     const billBlockMatch = t.match(/Bill\s*for[:\s]*(.+?)(?:\n{2,}|Billing\s*Period|Bill\s*Date|Account\s*Number)/is);
     const billBlock = billBlockMatch ? billBlockMatch[1].trim() : "";
     const lines = billBlock.split(/\n/).map(s => s.trim()).filter(Boolean);
@@ -546,11 +536,11 @@ const validCustomerNumber = !!customerNumber;
     if (bp) {
       const right = bp[2];
       const year  = bp[3] || new Date().getFullYear();
-      const endDate = new Date(${right}, ${year});
+      const endDate = new Date(`${right}, ${year}`);
       billPeriodEnd = endDate.toLocaleString('en-US', { month: 'short', day: 'numeric' });
     }
 
-    return { customerNumber, name, address, zip, billPeriodEnd, validCustomerNumber };
+    return { customerNumber, name, address, zip, billPeriodEnd };
   }
 });
 </script>
