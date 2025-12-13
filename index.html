@@ -471,26 +471,25 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   /* ---------- fake results screen ---------- */
-  const continueBtn = document.getElementById('continueUpload');
-  continueBtn.addEventListener('click', () => {
-    if (!continueBtn.classList.contains('enabled')) return;
-    document.getElementById('upload').classList.remove('show');
-    document.getElementById('loader').classList.add('show');
+continueBtn.addEventListener('click', () => {
+  if (!continueBtn.classList.contains('enabled')) return;
+  document.getElementById('upload').classList.remove('show');
+  document.getElementById('loader').classList.add('show');
 
-    if (window.lottie && !window.__loaderAnim){
-      window.__loaderAnim = lottie.loadAnimation({
-        container: document.getElementById('lottieContainer'),
-        renderer: 'svg', loop: true, autoplay: true,
-        path: 'loader.json'
-      });
-    } else if (window.__loaderAnim){
-      window.__loaderAnim.play();
-      window.__loaderAnim.resize && window.__loaderAnim.resize();
-    }
+  if (window.lottie && !window.__loaderAnim){
+    window.__loaderAnim = lottie.loadAnimation({
+      container: document.getElementById('lottieContainer'),
+      renderer: 'svg', loop: true, autoplay: true,
+      path: 'loader.json'
+    });
+  } else if (window.__loaderAnim){
+    window.__loaderAnim.play();
+    window.__loaderAnim.resize && window.__loaderAnim.resize();
+  }
 
-    window.scrollTo(0,0);
-    setTimeout(() => showLoaderThen(uploadQueue[uploadIndex] || 'electric'), 4000);
-  });
+  window.scrollTo(0,0);
+  setTimeout(() => showLoaderThen(uploadQueue[uploadIndex] || 'electric'), 4000);
+});
 
   function showLoaderThen(kind){
     const results = document.getElementById('results');
