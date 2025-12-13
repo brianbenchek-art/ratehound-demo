@@ -1,4 +1,4 @@
-<!doctype html>
+fileInput.click();<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
@@ -379,9 +379,9 @@ window.addEventListener('DOMContentLoaded', function () {
     document.getElementById('upload').classList.add('show');
     uploadQueue = ['electric'];
     setUploadTitleFor('electric');
-    selectMethod('upload');
+    resetPanels();
     window.scrollTo(0,0);
-    fileInput.click();
+
   });
 
   mBtnUpload.addEventListener('click', function(){ selectMethod('upload'); fileInput.click(); });
