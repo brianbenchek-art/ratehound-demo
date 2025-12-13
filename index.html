@@ -131,7 +131,7 @@
 
       <div id="m-upload" class="panel" hidden>
         <!-- Revert to images only -->
-        <input id="billFile" type="file" accept="image/*" aria-label="Upload or take a photo of your bill" hidden>
+        <input id="billFile" type="file" accept="image/*,application/pdf,.pdf" aria-label="Upload or take a photo of your bill" hidden>
         <img id="preview" class="preview" alt="Bill preview">
       </div>
 
@@ -271,7 +271,7 @@ async function pdfFirstPageAsImage(file, scale = 1.4) {
   }
 
   // Send to Apps Script Vision endpoint
-  async function sendToAppsScriptVision({ imageBlob, userEmail }) {
+  async function sendToAppsScriptVision({ imageBlob: ocrSource, userEmail }), {
     const compact = imageBlob.size > 900000 ? await downscaleImageBlob(imageBlob) : imageBlob;
     const imageDataUrl = await blobToDataUrl(compact);
 
