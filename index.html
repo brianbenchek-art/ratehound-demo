@@ -384,29 +384,7 @@ async function pdfFirstPageAsImage(file, scale = 1.4) {
       disableContinue();
       return;
     }
-
-    // handle both images and PDFs
-let ocrSource = f;
-
-if (f.type === 'application/pdf') {
-  try {
-    const { blob, dataUrl } = await pdfFirstPageAsImage(f, 1.4);
-    previewEl.src = dataUrl;
-    previewEl.style.display = 'block';
-    ocrSource = blob;
-  } catch (err) {
-    console.error('PDF render failed:', err);
-    previewEl.style.display = 'none';
-    disableContinue();
-    return;
-  }
-} else {
-  lastThumbUrl = URL.createObjectURL(f);
-  previewEl.src = lastThumbUrl;
-  previewEl.style.display = 'block';
-}
-
-    let out = document.getElementById('parsedOut');
+     let out = document.getElementById('parsedOut');
     if (!out) {
       out = document.createElement('pre');
       out.id = 'parsedOut';
@@ -414,7 +392,33 @@ if (f.type === 'application/pdf') {
       out.style.whiteSpace = 'pre-wrap';
       document.getElementById('m-upload').appendChild(out);
     }
-    out.textContent = '⏳ Reading your bill...';
+    out.textContent =
+  (f && (f.type === 'application/pdf' || /\.pdf$/i.test(f.name)))
+    ? '⏳ Rendering PDF…'
+    : '⏳ Reading your bill…';
+
+    // handle both images and PDFs
+let ocrSource = f;
+if (f.type === 'application/pdf' || /\.pdf$/i.test(f.name)) {
+  try {
+    const { blob, dataUrl } = await pdfFirstPageAsImage(f, 1.4);
+    previewEl.src = dataUrl;
+    previewEl.style.display = 'block';
+    ocrSource = blob;
+  } catch (err) {
+  console.error('PDF render failed:', err);
+  out.textContent = '❌ Could not open that PDF. Try a clearer copy or export the first page as an image.';
+  previewEl.style.display = 'none';
+  disableContinue();
+  return;
+}
+} else {
+  lastThumbUrl = URL.createObjectURL(f);
+  previewEl.src = lastThumbUrl;
+  previewEl.style.display = 'block';
+}
+
+   
 
     const timeout = new Promise((_, rej) => setTimeout(() => rej(new Error('Vision timeout')), 30000));
 
