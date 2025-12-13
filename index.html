@@ -241,29 +241,45 @@ document.addEventListener('DOMContentLoaded', () => {
     showToast('Grab the app: <a href="'+APP_LINK+'" target="_blank" rel="noopener">RateHound App</a>', 7000);
   }
 /* ---------- helpers (PDF/Images) ---------- */
-// PDF → first-page JPEG blob + data URL
+// PDF → first-page JPEG blob + data URL (robust)
 async function pdfFirstPageAsImage(file, scale = 1.4) {
+  // 1) Read bytes and use Uint8Array (more reliable across browsers)
   const buf = await file.arrayBuffer();
-  const pdf = await pdfjsLib.getDocument({ data: buf }).promise;
+  const bytes = new Uint8Array(buf);
+
+  // 2) Ensure workerSrc is set (some browsers drop globals on HMR/refresh)
+  if (!pdfjsLib?.GlobalWorkerOptions?.workerSrc) {
+    pdfjsLib.GlobalWorkerOptions.workerSrc =
+      "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.2.67/pdf.worker.min.js";
+  }
+
+  // 3) Load and render
+  const loadingTask = pdfjsLib.getDocument({ data: bytes });
+  const pdf = await loadingTask.promise;           // throws on invalid/corrupt PDFs
   const page = await pdf.getPage(1);
   const viewport = page.getViewport({ scale });
+
   const canvas = document.createElement('canvas');
   const ctx = canvas.getContext('2d', { willReadFrequently: true });
   canvas.width = viewport.width;
   canvas.height = viewport.height;
+
   await page.render({ canvasContext: ctx, viewport }).promise;
-  const blob = await new Promise(res => canvas.toBlob(res, 'image/jpeg', 0.9));
+
+  // 4) Export JPEG reliably (with toBlob fallback for older Safari)
+  const blob = await new Promise(async (res) => {
+    if (canvas.toBlob) {
+      canvas.toBlob(b => res(b), 'image/jpeg', 0.9);
+    } else {
+      const dataURI = canvas.toDataURL('image/jpeg', 0.9);
+      const b = await (await fetch(dataURI)).blob();
+      res(b);
+    }
+  });
+
   const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
   return { blob, dataUrl };
 }
-  /* ---------- helpers (images only) ---------- */
-  async function blobToDataUrl(blob){
-    return new Promise((res, rej) => {
-      const fr = new FileReader();
-      fr.onload = () => res(fr.result);
-      fr.onerror = rej;
-      fr.readAsDataURL(blob);
-    });
   }
 
   async function downscaleImageBlob(blob, maxDim=1600, mime='image/jpeg', quality=0.82){
@@ -407,8 +423,17 @@ if (f.type === 'application/pdf' || /\.pdf$/i.test(f.name)) {
     ocrSource = blob;
   } catch (err) {
   console.error('PDF render failed:', err);
-  out.textContent = '❌ Could not open that PDF. Try a clearer copy or export the first page as an image.';
   previewEl.style.display = 'none';
+
+  let out = document.getElementById('parsedOut');
+  if (!out) {
+    out = document.createElement('pre');
+    out.id = 'parsedOut';
+    out.className = 'hint';
+    out.style.whiteSpace = 'pre-wrap';
+    document.getElementById('m-upload').appendChild(out);
+  }
+  out.textContent = `❌ Could not open that PDF (${err?.name || 'Error'}). ${err?.message || ''}`;
   disableContinue();
   return;
 }
