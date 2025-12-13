@@ -162,100 +162,35 @@
   <div id="toasts" aria-live="polite" aria-atomic="true"></div>
 
 <script>
-document.addEventListener('DOMContentLoaded', () => {
-  /* ---------- splash → signup ---------- */
-  const splash = document.getElementById('splash');
-  const signup = document.getElementById('signup');
+/* libs are already loaded above */
 
-  setTimeout(() => {
-    splash.classList.add('out');
-    setTimeout(() => { splash.style.display = 'none'; signup.classList.add('show'); }, 450);
-  }, 2300);
-
-  splash.addEventListener('click', () => {
-    splash.classList.add('out');
-    setTimeout(() => { splash.style.display = 'none'; signup.classList.add('show'); }, 250);
-  });
-
-  /* ---------- signup enable ---------- */
-  const signUpBtn  = document.getElementById('signUpBtn');
-  const nameInput  = document.getElementById('name');
-  const phoneInput = document.getElementById('phone');
-  const emailInput = document.getElementById('email');
-
-  function checkSignupFields(){
-    signUpBtn.disabled = !(nameInput.value.trim() && phoneInput.value.trim() && emailInput.value.trim());
+/* pdf.js worker (no optional chaining) */
+(function () {
+  try {
+    if (window.pdfjsLib && pdfjsLib.GlobalWorkerOptions) {
+      pdfjsLib.GlobalWorkerOptions.workerSrc =
+        "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.2.67/pdf.worker.min.js";
+    }
+  } catch (e) {
+    console.warn("pdf.js worker setup skipped:", e);
   }
-  [nameInput, phoneInput, emailInput].forEach(el => el.addEventListener('input', checkSignupFields));
-  checkSignupFields();
+})();
 
-  renderUserChip();
-  function renderUserChip(){
-    const chip = document.getElementById('userChip');
-    try{
-      const user = JSON.parse(sessionStorage.getItem('rh_user') || '{}');
-      if (user && user.email) {
-        chip.textContent = `Signed in as ${user.email}`;
-        chip.hidden = false;
-        document.body.classList.add('has-chip');
-        document.getElementById('chipSafe').hidden = false;
-        requestAnimationFrame(() => chip.classList.add('show'));
-      }
-    } catch(e){}
-  }
-
-  /* ---------- shadow account + toasts (demo) ---------- */
-  const APP_LINK = '#';
-  const GAS_URL = 'https://script.google.com/macros/s/AKfycbyl5HwDc0MzkKZZsz1guTyvX0rOvjzMpB83ufmLtBmBVhqL5Wh3VBSaq-LCIJ7_hxsv/exec';
-  const RH_SHARED_SECRET = '9c7e51dff93b4c42ae4cdb1e8c4b9d21';
-
-  function createShadowAccount(){
-    const user = {
-      id: 'demo_' + Date.now(),
-      name:  document.getElementById('name')?.value.trim() || '',
-      phone: document.getElementById('phone')?.value.trim() || '',
-      email: document.getElementById('email')?.value.trim() || '',
-      createdAt: new Date().toISOString()
-    };
-    try { sessionStorage.setItem('rh_user', JSON.stringify(user)); } catch(e){}
-    renderUserChip();
-    return user;
-  }
-
-  function showToast(html, ms=4000){
-    const wrap = document.getElementById('toasts');
-    if (!wrap) return;
-    const t = document.createElement('div');
-    t.className = 'toast';
-    t.innerHTML = html;
-    wrap.appendChild(t);
-    requestAnimationFrame(() => t.classList.add('show'));
-    setTimeout(() => { t.classList.remove('show'); setTimeout(() => t.remove(), 250); }, ms);
-  }
-
-  function sendDemoWelcome(user){
-    console.log('[DEMO SMS] Welcome to RateHound,', user.name, 'Username:', user.email);
-    console.log('[DEMO EMAIL] Welcome to RateHound →', user.email);
-    showToast('Welcome to RateHound, ' + (user.name || 'there') + '!');
-    showToast('Your username is <strong>' + user.email + '</strong>.', 4000);
-    showToast('Grab the app: <a href="'+APP_LINK+'" target="_blank" rel="noopener">RateHound App</a>', 7000);
-  }
-/* ---------- helpers (PDF/Images) ---------- */
-// PDF → first-page JPEG blob + data URL (robust)
+/* ========== helpers ========== */
 async function pdfFirstPageAsImage(file, scale = 1.4) {
-  // 1) Read bytes and use Uint8Array (more reliable across browsers)
   const buf = await file.arrayBuffer();
   const bytes = new Uint8Array(buf);
 
-  // 2) Ensure workerSrc is set (some browsers drop globals on HMR/refresh)
-  if (!pdfjsLib?.GlobalWorkerOptions?.workerSrc) {
+  if (!(window.pdfjsLib && pdfjsLib.getDocument)) {
+    throw new Error("pdf.js not loaded");
+  }
+  if (!pdfjsLib.GlobalWorkerOptions.workerSrc) {
     pdfjsLib.GlobalWorkerOptions.workerSrc =
       "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.2.67/pdf.worker.min.js";
   }
 
-  // 3) Load and render
   const loadingTask = pdfjsLib.getDocument({ data: bytes });
-  const pdf = await loadingTask.promise;           // throws on invalid/corrupt PDFs
+  const pdf = await loadingTask.promise;
   const page = await pdf.getPage(1);
   const viewport = page.getViewport({ scale });
 
@@ -266,7 +201,6 @@ async function pdfFirstPageAsImage(file, scale = 1.4) {
 
   await page.render({ canvasContext: ctx, viewport }).promise;
 
-  // 4) Export JPEG reliably (with toBlob fallback for older Safari)
   const blob = await new Promise(async (res) => {
     if (canvas.toBlob) {
       canvas.toBlob(b => res(b), 'image/jpeg', 0.9);
@@ -276,95 +210,151 @@ async function pdfFirstPageAsImage(file, scale = 1.4) {
       res(b);
     }
   });
-
   const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
   return { blob, dataUrl };
 }
-  
-// Convert Blob -> data: URL
+
 async function blobToDataUrl(blob){
   return new Promise((res, rej) => {
     const fr = new FileReader();
-    fr.onload = () => res(fr.result);
+    fr.onload = function(){ res(fr.result); };
     fr.onerror = rej;
     fr.readAsDataURL(blob);
   });
 }
-  async function downscaleImageBlob(blob, maxDim=1600, mime='image/jpeg', quality=0.82){
-    const img = document.createElement('img');
-    const url = URL.createObjectURL(blob);
-    await new Promise(r => { img.onload = r; img.src = url; });
-    const w=img.naturalWidth, h=img.naturalHeight;
-    let nw=w, nh=h;
-    if (Math.max(w,h)>maxDim){ const k=maxDim/Math.max(w,h); nw=Math.round(w*k); nh=Math.round(h*k); }
-    const c=document.createElement('canvas'); c.width=nw; c.height=nh;
-    c.getContext('2d').drawImage(img,0,0,nw,nh);
-    return new Promise(res => c.toBlob(b => { URL.revokeObjectURL(url); res(b||blob); }, mime, quality));
-  }
 
-  // Send to Apps Script Vision endpoint
-  async function sendToAppsScriptVision({ imageBlob, userEmail }) {
-    const compact = imageBlob.size > 900000 ? await downscaleImageBlob(imageBlob) : imageBlob;
-    const imageDataUrl = await blobToDataUrl(compact);
+async function downscaleImageBlob(blob, maxDim=1600, mime='image/jpeg', quality=0.82){
+  const img = document.createElement('img');
+  const url = URL.createObjectURL(blob);
+  await new Promise(r => { img.onload = r; img.src = url; });
+  const w=img.naturalWidth, h=img.naturalHeight;
+  let nw=w, nh=h;
+  if (Math.max(w,h)>maxDim){ const k=maxDim/Math.max(w,h); nw=Math.round(w*k); nh=Math.round(h*k); }
+  const c=document.createElement('canvas'); c.width=nw; c.height=nh;
+  c.getContext('2d').drawImage(img,0,0,nw,nh);
+  return new Promise(res => c.toBlob(b => { URL.revokeObjectURL(url); res(b||blob); }, mime, quality));
+}
 
-    const payload = { userEmail, imageDataUrl, token: RH_SHARED_SECRET };
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbyl5HwDc0MzkKZZsz1guTyvX0rOvjzMpB83ufmLtBmBVhqL5Wh3VBSaq-LCIJ7_hxsv/exec';
+const RH_SHARED_SECRET = '9c7e51dff93b4c42ae4cdb1e8c4b9d21';
 
-    const resp = await fetch(GAS_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify(payload)
-    });
+async function sendToAppsScriptVision({ imageBlob, userEmail }) {
+  const compact = imageBlob.size > 900000 ? await downscaleImageBlob(imageBlob) : imageBlob;
+  const imageDataUrl = await blobToDataUrl(compact);
 
-    const text = await resp.text();
-    let json;
-    try {
-      json = JSON.parse(text);
-    } catch (e) {
-      console.error('Apps Script returned non-JSON:', { status: resp.status, text });
-      throw new Error(`Server returned non-JSON (${resp.status}): ${text.slice(0,200)}`);
-    }
+  const payload = { userEmail, imageDataUrl, token: RH_SHARED_SECRET };
 
-    if (!json.ok) {
-      console.error('Apps Script error payload:', json);
-      throw new Error(json.error || `Unknown server error (${resp.status})`);
-    }
-
-    console.log('Apps Script fields:', json.fields);
-    return json.fields;
-  }
-
-  // 20-digit customer number starting with 080 (robust to spaced OCR)
-  function extract080x20(text) {
-    const m = (text || '').match(/0\s*8\s*0(?:\s*\d){17}/i);
-    if (!m) return '';
-    const digits = m[0].replace(/\D/g, '');
-    return /^080\d{17}$/.test(digits) ? digits : '';
-  }
-
-  /* ---------- intake flow ---------- */
-  signUpBtn.addEventListener('click', () => {
-    if (signUpBtn.disabled) return;
-    const user = createShadowAccount();
-    sendDemoWelcome(user);
-    signup.classList.remove('show');
-    document.getElementById('upload').classList.add('show');
-    uploadQueue = ['electric'];
-    setUploadTitleFor('electric');
-    selectMethod('upload');     // original behavior: select upload immediately
-    window.scrollTo(0,0);
+  const resp = await fetch(GAS_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify(payload)
   });
 
-  const titleEl = document.getElementById('uploadTitle');
-  const mBtns   = { upload: document.getElementById('mBtnUpload') };
-  const panels  = { upload: document.getElementById('m-upload') };
-  const fileInput   = document.getElementById('billFile');
-  const previewEl   = document.getElementById('preview');
-  const continueBtn = document.getElementById('continueUpload');
+  const text = await resp.text();
+  let json;
+  try { json = JSON.parse(text); }
+  catch (e) {
+    console.error('Apps Script returned non-JSON:', { status: resp.status, text });
+    throw new Error('Server returned non-JSON');
+  }
+  if (!json.ok) {
+    console.error('Apps Script error payload:', json);
+    throw new Error(json.error || 'Unknown server error');
+  }
+  return json.fields;
+}
 
-  let uploadQueue = [];
-  let uploadIndex = 0;
-  let currentMethod = null;
-  let lastThumbUrl = null;
+/* ========== app ========== */
+window.addEventListener('DOMContentLoaded', function () {
+  /* splash → signup */
+  var splash = document.getElementById('splash');
+  var signup = document.getElementById('signup');
+
+  setTimeout(function(){
+    splash.classList.add('out');
+    setTimeout(function(){ splash.style.display='none'; signup.classList.add('show'); }, 450);
+  }, 2300);
+
+  splash.addEventListener('click', function(){
+    splash.classList.add('out');
+    setTimeout(function(){ splash.style.display='none'; signup.classList.add('show'); }, 250);
+  });
+
+  /* signup enable */
+  var signUpBtn  = document.getElementById('signUpBtn');
+  var nameInput  = document.getElementById('name');
+  var phoneInput = document.getElementById('phone');
+  var emailInput = document.getElementById('email');
+
+  function checkSignupFields(){
+    signUpBtn.disabled = !(nameInput.value.trim() && phoneInput.value.trim() && emailInput.value.trim());
+  }
+  [nameInput, phoneInput, emailInput].forEach(function(el){ el.addEventListener('input', checkSignupFields); });
+  checkSignupFields();
+
+  function renderUserChip(){
+    var chip = document.getElementById('userChip');
+    try{
+      var user = JSON.parse(sessionStorage.getItem('rh_user') || '{}');
+      if (user && user.email) {
+        chip.textContent = 'Signed in as ' + user.email;
+        chip.hidden = false;
+        document.body.classList.add('has-chip');
+        document.getElementById('chipSafe').hidden = false;
+        requestAnimationFrame(function(){ chip.classList.add('show'); });
+      }
+    } catch(e){}
+  }
+
+  function createShadowAccount(){
+    var user = {
+      id: 'demo_' + Date.now(),
+      name:  (document.getElementById('name').value || '').trim(),
+      phone: (document.getElementById('phone').value || '').trim(),
+      email: (document.getElementById('email').value || '').trim(),
+      createdAt: new Date().toISOString()
+    };
+    try { sessionStorage.setItem('rh_user', JSON.stringify(user)); } catch(e){}
+    renderUserChip();
+    return user;
+  }
+
+  function showToast(html, ms){
+    ms = ms || 4000;
+    var wrap = document.getElementById('toasts');
+    if (!wrap) return;
+    var t = document.createElement('div');
+    t.className = 'toast';
+    t.innerHTML = html;
+    wrap.appendChild(t);
+    requestAnimationFrame(function(){ t.classList.add('show'); });
+    setTimeout(function(){ t.classList.remove('show'); setTimeout(function(){ t.remove(); }, 250); }, ms);
+  }
+
+  var APP_LINK = '#';
+
+  function sendDemoWelcome(user){
+    console.log('[DEMO SMS] Welcome to RateHound,', user.name, 'Username:', user.email);
+    console.log('[DEMO EMAIL] Welcome to RateHound →', user.email);
+    showToast('Welcome to RateHound, ' + (user.name || 'there') + '!');
+    showToast('Your username is <strong>' + user.email + '</strong>.', 4000);
+    showToast('Grab the app: <a href="'+APP_LINK+'" target="_blank" rel="noopener">RateHound App</a>', 7000);
+  }
+
+  renderUserChip();
+
+  /* intake flow */
+  var titleEl     = document.getElementById('uploadTitle');
+  var mBtnUpload  = document.getElementById('mBtnUpload');
+  var panelUpload = document.getElementById('m-upload');
+  var fileInput   = document.getElementById('billFile');
+  var previewEl   = document.getElementById('preview');
+  var continueBtn = document.getElementById('continueUpload');
+
+  var uploadQueue = [];
+  var uploadIndex = 0;
+  var currentMethod = null;
+  var lastThumbUrl = null;
 
   function setUploadTitleFor(kind){
     titleEl.textContent = (kind === 'electric')
@@ -374,8 +364,8 @@ async function blobToDataUrl(blob){
   function enableContinue(){ continueBtn.classList.add('enabled'); continueBtn.style.opacity='1'; continueBtn.style.pointerEvents='auto'; }
   function disableContinue(){ continueBtn.classList.remove('enabled'); continueBtn.style.opacity='.5'; continueBtn.style.pointerEvents='none'; }
   function resetPanels(){
-    Object.values(panels).forEach(p => p.hidden = true);
-    Object.values(mBtns).forEach(b => b.classList.remove('selected'));
+    panelUpload.hidden = true;
+    mBtnUpload.classList.remove('selected');
     if (fileInput) fileInput.value = '';
     if (previewEl) previewEl.style.display = 'none';
     currentMethod = null;
@@ -384,92 +374,92 @@ async function blobToDataUrl(blob){
   function selectMethod(which){
     resetPanels();
     currentMethod = which;
-    mBtns[which].classList.add('selected');
-    panels[which].hidden = false;
-    validateUpload();
+    if (which === 'upload') {
+      mBtnUpload.classList.add('selected');
+      panelUpload.hidden = false;
+      validateUpload();
+    }
   }
-  mBtns.upload.addEventListener('click', () => { selectMethod('upload'); fileInput.click(); });
+
+  document.getElementById('signUpBtn').addEventListener('click', function(){
+    if (signUpBtn.disabled) return;
+    var user = createShadowAccount();
+    sendDemoWelcome(user);
+    document.getElementById('signup').classList.remove('show');
+    document.getElementById('upload').classList.add('show');
+    uploadQueue = ['electric'];
+    setUploadTitleFor('electric');
+    selectMethod('upload');
+    window.scrollTo(0,0);
+    fileInput.click();
+  });
+
+  mBtnUpload.addEventListener('click', function(){ selectMethod('upload'); fileInput.click(); });
 
   function validateUpload(){
     if (currentMethod === 'upload'){
-      const ok = !!fileInput.files?.[0];
+      var ok = !!(fileInput.files && fileInput.files[0]);
       return ok ? enableContinue() : disableContinue();
     }
     disableContinue();
   }
 
-  fileInput?.addEventListener('change', async () => {
-    const f = fileInput.files?.[0];
+  fileInput.addEventListener('change', async function(){
+    var f = fileInput.files && fileInput.files[0];
     if (lastThumbUrl) { URL.revokeObjectURL(lastThumbUrl); lastThumbUrl = null; }
 
     if (!f) {
       previewEl.style.display = 'none';
-      document.getElementById('parsedOut')?.remove();
+      var old = document.getElementById('parsedOut'); if (old) old.remove();
       disableContinue();
       return;
     }
-     let out = document.getElementById('parsedOut');
+
+    var out = document.getElementById('parsedOut');
     if (!out) {
       out = document.createElement('pre');
       out.id = 'parsedOut';
       out.className = 'hint';
       out.style.whiteSpace = 'pre-wrap';
-      document.getElementById('m-upload').appendChild(out);
+      panelUpload.appendChild(out);
     }
-    out.textContent =
-  (f && (f.type === 'application/pdf' || /\.pdf$/i.test(f.name)))
-    ? '⏳ Rendering PDF…'
-    : '⏳ Reading your bill…';
+    out.textContent = (f.type === 'application/pdf' || /\.pdf$/i.test(f.name)) ? '⏳ Rendering PDF…' : '⏳ Reading your bill…';
 
+    console.log('Selected file:', f.name, f.type, f.size);
+    var ocrSource = f;
 
-// handle both images and PDFs
-console.log('Selected file:', f?.name, f?.type, f?.size);
-let ocrSource = f;
+    var looksPdf = (f.type === 'application/pdf' || /\.pdf$/i.test(f.name));
 
-// broader check: accept real PDFs and .pdf extensions
-const looksPdf = f && (f.type === 'application/pdf' || /\.pdf$/i.test(f.name));
-
-if (looksPdf) {
-  try {
-    console.log('Rendering first page of PDF…');
-    const { blob, dataUrl } = await pdfFirstPageAsImage(f, 1.4);
-    previewEl.src = dataUrl;
-    previewEl.style.display = 'block';
-    ocrSource = blob;
-    console.log('✅ PDF rendered, blob size:', blob.size);
-  } catch (err) {
-    console.error('❌ PDF render failed:', err?.name, err?.message, err);
-    previewEl.style.display = 'none';
-
-    let out = document.getElementById('parsedOut');
-    if (!out) {
-      out = document.createElement('pre');
-      out.id = 'parsedOut';
-      out.className = 'hint';
-      out.style.whiteSpace = 'pre-wrap';
-      document.getElementById('m-upload').appendChild(out);
+    if (looksPdf) {
+      try {
+        console.log('Rendering first page of PDF…');
+        var rendered = await pdfFirstPageAsImage(f, 1.4);
+        previewEl.src = rendered.dataUrl;
+        previewEl.style.display = 'block';
+        ocrSource = rendered.blob;
+        console.log('PDF rendered, blob size:', rendered.blob.size);
+      } catch (err) {
+        console.error('PDF render failed:', err && err.name, err && err.message, err);
+        previewEl.style.display = 'none';
+        out.textContent = '❌ Could not open that PDF (' + ((err && err.name) || 'Error') + '). ' + ((err && err.message) || '');
+        disableContinue();
+        return;
+      }
+    } else {
+      lastThumbUrl = URL.createObjectURL(f);
+      previewEl.src = lastThumbUrl;
+      previewEl.style.display = 'block';
     }
-    out.textContent = `❌ Could not open that PDF (${err?.name || 'Error'}). ${err?.message || ''}`;
-    disableContinue();
-    return;
-  }
-} else {
-  console.log('Treating as image file');
-  lastThumbUrl = URL.createObjectURL(f);
-  previewEl.src = lastThumbUrl;
-  previewEl.style.display = 'block';
-}
 
-   
-
-    const timeout = new Promise((_, rej) => setTimeout(() => rej(new Error('Vision timeout')), 30000));
+    var timeout = new Promise(function(_, rej){ setTimeout(function(){ rej(new Error('Vision timeout')); }, 30000); });
 
     try {
-      const user = JSON.parse(sessionStorage.getItem('rh_user') || '{}');
-      const userEmail = user && user.email ? String(user.email) : '';
+      var user = {};
+      try { user = JSON.parse(sessionStorage.getItem('rh_user') || '{}'); } catch(e){}
+      var userEmail = (user && user.email) ? String(user.email) : '';
 
-      const fields = await Promise.race([
-        sendToAppsScriptVision({ imageBlob: ocrSource, userEmail }),
+      var fields = await Promise.race([
+        sendToAppsScriptVision({ imageBlob: ocrSource, userEmail: userEmail }),
         timeout
       ]);
 
@@ -480,16 +470,15 @@ if (looksPdf) {
       }
 
       out.textContent = [
-        `Customer number: ${fields.customerNumber || '(missing)'}`,
-        `Name: ${fields.name || ''}`,
-        `Address: ${fields.address || ''}`,
-        `Zip: ${fields.zip || ''}`,
-        `Bill period: ${fields.billPeriodEnd || ''}`
+        'Customer number: ' + (fields.customerNumber || '(missing)'),
+        'Name: ' + (fields.name || ''),
+        'Address: ' + (fields.address || ''),
+        'Zip: ' + (fields.zip || ''),
+        'Bill period: ' + (fields.billPeriodEnd || '')
       ].join('\n');
 
       window.__rh_fields = fields;
       enableContinue();
-
     } catch (err) {
       out.textContent = '❌ Could not read the bill.';
       disableContinue();
@@ -497,8 +486,8 @@ if (looksPdf) {
     }
   });
 
-  /* ---------- fake results screen ---------- */
-  continueBtn.addEventListener('click', () => {
+  /* fake results screen */
+  continueBtn.addEventListener('click', function(){
     if (!continueBtn.classList.contains('enabled')) return;
     document.getElementById('upload').classList.remove('show');
     document.getElementById('loader').classList.add('show');
@@ -511,51 +500,48 @@ if (looksPdf) {
       });
     } else if (window.__loaderAnim){
       window.__loaderAnim.play();
-      window.__loaderAnim.resize && window.__loaderAnim.resize();
+      if (window.__loaderAnim.resize) window.__loaderAnim.resize();
     }
 
     window.scrollTo(0,0);
-    setTimeout(() => showLoaderThen(uploadQueue[uploadIndex] || 'electric'), 4000);
+    setTimeout(function(){ showLoaderThen(uploadQueue[uploadIndex] || 'electric'); }, 4000);
   });
 
-  function showLoaderThen(kind){
-    const results = document.getElementById('results');
-    const box     = document.getElementById('resultsInner');
+  function showLoaderThen(){
+    var results = document.getElementById('results');
+    var box     = document.getElementById('resultsInner');
 
-    const planName='ClearGuarantee9Plus', ptc='9.39¢ / kWh', newRate='4.79¢ / kWh', term='9 Months', etf='$150', estSavings='45.1%';
+    var planName='ClearGuarantee9Plus', ptc='9.39¢ / kWh', newRate='4.79¢ / kWh', term='9 Months', etf='$150', estSavings='45.1%';
 
-    box.innerHTML = `
-      <div class="card">
-        <div class="yellowBox--sm">Price to Compare: ${ptc}</div>
-        <hr>
-        <div class="leadGreen" style="margin:8px 0 10px">Here's the lowest rate we found for you.</div>
-        <div class="yellowBox--lg ratePill"><div class="big">${newRate}</div></div>
-        <div style="margin:10px 0 6px">
-          <div style="font-weight:800;color:#134c07">Plan:</div>
-          <div style="font-size:18px">${planName}</div>
-        </div>
-        <div class="row2" style="margin-top:8px">
-          <div class="blk"><div style="font-weight:800;color:#134c07">Contract Term</div>${term}</div>
-          <div class="blk"><div style="font-weight:800;color:#134c07">Early Termination Fee</div>${etf}</div>
-        </div>
-        <div class="yellowBox--lg savingsPill">Estimated Savings: <span class="big">${estSavings}</span></div>
-        <button id="ctaSwitch" class="btn-cta">Switch me to this plan!</button>
-        <hr style="margin:18px 0 10px">
-        <div class="supplier" style="margin-top:0;display:flex;align-items:center;gap:12px;padding-top:12px;border-top:1px solid #e6e8eb">
-          <img src="clearwater logo.png" alt="clearwater logo" style="height:40px">
-          <span style="font-weight:800;color:#134c07">Clearview Energy</span>
-        </div>
-        <div class="links" style="margin-top:12px">
-          <a href="#">Clearview Energy Terms &amp; Conditions</a><br>
-          <a href="#">RateHound Terms of Service</a>
-        </div>
-        <div class="disclaimer" style="margin-top:12px">This rate will be effective following the first billing date after successful enrollment.</div>
-      </div>`;
+    box.innerHTML =
+      '<div class="card">' +
+      '<div class="yellowBox--sm">Price to Compare: ' + ptc + '</div>' +
+      '<hr>' +
+      '<div class="leadGreen" style="margin:8px 0 10px">Here\'s the lowest rate we found for you.</div>' +
+      '<div class="yellowBox--lg ratePill"><div class="big">' + newRate + '</div></div>' +
+      '<div style="margin:10px 0 6px"><div style="font-weight:800;color:#134c07">Plan:</div><div style="font-size:18px">' + planName + '</div></div>' +
+      '<div class="row2" style="margin-top:8px">' +
+      '<div class="blk"><div style="font-weight:800;color:#134c07">Contract Term</div>' + term + '</div>' +
+      '<div class="blk"><div style="font-weight:800;color:#134c07">Early Termination Fee</div>' + etf + '</div>' +
+      '</div>' +
+      '<div class="yellowBox--lg savingsPill">Estimated Savings: <span class="big">' + estSavings + '</span></div>' +
+      '<button id="ctaSwitch" class="btn-cta">Switch me to this plan!</button>' +
+      '<hr style="margin:18px 0 10px">' +
+      '<div class="supplier" style="margin-top:0;display:flex;align-items:center;gap:12px;padding-top:12px;border-top:1px solid #e6e8eb">' +
+      '<img src="clearwater logo.png" alt="clearwater logo" style="height:40px">' +
+      '<span style="font-weight:800;color:#134c07">Clearview Energy</span>' +
+      '</div>' +
+      '<div class="links" style="margin-top:12px">' +
+      '<a href="#">Clearview Energy Terms &amp; Conditions</a><br>' +
+      '<a href="#">RateHound Terms of Service</a>' +
+      '</div>' +
+      '<div class="disclaimer" style="margin-top:12px">This rate will be effective following the first billing date after successful enrollment.</div>' +
+      '</div>';
+
     document.getElementById('loader').classList.remove('show');
     results.style.display = 'flex';
-    box.querySelector('#ctaSwitch')?.addEventListener('click', () =>
-      showToast('Great — we’ll start the switch (demo).', 4200)
-    );
+    var cta = box.querySelector('#ctaSwitch');
+    if (cta) cta.addEventListener('click', function(){ showToast('Great — we’ll start the switch (demo).', 4200); });
   }
 });
 </script>
