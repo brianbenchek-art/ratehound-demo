@@ -459,30 +459,7 @@ continueBtn.addEventListener('click', function () {
   if (window.__loaderAnim && window.__loaderAnim.play) window.__loaderAnim.play();
   setTimeout(() => { showLoaderThen(); }, 400);
 });
-  } else if (window.__loaderAnim){
-    window.__loaderAnim.play();
-    if (window.__loaderAnim.resize) window.__loaderAnim.resize();
-  }
-  window.scrollTo(0,0);
-
-  // Send to Apps Script
-  let user = {};
-  try { user = JSON.parse(sessionStorage.getItem('rh_user') || '{}'); } catch(_) {}
-
-  try {
-    const fields = await sendToAppsScriptVision({
-      imageDataUrl: dataUrl,
-      userEmail: user.email || ''
-    });
-    window.__rh_fields = fields;     // stash parsed fields
-    showLoaderThen();                // go to results
-  } catch (err) {
-    console.error('Vision error:', err);
-    document.getElementById('loader').classList.remove('show');
-    document.getElementById('upload').classList.add('show');
-    showToast('Could not read the bill. Try a clearer photo or PDF.', 5200);
-  }
-});
+ 
 
 // NEW: results renderer (no delay, optional parsed summary at top)
 function showLoaderThen(){
