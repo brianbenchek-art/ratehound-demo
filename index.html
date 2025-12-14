@@ -90,27 +90,7 @@
 <!-- libs -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js"></script>
 
-<!-- Add pdf.js just below lottie -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.2.67/pdf.min.js"></script>
-<script>
-async function ensurePdfJs() {
-  // Load pdf.js dynamically if it isn’t ready
-  if (!window.pdfjsLib || !pdfjsLib.getDocument) {
-    await new Promise((resolve, reject) => {
-      const s = document.createElement('script');
-      s.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.2.67/pdf.min.js';
-      s.onload = resolve;
-      s.onerror = () => reject(new Error('Failed to load pdf.js'));
-      document.head.appendChild(s);
-    });
-  }
 
-  // Always ensure the worker script is set (safe to run multiple times)
-  if (!pdfjsLib.GlobalWorkerOptions) pdfjsLib.GlobalWorkerOptions = {};
-  pdfjsLib.GlobalWorkerOptions.workerSrc =
-    'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.2.67/pdf.worker.min.js';
-}
-</script>
 
 <!-- No previews; local pdf.js only for rasterizing PDFs -->
 <script src="pdf.min.js"></script>
@@ -179,7 +159,6 @@ if (window.pdfjsLib) {
 
 
 
-/* ========== helpers ========== */
 /* ========== helpers ========== */
 // Minimal PDF + image handler, no preview UI
 async function fileToImageBlob(file) {
@@ -409,64 +388,106 @@ fileInput.addEventListener('change', async function(){
   }
 });
 
-  /* fake results screen */
-  continueBtn.addEventListener('click', function(){
-    if (!continueBtn.classList.contains('enabled')) return;
-    document.getElementById('upload').classList.remove('show');
-    document.getElementById('loader').classList.add('show');
+ // NEW: fire OCR on Continue, then render results
+continueBtn.addEventListener('click', async function(){
+  if (!continueBtn.classList.contains('enabled')) return;
 
-    if (window.lottie && !window.__loaderAnim){
-      window.__loaderAnim = lottie.loadAnimation({
-        container: document.getElementById('lottieContainer'),
-        renderer: 'svg', loop: true, autoplay: true,
-        path: 'loader.json'
-      });
-    } else if (window.__loaderAnim){
-      window.__loaderAnim.play();
-      if (window.__loaderAnim.resize) window.__loaderAnim.resize();
-    }
+  const dataUrl = window.__rh_uploadDataUrl;
+  if (!dataUrl) {
+    showToast('No file selected. Please upload a bill.', 4000);
+    return;
+  }
 
-    window.scrollTo(0,0);
-    setTimeout(function(){ showLoaderThen(uploadQueue[uploadIndex] || 'electric'); }, 4000);
-  });
+  // Show loader
+  document.getElementById('upload').classList.remove('show');
+  document.getElementById('loader').classList.add('show');
 
-  function showLoaderThen(){
-    var results = document.getElementById('results');
-    var box     = document.getElementById('resultsInner');
+  if (window.lottie && !window.__loaderAnim){
+    window.__loaderAnim = lottie.loadAnimation({
+      container: document.getElementById('lottieContainer'),
+      renderer: 'svg', loop: true, autoplay: true,
+      path: 'loader.json'
+    });
+  } else if (window.__loaderAnim){
+    window.__loaderAnim.play();
+    if (window.__loaderAnim.resize) window.__loaderAnim.resize();
+  }
+  window.scrollTo(0,0);
 
-    var planName='ClearGuarantee9Plus', ptc='9.39¢ / kWh', newRate='4.79¢ / kWh', term='9 Months', etf='$150', estSavings='45.1%';
+  // Send to Apps Script
+  let user = {};
+  try { user = JSON.parse(sessionStorage.getItem('rh_user') || '{}'); } catch(_) {}
 
-    box.innerHTML =
-      '<div class="card">' +
+  try {
+    const fields = await sendToAppsScriptVision({
+      imageDataUrl: dataUrl,
+      userEmail: user.email || ''
+    });
+    window.__rh_fields = fields;     // stash parsed fields
+    showLoaderThen();                // go to results
+  } catch (err) {
+    console.error('Vision error:', err);
+    document.getElementById('loader').classList.remove('show');
+    document.getElementById('upload').classList.add('show');
+    showToast('Could not read the bill. Try a clearer photo or PDF.', 5200);
+  }
+});
+
+// NEW: results renderer (no delay, optional parsed summary at top)
+function showLoaderThen(){
+  const results = document.getElementById('results');
+  const box     = document.getElementById('resultsInner');
+
+  const f = window.__rh_fields || {};
+  let parsedCard = '';
+  if (f.customerNumber || f.name || f.address || f.zip || f.billPeriodEnd) {
+    parsedCard =
+      '<div class="card" style="margin-bottom:12px">' +
+        '<div style="font-weight:800;color:#134c07">Parsed from your bill</div>' +
+        'Customer #: ' + (f.customerNumber || '(missing)') + '<br>' +
+        'Name: ' + (f.name || '') + '<br>' +
+        'Address: ' + (f.address || '') + ' ' + (f.zip || '') + '<br>' +
+        'Bill period end: ' + (f.billPeriodEnd || '') +
+      '</div>';
+  }
+
+  const planName='ClearGuarantee9Plus', ptc='9.39¢ / kWh', newRate='4.79¢ / kWh', term='9 Months', etf='$150', estSavings='45.1%';
+
+  box.innerHTML =
+    parsedCard +
+    '<div class="card">' +
       '<div class="yellowBox--sm">Price to Compare: ' + ptc + '</div>' +
       '<hr>' +
       '<div class="leadGreen" style="margin:8px 0 10px">Here\'s the lowest rate we found for you.</div>' +
       '<div class="yellowBox--lg ratePill"><div class="big">' + newRate + '</div></div>' +
       '<div style="margin:10px 0 6px"><div style="font-weight:800;color:#134c07">Plan:</div><div style="font-size:18px">' + planName + '</div></div>' +
       '<div class="row2" style="margin-top:8px">' +
-      '<div class="blk"><div style="font-weight:800;color:#134c07">Contract Term</div>' + term + '</div>' +
-      '<div class="blk"><div style="font-weight:800;color:#134c07">Early Termination Fee</div>' + etf + '</div>' +
+        '<div class="blk"><div style="font-weight:800;color:#134c07">Contract Term</div>' + term + '</div>' +
+        '<div class="blk"><div style="font-weight:800;color:#134c07">Early Termination Fee</div>' + etf + '</div>' +
       '</div>' +
       '<div class="yellowBox--lg savingsPill">Estimated Savings: <span class="big">' + estSavings + '</span></div>' +
       '<button id="ctaSwitch" class="btn-cta">Switch me to this plan!</button>' +
       '<hr style="margin:18px 0 10px">' +
       '<div class="supplier" style="margin-top:0;display:flex;align-items:center;gap:12px;padding-top:12px;border-top:1px solid #e6e8eb">' +
-      '<img src="clearwater logo.png" alt="clearwater logo" style="height:40px">' +
-      '<span style="font-weight:800;color:#134c07">Clearview Energy</span>' +
+        '<img src="clearwater logo.png" alt="clearwater logo" style="height:40px">' +
+        '<span style="font-weight:800;color:#134c07">Clearview Energy</span>' +
       '</div>' +
       '<div class="links" style="margin-top:12px">' +
-      '<a href="#">Clearview Energy Terms &amp; Conditions</a><br>' +
-      '<a href="#">RateHound Terms of Service</a>' +
+        '<a href="#">Clearview Energy Terms &amp; Conditions</a><br>' +
+        '<a href="#">RateHound Terms of Service</a>' +
       '</div>' +
       '<div class="disclaimer" style="margin-top:12px">This rate will be effective following the first billing date after successful enrollment.</div>' +
-      '</div>';
+    '</div>';
 
-    document.getElementById('loader').classList.remove('show');
-    results.style.display = 'flex';
-    var cta = box.querySelector('#ctaSwitch');
-    if (cta) cta.addEventListener('click', function(){ showToast('Great — we’ll start the switch (demo).', 4200); });
-  }
-});
+  document.getElementById('loader').classList.remove('show');
+  results.style.display = 'flex';
+
+  const cta = box.querySelector('#ctaSwitch');
+  if (cta) cta.addEventListener('click', function(){
+    showToast('Great — we’ll start the switch (demo).', 4200);
+  });
+}
+
 </script>
 </body>
 </html>
