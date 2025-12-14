@@ -245,7 +245,7 @@ async function sendToAppsScriptVision({ imageDataUrl, userEmail }) {
 
   const resp = await fetch(GAS_URL, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'headers: { 'Content-Type': 'text/plain;charset=utf-8' },
     body: JSON.stringify(payload)
   });
 
@@ -383,18 +383,15 @@ async function sendToAppsScriptVision({ imageDataUrl, userEmail }) {
 
   mBtnUpload.addEventListener('click', function(){ selectMethod('upload'); fileInput.click(); });
 
-  function validateUpload(){
-    if (currentMethod === 'upload'){
-      var ok = !!(fileInput.files && fileInput.files[0]);
-      return ok ? enableContinue() : disableContinue();
-    }
-    disableContinue();
-  }
+ function validateUpload(){
+  // Enable only after OCR returns in the change handler
+  disableContinue();
+  if (currentMethod !== 'upload') return;
+}
 fileInput.addEventListener('change', async function () {
   const f = fileInput.files && fileInput.files[0];
   if (!f) { disableContinue(); return; }
 
-  // UI: lock the flow and show loader
   disableContinue();
   document.getElementById('upload').classList.remove('show');
   document.getElementById('loader').classList.add('show');
@@ -411,12 +408,10 @@ fileInput.addEventListener('change', async function () {
   window.scrollTo(0,0);
 
   try {
-    // Downscale → data URL
-    const blob = await fileToImageBlob(f);
+    const blob    = await fileToImageBlob(f);
     const dataUrl = await blobToDataUrl(blob);
     window.__rh_uploadDataUrl = dataUrl;
 
-    // Send to Apps Script now; only enable Continue when fields are back
     let user = {};
     try { user = JSON.parse(sessionStorage.getItem('rh_user') || '{}'); } catch(_) {}
 
@@ -425,12 +420,11 @@ fileInput.addEventListener('change', async function () {
       userEmail: user.email || ''
     });
 
-    window.__rh_fields = fields;      // save parsed fields
-    enableContinue();                 // now user can proceed
+    window.__rh_fields = fields;
 
-    // UI: back to upload page, loader off
     document.getElementById('loader').classList.remove('show');
     document.getElementById('upload').classList.add('show');
+    enableContinue();
     showToast('Bill read. Tap Continue.', 3200);
   } catch (err) {
     console.error('Upload/parse failed:', err);
