@@ -112,7 +112,13 @@ async function ensurePdfJs() {
 }
 </script>
 
-<script src="https://unpkg.com/tesseract.js@4/dist/tesseract.min.js"></script>
+<!-- No previews; local pdf.js only for rasterizing PDFs -->
+<script src="pdf.min.js"></script>
+<script>
+if (window.pdfjsLib) {
+  pdfjsLib.GlobalWorkerOptions.workerSrc = 'pdf.worker.min.js';
+}
+</script>
 </head>
 <body>
   <div id="chipSafe" hidden></div>
@@ -174,35 +180,40 @@ async function ensurePdfJs() {
 
 
 /* ========== helpers ========== */
-async function pdfFirstPageAsImage(file, scale = 1.4) {
-  await ensurePdfJs(); // guarantee pdf.js is initialized
+/* ========== helpers ========== */
+// Minimal PDF + image handler, no preview UI
+async function fileToImageBlob(file) {
+  if (file.type.startsWith('image/')) {
+    // Downscale image (optional)
+    const url = URL.createObjectURL(file);
+    const img = document.createElement('img');
+    await new Promise(r => { img.onload = r; img.src = url; });
+    const maxDim = 1600;
+    const k = Math.min(1, maxDim / Math.max(img.naturalWidth, img.naturalHeight));
+    const cw = Math.round(img.naturalWidth * k), ch = Math.round(img.naturalHeight * k);
+    const c = document.createElement('canvas'); c.width = cw; c.height = ch;
+    c.getContext('2d').drawImage(img, 0, 0, cw, ch);
+    URL.revokeObjectURL(url);
+    return await new Promise(res => c.toBlob(b => res(b), 'image/jpeg', 0.9));
+  }
 
-  const buf = await file.arrayBuffer();
-  const bytes = new Uint8Array(buf);
-
-  const loadingTask = pdfjsLib.getDocument({ data: bytes });
-  const pdf = await loadingTask.promise;
-  const page = await pdf.getPage(1);
-  const viewport = page.getViewport({ scale });
-
-  const canvas = document.createElement('canvas');
-  canvas.width = viewport.width;
-  canvas.height = viewport.height;
-  const ctx = canvas.getContext('2d', { willReadFrequently: true });
-
-  await page.render({ canvasContext: ctx, viewport }).promise;
-
-  const blob = await new Promise(async (res) => {
-    if (canvas.toBlob) {
-      canvas.toBlob(b => res(b), 'image/jpeg', 0.9);
-    } else {
-      const dataURI = canvas.toDataURL('image/jpeg', 0.9);
-      const b = await (await fetch(dataURI)).blob();
-      res(b);
+  if (file.type === 'application/pdf' || /\.pdf$/i.test(file.name)) {
+    if (!window.pdfjsLib || !pdfjsLib.getDocument) {
+      throw new Error('pdf.js not loaded');
     }
-  });
-  const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
-  return { blob, dataUrl };
+    const bytes = new Uint8Array(await file.arrayBuffer());
+    const pdf = await pdfjsLib.getDocument({ data: bytes }).promise;
+    const page = await pdf.getPage(1);
+    const viewport = page.getViewport({ scale: 1.4 });
+    const canvas = document.createElement('canvas');
+    canvas.width = viewport.width;
+    canvas.height = viewport.height;
+    const ctx = canvas.getContext('2d', { willReadFrequently: true });
+    await page.render({ canvasContext: ctx, viewport }).promise;
+    return await new Promise(res => canvas.toBlob(b => res(b), 'image/jpeg', 0.9));
+  }
+
+  throw new Error('Unsupported file type');
 }
  
 async function blobToDataUrl(blob){
@@ -229,11 +240,11 @@ async function downscaleImageBlob(blob, maxDim=1600, mime='image/jpeg', quality=
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbyl5HwDc0MzkKZZsz1guTyvX0rOvjzMpB83ufmLtBmBVhqL5Wh3VBSaq-LCIJ7_hxsv/exec';
 const RH_SHARED_SECRET = '9c7e51dff93b4c42ae4cdb1e8c4b9d21';
 
-async function sendToAppsScriptVision({ imageBlob, userEmail }) {
-  const compact = imageBlob.size > 900000 ? await downscaleImageBlob(imageBlob) : imageBlob;
-  const imageDataUrl = await blobToDataUrl(compact);
+// Step 4 — minimal Apps Script caller (no pdf.js, no preview)
+async function sendToAppsScriptVision({ imageDataUrl, userEmail }) {
+  if (!imageDataUrl) throw new Error('Missing image data');
 
-  const payload = { userEmail, imageDataUrl, token: RH_SHARED_SECRET };
+  const payload = { userEmail: userEmail || '', imageDataUrl, token: RH_SHARED_SECRET };
 
   const resp = await fetch(GAS_URL, {
     method: 'POST',
@@ -243,33 +254,21 @@ async function sendToAppsScriptVision({ imageBlob, userEmail }) {
 
   const text = await resp.text();
   let json;
-  try { json = JSON.parse(text); }
-  catch (e) {
+  try {
+    json = JSON.parse(text);
+  } catch (e) {
     console.error('Apps Script returned non-JSON:', { status: resp.status, text });
     throw new Error('Server returned non-JSON');
   }
+
   if (!json.ok) {
     console.error('Apps Script error payload:', json);
     throw new Error(json.error || 'Unknown server error');
   }
-  return json.fields;
+
+  return json.fields; // {customerNumber, name, address, zip, billPeriodEnd, ...}
 }
-
 /* ========== app ========== */
-window.addEventListener('DOMContentLoaded', function () {
-  /* splash → signup */
-  var splash = document.getElementById('splash');
-  var signup = document.getElementById('signup');
-
-  setTimeout(function(){
-    splash.classList.add('out');
-    setTimeout(function(){ splash.style.display='none'; signup.classList.add('show'); }, 450);
-  }, 2300);
-
-  splash.addEventListener('click', function(){
-    splash.classList.add('out');
-    setTimeout(function(){ splash.style.display='none'; signup.classList.add('show'); }, 250);
-  });
 
   /* signup enable */
   var signUpBtn  = document.getElementById('signUpBtn');
@@ -395,87 +394,20 @@ window.addEventListener('DOMContentLoaded', function () {
     disableContinue();
   }
 
-  fileInput.addEventListener('change', async function(){
-    var f = fileInput.files && fileInput.files[0];
-    if (lastThumbUrl) { URL.revokeObjectURL(lastThumbUrl); lastThumbUrl = null; }
+fileInput.addEventListener('change', async function(){
+  const f = fileInput.files && fileInput.files[0];
+  if (!f) return disableContinue();
 
-    if (!f) {
-      previewEl.style.display = 'none';
-      var old = document.getElementById('parsedOut'); if (old) old.remove();
-      disableContinue();
-      return;
-    }
-
-    var out = document.getElementById('parsedOut');
-    if (!out) {
-      out = document.createElement('pre');
-      out.id = 'parsedOut';
-      out.className = 'hint';
-      out.style.whiteSpace = 'pre-wrap';
-      panelUpload.appendChild(out);
-    }
-    out.textContent = (f.type === 'application/pdf' || /\.pdf$/i.test(f.name)) ? '⏳ Rendering PDF…' : '⏳ Reading your bill…';
-
-    console.log('Selected file:', f.name, f.type, f.size);
-    var ocrSource = f;
-
-    var looksPdf = (f.type === 'application/pdf' || /\.pdf$/i.test(f.name));
-
-    if (looksPdf) {
-      try {
-        console.log('Rendering first page of PDF…');
-        var rendered = await pdfFirstPageAsImage(f, 1.4);
-        previewEl.src = rendered.dataUrl;
-        previewEl.style.display = 'block';
-        ocrSource = rendered.blob;
-        console.log('PDF rendered, blob size:', rendered.blob.size);
-      } catch (err) {
-        console.error('PDF render failed:', err && err.name, err && err.message, err);
-        previewEl.style.display = 'none';
-        out.textContent = '❌ Could not open that PDF (' + ((err && err.name) || 'Error') + '). ' + ((err && err.message) || '');
-        disableContinue();
-        return;
-      }
-    } else {
-      lastThumbUrl = URL.createObjectURL(f);
-      previewEl.src = lastThumbUrl;
-      previewEl.style.display = 'block';
-    }
-
-    var timeout = new Promise(function(_, rej){ setTimeout(function(){ rej(new Error('Vision timeout')); }, 30000); });
-
-    try {
-      var user = {};
-      try { user = JSON.parse(sessionStorage.getItem('rh_user') || '{}'); } catch(e){}
-      var userEmail = (user && user.email) ? String(user.email) : '';
-
-      var fields = await Promise.race([
-        sendToAppsScriptVision({ imageBlob: ocrSource, userEmail: userEmail }),
-        timeout
-      ]);
-
-      if (!fields || (!fields.customerNumber && !fields.name)) {
-        out.textContent = '❌ Could not read bill details. Please retake or upload a clearer photo.';
-        disableContinue();
-        return;
-      }
-
-      out.textContent = [
-        'Customer number: ' + (fields.customerNumber || '(missing)'),
-        'Name: ' + (fields.name || ''),
-        'Address: ' + (fields.address || ''),
-        'Zip: ' + (fields.zip || ''),
-        'Bill period: ' + (fields.billPeriodEnd || '')
-      ].join('\n');
-
-      window.__rh_fields = fields;
-      enableContinue();
-    } catch (err) {
-      out.textContent = '❌ Could not read the bill.';
-      disableContinue();
-      return;
-    }
-  });
+  try {
+    const blob = await fileToImageBlob(f);
+    window.__rh_uploadDataUrl = await blobToDataUrl(blob);
+    enableContinue();
+  } catch (err) {
+    console.error('File load failed:', err);
+    window.__rh_uploadDataUrl = null;
+    disableContinue();
+  }
+});
 
   /* fake results screen */
   continueBtn.addEventListener('click', function(){
