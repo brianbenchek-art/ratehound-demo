@@ -443,7 +443,7 @@ fileInput.addEventListener('change', async function () {
   }
 });
 
- // NEW: fire OCR on Continue, then render results
+// OCR already done on change; just show results now
 continueBtn.addEventListener('click', function () {
   if (!continueBtn.classList.contains('enabled')) return;
 
@@ -452,6 +452,67 @@ continueBtn.addEventListener('click', function () {
     showToast('No parsed data yet. Re-upload your bill.', 4200);
     return;
   }
+
+  document.getElementById('upload').classList.remove('show');
+  document.getElementById('loader').classList.add('show');
+  if (window.__loaderAnim && window.__loaderAnim.play) window.__loaderAnim.play();
+  setTimeout(() => { showLoaderThen(); }, 400);
+});
+
+// NEW: results renderer (no delay, optional parsed summary at top)
+function showLoaderThen(){
+  const results = document.getElementById('results');
+  const box     = document.getElementById('resultsInner');
+
+  const f = window.__rh_fields || {};
+  let parsedCard = '';
+  if (f.customerNumber || f.name || f.address || f.zip || f.billPeriodEnd) {
+    parsedCard =
+      '<div class="card" style="margin-bottom:12px">' +
+        '<div style="font-weight:800;color:#134c07">Parsed from your bill</div>' +
+        'Customer #: ' + (f.customerNumber || '(missing)') + '<br>' +
+        'Name: ' + (f.name || '') + '<br>' +
+        'Address: ' + (f.address || '') + ' ' + (f.zip || '') + '<br>' +
+        'Bill period end: ' + (f.billPeriodEnd || '') +
+      '</div>';
+  }
+
+  const planName='ClearGuarantee9Plus', ptc='9.39¢ / kWh', newRate='4.79¢ / kWh', term='9 Months', etf='$150', estSavings='45.1%';
+
+  box.innerHTML =
+    parsedCard +
+    '<div class="card">' +
+      '<div class="yellowBox--sm">Price to Compare: ' + ptc + '</div>' +
+      '<hr>' +
+      '<div class="leadGreen" style="margin:8px 0 10px">Here\'s the lowest rate we found for you.</div>' +
+      '<div class="yellowBox--lg ratePill"><div class="big">' + newRate + '</div></div>' +
+      '<div style="margin:10px 0 6px"><div style="font-weight:800;color:#134c07">Plan:</div><div style="font-size:18px">' + planName + '</div></div>' +
+      '<div class="row2" style="margin-top:8px">' +
+        '<div class="blk"><div style="font-weight:800;color:#134c07">Contract Term</div>' + term + '</div>' +
+        '<div class="blk"><div style="font-weight:800;color:#134c07">Early Termination Fee</div>' + etf + '</div>' +
+      '</div>' +
+      '<div class="yellowBox--lg savingsPill">Estimated Savings: <span class="big">' + estSavings + '</span></div>' +
+      '<button id="ctaSwitch" class="btn-cta">Switch me to this plan!</button>' +
+      '<hr style="margin:18px 0 10px">' +
+      '<div class="supplier" style="margin-top:0;display:flex;align-items:center;gap:12px;padding-top:12px;border-top:1px solid #e6e8eb">' +
+        '<img src="clearwater logo.png" alt="clearwater logo" style="height:40px">' +
+        '<span style="font-weight:800;color:#134c07">Clearview Energy</span>' +
+      '</div>' +
+      '<div class="links" style="margin-top:12px">' +
+        '<a href="#">Clearview Energy Terms &amp; Conditions</a><br>' +
+        '<a href="#">RateHound Terms of Service</a>' +
+      '</div>' +
+      '<div class="disclaimer" style="margin-top:12px">This rate will be effective following the first billing date after successful enrollment.</div>' +
+    '</div>';
+
+  document.getElementById('loader').classList.remove('show');
+  results.style.display = 'flex';
+
+  const cta = box.querySelector('#ctaSwitch');
+  if (cta) cta.addEventListener('click', function(){
+    showToast('Great — we’ll start the switch (demo).', 4200);
+  });
+}
 
   // Show loader briefly for continuity, then results
   document.getElementById('upload').classList.remove('show');
