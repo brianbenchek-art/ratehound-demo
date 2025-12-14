@@ -93,16 +93,24 @@
 <!-- Add pdf.js just below lottie -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.2.67/pdf.min.js"></script>
 <script>
-  (function () {
-    try {
-      if (window.pdfjsLib && pdfjsLib.GlobalWorkerOptions) {
-        pdfjsLib.GlobalWorkerOptions.workerSrc =
-          "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.2.67/pdf.worker.min.js";
-      }
-    } catch (e) {
-      console.warn("pdf.js worker setup skipped:", e);
-    }
-  })();
+// Ensure pdf.js is initialized before use
+window.addEventListener('load', () => {
+  if (!window.pdfjsLib) {
+    console.error('pdf.js library not found');
+    return;
+  }
+
+  if (!pdfjsLib.GlobalWorkerOptions) {
+    pdfjsLib.GlobalWorkerOptions = {};
+  }
+
+  if (!pdfjsLib.GlobalWorkerOptions.workerSrc) {
+    pdfjsLib.GlobalWorkerOptions.workerSrc =
+      "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.2.67/pdf.worker.min.js";
+  }
+
+  console.log('✅ pdf.js initialized:', pdfjsLib.GlobalWorkerOptions.workerSrc);
+});
 </script>
 
 <script src="https://unpkg.com/tesseract.js@4/dist/tesseract.min.js"></script>
@@ -178,7 +186,9 @@ async function pdfFirstPageAsImage(file, scale = 1.4) {
     pdfjsLib.GlobalWorkerOptions.workerSrc =
       "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.2.67/pdf.worker.min.js";
   }
-
+if (!window.pdfjsLib || !pdfjsLib.getDocument) {
+  throw new Error("pdf.js not loaded");
+}
   const loadingTask = pdfjsLib.getDocument({ data: bytes });
   const pdf = await loadingTask.promise;
   const page = await pdf.getPage(1);
