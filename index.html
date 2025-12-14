@@ -245,7 +245,7 @@ async function sendToAppsScriptVision({ imageDataUrl, userEmail }) {
 
   const resp = await fetch(GAS_URL, {
     method: 'POST',
-    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload)
   });
 
@@ -390,42 +390,75 @@ async function sendToAppsScriptVision({ imageDataUrl, userEmail }) {
     }
     disableContinue();
   }
-
-fileInput.addEventListener('change', async function(){
+fileInput.addEventListener('change', async function () {
   const f = fileInput.files && fileInput.files[0];
-  if (!f) return disableContinue();
+  if (!f) { disableContinue(); return; }
 
-  try {
-    const blob = await fileToImageBlob(f);
-    window.__rh_uploadDataUrl = await blobToDataUrl(blob);
-    enableContinue();
-  } catch (err) {
-    console.error('File load failed:', err);
-    window.__rh_uploadDataUrl = null;
-    disableContinue();
-  }
-});
-
- // NEW: fire OCR on Continue, then render results
-continueBtn.addEventListener('click', async function(){
-  if (!continueBtn.classList.contains('enabled')) return;
-
-  const dataUrl = window.__rh_uploadDataUrl;
-  if (!dataUrl) {
-    showToast('No file selected. Please upload a bill.', 4000);
-    return;
-  }
-
-  // Show loader
+  // UI: lock the flow and show loader
+  disableContinue();
   document.getElementById('upload').classList.remove('show');
   document.getElementById('loader').classList.add('show');
-
   if (window.lottie && !window.__loaderAnim){
     window.__loaderAnim = lottie.loadAnimation({
       container: document.getElementById('lottieContainer'),
       renderer: 'svg', loop: true, autoplay: true,
       path: 'loader.json'
     });
+  } else if (window.__loaderAnim){
+    window.__loaderAnim.play();
+    if (window.__loaderAnim.resize) window.__loaderAnim.resize();
+  }
+  window.scrollTo(0,0);
+
+  try {
+    // Downscale → data URL
+    const blob = await fileToImageBlob(f);
+    const dataUrl = await blobToDataUrl(blob);
+    window.__rh_uploadDataUrl = dataUrl;
+
+    // Send to Apps Script now; only enable Continue when fields are back
+    let user = {};
+    try { user = JSON.parse(sessionStorage.getItem('rh_user') || '{}'); } catch(_) {}
+
+    const fields = await sendToAppsScriptVision({
+      imageDataUrl: dataUrl,
+      userEmail: user.email || ''
+    });
+
+    window.__rh_fields = fields;      // save parsed fields
+    enableContinue();                 // now user can proceed
+
+    // UI: back to upload page, loader off
+    document.getElementById('loader').classList.remove('show');
+    document.getElementById('upload').classList.add('show');
+    showToast('Bill read. Tap Continue.', 3200);
+  } catch (err) {
+    console.error('Upload/parse failed:', err);
+    window.__rh_uploadDataUrl = null;
+    window.__rh_fields = null;
+    document.getElementById('loader').classList.remove('show');
+    document.getElementById('upload').classList.add('show');
+    disableContinue();
+    showToast('Could not read the bill. Try a clearer photo.', 5200);
+  }
+});
+
+ // NEW: fire OCR on Continue, then render results
+continueBtn.addEventListener('click', function () {
+  if (!continueBtn.classList.contains('enabled')) return;
+
+  const f = window.__rh_fields || null;
+  if (!f) {
+    showToast('No parsed data yet. Re-upload your bill.', 4200);
+    return;
+  }
+
+  // Show loader briefly for continuity, then results
+  document.getElementById('upload').classList.remove('show');
+  document.getElementById('loader').classList.add('show');
+  if (window.__loaderAnim && window.__loaderAnim.play) window.__loaderAnim.play();
+  setTimeout(() => { showLoaderThen(); }, 400);
+});
   } else if (window.__loaderAnim){
     window.__loaderAnim.play();
     if (window.__loaderAnim.resize) window.__loaderAnim.resize();
