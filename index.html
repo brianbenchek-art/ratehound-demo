@@ -157,7 +157,25 @@ if (window.pdfjsLib) {
 <script>
 /* libs are already loaded above */
 
+<script>
+// --- splash → signup ---
+document.addEventListener('DOMContentLoaded', () => {
+  const splash = document.getElementById('splash');
+  const signup = document.getElementById('signup');
 
+  function go() {
+    splash.classList.add('out'); // fades out via .fade css
+    setTimeout(() => {
+      splash.style.display = 'none';
+      signup.classList.add('show'); // display:flex
+    }, 450);
+  }
+
+  // Auto-advance after a short delay; tap/click also works
+  setTimeout(go, 1200);
+  splash.addEventListener('click', go);
+});
+</script>
 
 /* ========== helpers ========== */
 // Minimal PDF + image handler, no preview UI
