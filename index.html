@@ -2,10 +2,10 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1"> 
 <title>RateHound</title>
 <meta name="theme-color" content="#134c07">
-<style>
+<style> 
   :root{--brand:#134c07;--ink:#134c07;--muted:#6b7280;--border:#134c07}
   *{box-sizing:border-box}
   html,body{height:100%}
@@ -45,12 +45,12 @@
   .toast.show{opacity:1;transform:translateY(0)}
   .toast a{color:#fff;text-decoration:underline;font-weight:600}
 
-  /* UPLOAD (Account intake) */
+  /* UPLOAD (images only) */
   #upload{background:#fff;color:var(--ink);display:none}
   #upload.show{display:flex}
   #upload .inner{margin:0 auto;width:min(92%,420px);padding:28px 16px;display:flex;flex-direction:column;gap:16px;justify-content:flex-start;min-height:100vh;margin-top:5vh}
   #upload h1{margin:0 0 8px;font-size:26px;font-weight:700;text-align:center}
-  .method{width:100%;height:8vh;min-height:64px;display:flex;align-items:center;justify-content:center;border:2px solid var(--brand);background:#fff;color:var(--brand);border-radius:12px;font-weight:600;font-size:18px;margin-top:10px}
+  .method{width:100%;height:8vh;min-height:64px;display:flex;align-items:center;justify-content:center;border:2px solid var(--brand);background:#fff;color:var(--brand);border-radius:12px;font-weight:600;font-size:18px;margin-top:10px;cursor:pointer}
   .method.selected{background:var(--brand);color:#fff}
   .panel[hidden]{display:none}
   .preview{display:none;width:100%;max-height:300px;object-fit:contain;border:1px solid var(--border);border-radius:8px}
@@ -89,8 +89,22 @@
 
 <!-- libs -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js"></script>
+
+<!-- Add pdf.js just below lottie -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.2.67/pdf.min.js"></script>
-<script>pdfjsLib.GlobalWorkerOptions.workerSrc="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.2.67/pdf.worker.min.js";</script>
+<script>
+  (function () {
+    try {
+      if (window.pdfjsLib && pdfjsLib.GlobalWorkerOptions) {
+        pdfjsLib.GlobalWorkerOptions.workerSrc =
+          "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.2.67/pdf.worker.min.js";
+      }
+    } catch (e) {
+      console.warn("pdf.js worker setup skipped:", e);
+    }
+  })();
+</script>
+
 <script src="https://unpkg.com/tesseract.js@4/dist/tesseract.min.js"></script>
 </head>
 <body>
@@ -124,7 +138,8 @@
       <button class="method" id="mBtnUpload">Upload / Take Photo</button>
 
       <div id="m-upload" class="panel" hidden>
-        <input id="billFile" type="file" accept="image/*,application/pdf" aria-label="Upload or take a photo of your bill" hidden>
+        <!-- Revert to images only -->
+        <input id="billFile" type="file" accept="image/*,application/pdf,.pdf" aria-label="Upload or take a photo of your bill" hidden>
         <img id="preview" class="preview" alt="Bill preview">
       </div>
 
@@ -147,60 +162,146 @@
   <div id="toasts" aria-live="polite" aria-atomic="true"></div>
 
 <script>
-document.addEventListener('DOMContentLoaded', () => {
-  /* ---------- splash → signup ---------- */
-  const splash = document.getElementById('splash');
-  const signup = document.getElementById('signup');
+/* libs are already loaded above */
 
-  setTimeout(() => {
-    splash.classList.add('out');
-    setTimeout(() => { splash.style.display = 'none'; signup.classList.add('show'); }, 450);
-  }, 2300);
 
-  splash.addEventListener('click', () => {
-    splash.classList.add('out');
-    setTimeout(() => { splash.style.display = 'none'; signup.classList.add('show'); }, 250);
+
+/* ========== helpers ========== */
+async function pdfFirstPageAsImage(file, scale = 1.4) {
+  const buf = await file.arrayBuffer();
+  const bytes = new Uint8Array(buf);
+
+  if (!(window.pdfjsLib && pdfjsLib.getDocument)) {
+    throw new Error("pdf.js not loaded");
+  }
+  if (!pdfjsLib.GlobalWorkerOptions.workerSrc) {
+    pdfjsLib.GlobalWorkerOptions.workerSrc =
+      "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.2.67/pdf.worker.min.js";
+  }
+
+  const loadingTask = pdfjsLib.getDocument({ data: bytes });
+  const pdf = await loadingTask.promise;
+  const page = await pdf.getPage(1);
+  const viewport = page.getViewport({ scale });
+
+  const canvas = document.createElement('canvas');
+  const ctx = canvas.getContext('2d', { willReadFrequently: true });
+  canvas.width = viewport.width;
+  canvas.height = viewport.height;
+
+  await page.render({ canvasContext: ctx, viewport }).promise;
+
+  const blob = await new Promise(async (res) => {
+    if (canvas.toBlob) {
+      canvas.toBlob(b => res(b), 'image/jpeg', 0.9);
+    } else {
+      const dataURI = canvas.toDataURL('image/jpeg', 0.9);
+      const b = await (await fetch(dataURI)).blob();
+      res(b);
+    }
+  });
+  const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
+  return { blob, dataUrl };
+}
+
+async function blobToDataUrl(blob){
+  return new Promise((res, rej) => {
+    const fr = new FileReader();
+    fr.onload = function(){ res(fr.result); };
+    fr.onerror = rej;
+    fr.readAsDataURL(blob);
+  });
+}
+
+async function downscaleImageBlob(blob, maxDim=1600, mime='image/jpeg', quality=0.82){
+  const img = document.createElement('img');
+  const url = URL.createObjectURL(blob);
+  await new Promise(r => { img.onload = r; img.src = url; });
+  const w=img.naturalWidth, h=img.naturalHeight;
+  let nw=w, nh=h;
+  if (Math.max(w,h)>maxDim){ const k=maxDim/Math.max(w,h); nw=Math.round(w*k); nh=Math.round(h*k); }
+  const c=document.createElement('canvas'); c.width=nw; c.height=nh;
+  c.getContext('2d').drawImage(img,0,0,nw,nh);
+  return new Promise(res => c.toBlob(b => { URL.revokeObjectURL(url); res(b||blob); }, mime, quality));
+}
+
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbyl5HwDc0MzkKZZsz1guTyvX0rOvjzMpB83ufmLtBmBVhqL5Wh3VBSaq-LCIJ7_hxsv/exec';
+const RH_SHARED_SECRET = '9c7e51dff93b4c42ae4cdb1e8c4b9d21';
+
+async function sendToAppsScriptVision({ imageBlob, userEmail }) {
+  const compact = imageBlob.size > 900000 ? await downscaleImageBlob(imageBlob) : imageBlob;
+  const imageDataUrl = await blobToDataUrl(compact);
+
+  const payload = { userEmail, imageDataUrl, token: RH_SHARED_SECRET };
+
+  const resp = await fetch(GAS_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify(payload)
   });
 
-  /* ---------- signup enable ---------- */
-  const signUpBtn  = document.getElementById('signUpBtn');
-  const nameInput  = document.getElementById('name');
-  const phoneInput = document.getElementById('phone');
-  const emailInput = document.getElementById('email');
+  const text = await resp.text();
+  let json;
+  try { json = JSON.parse(text); }
+  catch (e) {
+    console.error('Apps Script returned non-JSON:', { status: resp.status, text });
+    throw new Error('Server returned non-JSON');
+  }
+  if (!json.ok) {
+    console.error('Apps Script error payload:', json);
+    throw new Error(json.error || 'Unknown server error');
+  }
+  return json.fields;
+}
+
+/* ========== app ========== */
+window.addEventListener('DOMContentLoaded', function () {
+  /* splash → signup */
+  var splash = document.getElementById('splash');
+  var signup = document.getElementById('signup');
+
+  setTimeout(function(){
+    splash.classList.add('out');
+    setTimeout(function(){ splash.style.display='none'; signup.classList.add('show'); }, 450);
+  }, 2300);
+
+  splash.addEventListener('click', function(){
+    splash.classList.add('out');
+    setTimeout(function(){ splash.style.display='none'; signup.classList.add('show'); }, 250);
+  });
+
+  /* signup enable */
+  var signUpBtn  = document.getElementById('signUpBtn');
+  var nameInput  = document.getElementById('name');
+  var phoneInput = document.getElementById('phone');
+  var emailInput = document.getElementById('email');
 
   function checkSignupFields(){
     signUpBtn.disabled = !(nameInput.value.trim() && phoneInput.value.trim() && emailInput.value.trim());
   }
-  [nameInput, phoneInput, emailInput].forEach(el => el.addEventListener('input', checkSignupFields));
+  [nameInput, phoneInput, emailInput].forEach(function(el){ el.addEventListener('input', checkSignupFields); });
   checkSignupFields();
 
-  renderUserChip();
   function renderUserChip(){
-    const chip = document.getElementById('userChip');
+    var chip = document.getElementById('userChip');
     try{
-      const user = JSON.parse(sessionStorage.getItem('rh_user') || '{}');
+      var user = JSON.parse(sessionStorage.getItem('rh_user') || '{}');
       if (user && user.email) {
-        chip.textContent = `Signed in as ${user.email}`;
+        chip.textContent = 'Signed in as ' + user.email;
         chip.hidden = false;
         document.body.classList.add('has-chip');
         document.getElementById('chipSafe').hidden = false;
-        requestAnimationFrame(() => chip.classList.add('show'));
+        requestAnimationFrame(function(){ chip.classList.add('show'); });
       }
     } catch(e){}
   }
 
-  /* ---------- shadow account + toasts (demo) ---------- */
-  const APP_LINK = '#';
-  // GAS endpoint + optional shared secret
-  const GAS_URL = 'https://script.google.com/macros/s/AKfycbzXbhsjKxoZIaMScyrNQ9fHiYoLAHlhz2cuFuXG4LfYabWQ2WDOPXfgDD1k6N212mw5/exec';     
-  const RH_SHARED_SECRET = '9c7e51dff93b4c42ae4cdb1e8c4b9d21'; 
-
   function createShadowAccount(){
-    const user = {
+    var user = {
       id: 'demo_' + Date.now(),
-      name:  document.getElementById('name')?.value.trim() || '',
-      phone: document.getElementById('phone')?.value.trim() || '',
-      email: document.getElementById('email')?.value.trim() || '',
+      name:  (document.getElementById('name').value || '').trim(),
+      phone: (document.getElementById('phone').value || '').trim(),
+      email: (document.getElementById('email').value || '').trim(),
       createdAt: new Date().toISOString()
     };
     try { sessionStorage.setItem('rh_user', JSON.stringify(user)); } catch(e){}
@@ -208,16 +309,19 @@ document.addEventListener('DOMContentLoaded', () => {
     return user;
   }
 
-  function showToast(html, ms=4000){
-    const wrap = document.getElementById('toasts');
+  function showToast(html, ms){
+    ms = ms || 4000;
+    var wrap = document.getElementById('toasts');
     if (!wrap) return;
-    const t = document.createElement('div');
+    var t = document.createElement('div');
     t.className = 'toast';
     t.innerHTML = html;
     wrap.appendChild(t);
-    requestAnimationFrame(() => t.classList.add('show'));
-    setTimeout(() => { t.classList.remove('show'); setTimeout(() => t.remove(), 250); }, ms);
+    requestAnimationFrame(function(){ t.classList.add('show'); });
+    setTimeout(function(){ t.classList.remove('show'); setTimeout(function(){ t.remove(); }, 250); }, ms);
   }
+
+  var APP_LINK = '#';
 
   function sendDemoWelcome(user){
     console.log('[DEMO SMS] Welcome to RateHound,', user.name, 'Username:', user.email);
@@ -227,106 +331,20 @@ document.addEventListener('DOMContentLoaded', () => {
     showToast('Grab the app: <a href="'+APP_LINK+'" target="_blank" rel="noopener">RateHound App</a>', 7000);
   }
 
-  /* ---------- helpers (PDF/Images) ---------- */
-  async function pdfFirstPageAsImage(file, scale = 1.4) {
-    const buf = await file.arrayBuffer();
-    const pdf = await pdfjsLib.getDocument({ data: buf }).promise;
-    const page = await pdf.getPage(1);
-    const viewport = page.getViewport({ scale });
-    const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d');
-    canvas.width = viewport.width; canvas.height = viewport.height;
-    await page.render({ canvasContext: ctx, viewport }).promise;
-    const blob = await new Promise(res => canvas.toBlob(res, 'image/png', 0.95));
-    const dataUrl = canvas.toDataURL('image/png');
-    return { blob, dataUrl };
-  }
+  renderUserChip();
 
-  async function blobToDataUrl(blob){
-    return new Promise((res, rej) => {
-      const fr = new FileReader();
-      fr.onload = () => res(fr.result);
-      fr.onerror = rej;
-      fr.readAsDataURL(blob);
-    });
-  }
+  /* intake flow */
+  var titleEl     = document.getElementById('uploadTitle');
+  var mBtnUpload  = document.getElementById('mBtnUpload');
+  var panelUpload = document.getElementById('m-upload');
+  var fileInput   = document.getElementById('billFile');
+  var previewEl   = document.getElementById('preview');
+  var continueBtn = document.getElementById('continueUpload');
 
-  async function downscaleImageBlob(blob, maxDim=1600, mime='image/jpeg', quality=0.82){
-    const img = document.createElement('img');
-    const url = URL.createObjectURL(blob);
-    await new Promise(r => { img.onload = r; img.src = url; });
-    const w=img.naturalWidth, h=img.naturalHeight;
-    let nw=w, nh=h;
-    if (Math.max(w,h)>maxDim){ const k=maxDim/Math.max(w,h); nw=Math.round(w*k); nh=Math.round(h*k); }
-    const c=document.createElement('canvas'); c.width=nw; c.height=nh;
-    c.getContext('2d').drawImage(img,0,0,nw,nh);
-    return new Promise(res => c.toBlob(b => { URL.revokeObjectURL(url); res(b||blob); }, mime, quality));
-  }
-
-  // Send to Apps Script Vision endpoint (text-first error reporting)
-  async function sendToAppsScriptVision({ imageBlob, userEmail }) {
-  // Downscale if large, then convert to data URL
-  const compact = imageBlob.size > 900000 ? await downscaleImageBlob(imageBlob) : imageBlob;
-  const imageDataUrl = await blobToDataUrl(compact);
-
-  const payload = { userEmail, imageDataUrl, token: RH_SHARED_SECRET };
-
-  // Use text/plain to avoid CORS preflight
-  const resp = await fetch(GAS_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-    body: JSON.stringify(payload)
-  });
-
-  const text = await resp.text(); // read text first for better errors
-  let json;
-  try {
-    json = JSON.parse(text);
-  } catch (e) {
-    console.error('Apps Script returned non-JSON:', { status: resp.status, text });
-    throw new Error(`Server returned non-JSON (${resp.status}): ${text.slice(0,200)}`);
-  }
-
-  if (!json.ok) {
-    console.error('Apps Script error payload:', json);
-    throw new Error(json.error || `Unknown server error (${resp.status})`);
-  }
-
-  console.log('Apps Script fields:', json.fields);
-  return json.fields;
-}
-// -------- Customer number: 20 digits starting with 080 --------
-// Accepts spaces/newlines/OCR gaps between digits, then normalizes
-function extract080x20(text) {
-  const m = (text || '').match(/0\s*8\s*0(?:\s*\d){17}/i);
-  if (!m) return '';
-  const digits = m[0].replace(/\D/g, '');
-  return /^080\d{17}$/.test(digits) ? digits : '';
-}
-  /* ---------- intake flow ---------- */
-  signUpBtn.addEventListener('click', () => {
-    if (signUpBtn.disabled) return;
-    const user = createShadowAccount();
-    sendDemoWelcome(user);
-    signup.classList.remove('show');
-    document.getElementById('upload').classList.add('show');
-    uploadQueue = ['electric'];
-    setUploadTitleFor('electric');
-    selectMethod('upload');
-    window.scrollTo(0,0);
-  });
-
-  const titleEl = document.getElementById('uploadTitle');
-  const mBtns   = { upload: document.getElementById('mBtnUpload') };
-  const panels  = { upload: document.getElementById('m-upload') };
-  const fileInput   = document.getElementById('billFile');
-  const previewEl   = document.getElementById('preview');
-  const continueBtn = document.getElementById('continueUpload');
-
-  let uploadQueue = [];
-  let uploadIndex = 0;
-  let currentMethod = null;
-  let lastThumbUrl = null;
+  var uploadQueue = [];
+  var uploadIndex = 0;
+  var currentMethod = null;
+  var lastThumbUrl = null;
 
   function setUploadTitleFor(kind){
     titleEl.textContent = (kind === 'electric')
@@ -336,8 +354,8 @@ function extract080x20(text) {
   function enableContinue(){ continueBtn.classList.add('enabled'); continueBtn.style.opacity='1'; continueBtn.style.pointerEvents='auto'; }
   function disableContinue(){ continueBtn.classList.remove('enabled'); continueBtn.style.opacity='.5'; continueBtn.style.pointerEvents='none'; }
   function resetPanels(){
-    Object.values(panels).forEach(p => p.hidden = true);
-    Object.values(mBtns).forEach(b => b.classList.remove('selected'));
+    panelUpload.hidden = true;
+    mBtnUpload.classList.remove('selected');
     if (fileInput) fileInput.value = '';
     if (previewEl) previewEl.style.display = 'none';
     currentMethod = null;
@@ -346,63 +364,92 @@ function extract080x20(text) {
   function selectMethod(which){
     resetPanels();
     currentMethod = which;
-    mBtns[which].classList.add('selected');
-    panels[which].hidden = false;
-    validateUpload();
+    if (which === 'upload') {
+      mBtnUpload.classList.add('selected');
+      panelUpload.hidden = false;
+      validateUpload();
+    }
   }
-  mBtns.upload.addEventListener('click', () => { selectMethod('upload'); fileInput.click(); });
+
+  document.getElementById('signUpBtn').addEventListener('click', function(){
+    if (signUpBtn.disabled) return;
+    var user = createShadowAccount();
+    sendDemoWelcome(user);
+    document.getElementById('signup').classList.remove('show');
+    document.getElementById('upload').classList.add('show');
+    uploadQueue = ['electric'];
+    setUploadTitleFor('electric');
+    resetPanels();
+    window.scrollTo(0,0);
+
+  });
+
+  mBtnUpload.addEventListener('click', function(){ selectMethod('upload'); fileInput.click(); });
+
   function validateUpload(){
     if (currentMethod === 'upload'){
-      const ok = !!fileInput.files?.[0];
+      var ok = !!(fileInput.files && fileInput.files[0]);
       return ok ? enableContinue() : disableContinue();
     }
     disableContinue();
   }
 
-  fileInput?.addEventListener('change', async () => {
-    const f = fileInput.files?.[0];
+  fileInput.addEventListener('change', async function(){
+    var f = fileInput.files && fileInput.files[0];
     if (lastThumbUrl) { URL.revokeObjectURL(lastThumbUrl); lastThumbUrl = null; }
 
     if (!f) {
       previewEl.style.display = 'none';
-      document.getElementById('parsedOut')?.remove();
+      var old = document.getElementById('parsedOut'); if (old) old.remove();
       disableContinue();
       return;
     }
 
-    let ocrSource = f;
-    if (f.type === 'application/pdf') {
-      try {
-        const { blob, dataUrl } = await pdfFirstPageAsImage(f, 1.4);
-        previewEl.src = dataUrl; previewEl.style.display = 'block';
-        ocrSource = blob;
-      } catch (e) {
-        console.error('PDF render failed:', e);
-        previewEl.style.display = 'none';
-      }
-    } else {
-      lastThumbUrl = URL.createObjectURL(f);
-      previewEl.src = lastThumbUrl; previewEl.style.display = 'block';
-    }
-
-    let out = document.getElementById('parsedOut');
+    var out = document.getElementById('parsedOut');
     if (!out) {
       out = document.createElement('pre');
       out.id = 'parsedOut';
       out.className = 'hint';
       out.style.whiteSpace = 'pre-wrap';
-      document.getElementById('m-upload').appendChild(out);
+      panelUpload.appendChild(out);
     }
-    out.textContent = '⏳ Reading your bill...';
+    out.textContent = (f.type === 'application/pdf' || /\.pdf$/i.test(f.name)) ? '⏳ Rendering PDF…' : '⏳ Reading your bill…';
 
-    const timeout = new Promise((_, rej) => setTimeout(() => rej(new Error('Vision timeout')), 30000));
+    console.log('Selected file:', f.name, f.type, f.size);
+    var ocrSource = f;
+
+    var looksPdf = (f.type === 'application/pdf' || /\.pdf$/i.test(f.name));
+
+    if (looksPdf) {
+      try {
+        console.log('Rendering first page of PDF…');
+        var rendered = await pdfFirstPageAsImage(f, 1.4);
+        previewEl.src = rendered.dataUrl;
+        previewEl.style.display = 'block';
+        ocrSource = rendered.blob;
+        console.log('PDF rendered, blob size:', rendered.blob.size);
+      } catch (err) {
+        console.error('PDF render failed:', err && err.name, err && err.message, err);
+        previewEl.style.display = 'none';
+        out.textContent = '❌ Could not open that PDF (' + ((err && err.name) || 'Error') + '). ' + ((err && err.message) || '');
+        disableContinue();
+        return;
+      }
+    } else {
+      lastThumbUrl = URL.createObjectURL(f);
+      previewEl.src = lastThumbUrl;
+      previewEl.style.display = 'block';
+    }
+
+    var timeout = new Promise(function(_, rej){ setTimeout(function(){ rej(new Error('Vision timeout')); }, 30000); });
 
     try {
-      const user = JSON.parse(sessionStorage.getItem('rh_user') || '{}');
-      const userEmail = user && user.email ? String(user.email) : '';
+      var user = {};
+      try { user = JSON.parse(sessionStorage.getItem('rh_user') || '{}'); } catch(e){}
+      var userEmail = (user && user.email) ? String(user.email) : '';
 
-      const fields = await Promise.race([
-        sendToAppsScriptVision({ imageBlob: ocrSource, userEmail }),
+      var fields = await Promise.race([
+        sendToAppsScriptVision({ imageBlob: ocrSource, userEmail: userEmail }),
         timeout
       ]);
 
@@ -413,53 +460,24 @@ function extract080x20(text) {
       }
 
       out.textContent = [
-        `Customer number: ${fields.customerNumber || '(missing)'}`,
-        `Name: ${fields.name || ''}`,
-        `Address: ${fields.address || ''}`,
-        `Zip: ${fields.zip || ''}`,
-        `Bill period: ${fields.billPeriodEnd || ''}`
+        'Customer number: ' + (fields.customerNumber || '(missing)'),
+        'Name: ' + (fields.name || ''),
+        'Address: ' + (fields.address || ''),
+        'Zip: ' + (fields.zip || ''),
+        'Bill period: ' + (fields.billPeriodEnd || '')
       ].join('\n');
 
       window.__rh_fields = fields;
       enableContinue();
-
     } catch (err) {
-  console.warn('Vision parse failed, using on-device OCR:', err);
-  out.textContent = '⚠️ Server failed; using on-device OCR...';
-  try {
-    const text = await ocrImage(ocrSource);
-    const num = extract080x20(text);
-    if (!num) {
-      out.textContent += '\n❌ Could not find a valid 080xxxxxxxxxxxxxxxxx number.';
+      out.textContent = '❌ Could not read the bill.';
       disableContinue();
       return;
     }
-
-    const local = { 
-      customerNumber: num,
-      ...parseFields(text)
-    };
-
-    out.textContent = [
-      `Customer number: ${local.customerNumber}`,
-      `Name: ${local.name || ''}`,
-      `Address: ${local.address || ''}`,
-      `Zip: ${local.zip || ''}`,
-      `Bill period: ${local.billPeriodEnd || ''}`
-    ].join('\n');
-
-    window.__rh_fields = local;
-    enableContinue();
-  } catch (e2) {
-    out.textContent = '❌ Could not read the bill.';
-    disableContinue();
-  }
-    return; // prevent any old fallthrough code from running
-    }
   });
 
-  /* ---------- fake results screen ---------- */
-  continueBtn.addEventListener('click', () => {
+  /* fake results screen */
+  continueBtn.addEventListener('click', function(){
     if (!continueBtn.classList.contains('enabled')) return;
     document.getElementById('upload').classList.remove('show');
     document.getElementById('loader').classList.add('show');
@@ -472,85 +490,48 @@ function extract080x20(text) {
       });
     } else if (window.__loaderAnim){
       window.__loaderAnim.play();
-      window.__loaderAnim.resize && window.__loaderAnim.resize();
+      if (window.__loaderAnim.resize) window.__loaderAnim.resize();
     }
 
     window.scrollTo(0,0);
-    setTimeout(() => showLoaderThen(uploadQueue[uploadIndex] || 'electric'), 4000);
+    setTimeout(function(){ showLoaderThen(uploadQueue[uploadIndex] || 'electric'); }, 4000);
   });
 
-  function showLoaderThen(kind){
-    const results = document.getElementById('results');
-    const box     = document.getElementById('resultsInner');
+  function showLoaderThen(){
+    var results = document.getElementById('results');
+    var box     = document.getElementById('resultsInner');
 
-    const planName='ClearGuarantee9Plus', ptc='9.39¢ / kWh', newRate='4.79¢ / kWh', term='9 Months', etf='$150', estSavings='45.1%';
+    var planName='ClearGuarantee9Plus', ptc='9.39¢ / kWh', newRate='4.79¢ / kWh', term='9 Months', etf='$150', estSavings='45.1%';
 
-    box.innerHTML = `
-      <div class="card">
-        <div class="yellowBox--sm">Price to Compare: ${ptc}</div>
-        <hr>
-        <div class="leadGreen" style="margin:8px 0 10px">Here's the lowest rate we found for you.</div>
-        <div class="yellowBox--lg ratePill"><div class="big">${newRate}</div></div>
-        <div style="margin:10px 0 6px">
-          <div style="font-weight:800;color:#134c07">Plan:</div>
-          <div style="font-size:18px">${planName}</div>
-        </div>
-        <div class="row2" style="margin-top:8px">
-          <div class="blk"><div style="font-weight:800;color:#134c07">Contract Term</div>${term}</div>
-          <div class="blk"><div style="font-weight:800;color:#134c07">Early Termination Fee</div>${etf}</div>
-        </div>
-        <div class="yellowBox--lg savingsPill">Estimated Savings: <span class="big">${estSavings}</span></div>
-        <button id="ctaSwitch" class="btn-cta">Switch me to this plan!</button>
-        <hr style="margin:18px 0 10px">
-        <div class="supplier" style="margin-top:0;display:flex;align-items:center;gap:12px;padding-top:12px;border-top:1px solid #e6e8eb">
-          <img src="clearwater logo.png" alt="clearwater logo" style="height:40px">
-          <span style="font-weight:800;color:#134c07">Clearview Energy</span>
-        </div>
-        <div class="links" style="margin-top:12px">
-          <a href="#">Clearview Energy Terms &amp; Conditions</a><br>
-          <a href="#">RateHound Terms of Service</a>
-        </div>
-        <div class="disclaimer" style="margin-top:12px">This rate will be effective following the first billing date after successful enrollment.</div>
-      </div>`;
+    box.innerHTML =
+      '<div class="card">' +
+      '<div class="yellowBox--sm">Price to Compare: ' + ptc + '</div>' +
+      '<hr>' +
+      '<div class="leadGreen" style="margin:8px 0 10px">Here\'s the lowest rate we found for you.</div>' +
+      '<div class="yellowBox--lg ratePill"><div class="big">' + newRate + '</div></div>' +
+      '<div style="margin:10px 0 6px"><div style="font-weight:800;color:#134c07">Plan:</div><div style="font-size:18px">' + planName + '</div></div>' +
+      '<div class="row2" style="margin-top:8px">' +
+      '<div class="blk"><div style="font-weight:800;color:#134c07">Contract Term</div>' + term + '</div>' +
+      '<div class="blk"><div style="font-weight:800;color:#134c07">Early Termination Fee</div>' + etf + '</div>' +
+      '</div>' +
+      '<div class="yellowBox--lg savingsPill">Estimated Savings: <span class="big">' + estSavings + '</span></div>' +
+      '<button id="ctaSwitch" class="btn-cta">Switch me to this plan!</button>' +
+      '<hr style="margin:18px 0 10px">' +
+      '<div class="supplier" style="margin-top:0;display:flex;align-items:center;gap:12px;padding-top:12px;border-top:1px solid #e6e8eb">' +
+      '<img src="clearwater logo.png" alt="clearwater logo" style="height:40px">' +
+      '<span style="font-weight:800;color:#134c07">Clearview Energy</span>' +
+      '</div>' +
+      '<div class="links" style="margin-top:12px">' +
+      '<a href="#">Clearview Energy Terms &amp; Conditions</a><br>' +
+      '<a href="#">RateHound Terms of Service</a>' +
+      '</div>' +
+      '<div class="disclaimer" style="margin-top:12px">This rate will be effective following the first billing date after successful enrollment.</div>' +
+      '</div>';
+
     document.getElementById('loader').classList.remove('show');
     results.style.display = 'flex';
-   box.querySelector('#ctaSwitch')?.addEventListener('click', () =>
-  showToast('Great — we’ll start the switch (demo).', 4200)
-);
-  }
-
-  /* ---- client-side parsing fallback ---- */
-  function parseFields(text){
-    const t = (text || "").replace(/\r/g, "");
-  
-
-  // -------- Customer number: 20 digits starting with 080 --------
-// Accepts spaces, newlines, or OCR gaps between digits
-
-const customerNumber = extract080x20(t);
-const validCustomerNumber = !!customerNumber;
-    const billBlockMatch = t.match(/Bill\s*for[:\s]*(.+?)(?:\n{2,}|Billing\s*Period|Bill\s*Date|Account\s*Number)/is);
-    const billBlock = billBlockMatch ? billBlockMatch[1].trim() : "";
-    const lines = billBlock.split(/\n/).map(s => s.trim()).filter(Boolean);
-
-    const name   = lines[0] || "";
-    const address = (lines.find(l => /^\d+[\sA-Za-z]/.test(l)) || lines[1] || "").replace(/\s{2,}/g," ").trim();
-
-    const zipMatch =
-      (lines.slice(-2).join(" ").match(/\b(\d{5})(?:-\d{4})?\b/)) ||
-      (billBlock.match(/\b(\d{5})(?:-\d{4})?\b/));
-    const zip = zipMatch ? zipMatch[1] : "";
-
-    const bp = t.match(/Billing\s*Period[:\s]*([A-Za-z]{3,9}\s+\d{1,2})\s*(?:to|–|-|—)\s*([A-Za-z]{3,9}\s+\d{1,2})(?:,\s*(\d{4}))?/i);
-    let billPeriodEnd = "";
-    if (bp) {
-      const right = bp[2];
-      const year  = bp[3] || new Date().getFullYear();
-      const endDate = new Date(`${right}, ${year}`);
-      billPeriodEnd = endDate.toLocaleString('en-US', { month: 'short', day: 'numeric' });
-    }
-
-    return { customerNumber, name, address, zip, billPeriodEnd, validCustomerNumber };
+    var cta = box.querySelector('#ctaSwitch');
+    if (cta) cta.addEventListener('click', function(){ showToast('Great — we’ll start the switch (demo).', 4200); });
   }
 });
 </script>
