@@ -225,7 +225,7 @@ async function downscaleImageBlob(blob, maxDim=1600, mime='image/jpeg', quality=
   return new Promise(res => c.toBlob(b => { URL.revokeObjectURL(url); res(b||blob); }, mime, quality));
 }
 
-const GAS_URL = 'https://script.google.com/macros/s/AKfycbzWiwWza8tO0wmx2NTRwyMQokukTJ4kr1T8J9jIr1dAkTT-dNshtWuFvmNNhg_uwIg/exec';
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbyFMl9EPfabIz_I5XFQ_w7-cRMXJvzpgzo9xDoEF34O3uPljCbykinD0W-0NsV5tuc/exec';
 const RH_SHARED_SECRET = '9c7e51dff93b4c42ae4cdb1e8c4b9d21';
 
 async function sendToAppsScriptVision({ imageBlob, userEmail }) {
