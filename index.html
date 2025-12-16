@@ -88,9 +88,27 @@
 </style>
 
 <!-- libs -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.2.67/pdf.min.js"></script>
-<script>pdfjsLib.GlobalWorkerOptions.workerSrc="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.2.67/pdf.worker.min.js";</script>
+<script type="module">
+  import * as pdfjsLib from './pdf.min.mjs';
+  window.pdfjsLib = pdfjsLib; // keep existing code working
+  pdfjsLib.GlobalWorkerOptions.workerSrc = './pdf.worker.min.mjs';
+</script>
+  <script type="module">
+  window.__rh_setPdfBlobWorkerFallback = async function () {
+    try {
+      const res  = await fetch('./pdf.worker.min.mjs', { cache: 'force-cache' });
+      const code = await res.text();
+      const blob = new Blob([code], { type: 'text/javascript' });
+      const url  = URL.createObjectURL(blob);
+      window.pdfjsLib.GlobalWorkerOptions.workerSrc = url;
+      return true;
+    } catch (e) {
+      console.error('[pdf.js] blob-worker fallback failed:', e);
+      return false;
+    }
+  };
+</script>
+
 <script src="https://unpkg.com/tesseract.js@4/dist/tesseract.min.js"></script>
 </head>
 <body>
