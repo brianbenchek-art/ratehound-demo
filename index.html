@@ -91,12 +91,12 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js"></script>
 
 <!-- Add pdf.js just below lottie -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.2.67/pdf.min.js"></script>
+<script src="./pdf.min.js"></script>
 <script>
   (function () {
     try {
       if (window.pdfjsLib && pdfjsLib.GlobalWorkerOptions) {
-        pdfjsLib.GlobalWorkerOptions.workerSrc =
+       pdfjsLib.GlobalWorkerOptions.workerSrc = "./pdf.worker.min.js";
           "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.2.67/pdf.worker.min.js";
       }
     } catch (e) {
