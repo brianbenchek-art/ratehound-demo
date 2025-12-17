@@ -97,7 +97,7 @@
     try {
       if (window.pdfjsLib && pdfjsLib.GlobalWorkerOptions) {
        pdfjsLib.GlobalWorkerOptions.workerSrc = "./pdf.worker.min.js";
-          "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.2.67/pdf.worker.min.js";
+          "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js";
       }
     } catch (e) {
       console.warn("pdf.js worker setup skipped:", e);
@@ -176,7 +176,7 @@ async function pdfFirstPageAsImage(file, scale = 1.4) {
   }
   if (!pdfjsLib.GlobalWorkerOptions.workerSrc) {
     pdfjsLib.GlobalWorkerOptions.workerSrc =
-      "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.2.67/pdf.worker.min.js";
+  "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
   }
 
   const loadingTask = pdfjsLib.getDocument({ data: bytes });
