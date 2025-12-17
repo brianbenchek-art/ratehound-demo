@@ -93,16 +93,15 @@
 <!-- Add pdf.js just below lottie -->
 <script src="./pdf.min.js"></script>
 <script>
-  (function () {
-    try {
-      if (window.pdfjsLib && pdfjsLib.GlobalWorkerOptions) {
-       pdfjsLib.GlobalWorkerOptions.workerSrc = "./pdf.worker.min.js";
-          "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js";
-      }
-    } catch (e) {
-      console.warn("pdf.js worker setup skipped:", e);
+(function () {
+  try {
+    if (window.pdfjsLib && pdfjsLib.GlobalWorkerOptions) {
+      pdfjsLib.GlobalWorkerOptions.workerSrc = "./pdf.worker.min.js";
     }
-  })();
+  } catch (e) {
+    console.warn("pdf.js worker setup skipped:", e);
+  }
+})();
 </script>
 
 <script src="https://unpkg.com/tesseract.js@4/dist/tesseract.min.js"></script>
