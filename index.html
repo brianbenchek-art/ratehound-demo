@@ -85,6 +85,78 @@
   body.has-chip{padding-top:var(--safeTop)}
   .chip{position:fixed;top:10px;right:10px;background:#134c07;color:#fff;border-radius:999px;padding:6px 10px;font-size:12px;font-weight:600;box-shadow:0 2px 6px rgba(0,0,0,.12);z-index:1001;opacity:.9;transform:scale(.9)}
   .chip.show{opacity:1;transform:translateY(0)}
+  /* ---------- Confirm/Edit Modal ---------- */
+#confirmModal[hidden]{display:none}
+#confirmModal{
+  position:fixed; inset:0; z-index:2000;
+  display:flex; align-items:center; justify-content:center;
+  background:rgba(0,0,0,.45);
+  padding:18px;
+}
+#confirmModal .modalCard{
+  width:min(92vw, 420px);
+  background:#fff;
+  border:1px solid var(--border);
+  border-radius:18px;
+  box-shadow:0 10px 30px rgba(0,0,0,.20);
+  overflow:hidden;
+}
+#confirmModal .modalTop{
+  padding:16px 16px 10px;
+  background:#f6f7f8;
+  border-bottom:1px solid rgba(0,0,0,.08);
+}
+#confirmModal .modalTitle{
+  margin:0;
+  font-size:18px;
+  font-weight:800;
+  color:var(--ink);
+  text-align:center;
+}
+#confirmModal .modalBody{ padding:14px 16px 6px; }
+#confirmModal .fieldRow{ margin:10px 0; }
+#confirmModal label{
+  display:block;
+  font-size:12px;
+  color:var(--muted);
+  margin-bottom:6px;
+  font-weight:700;
+}
+#confirmModal input{
+  width:100%;
+  padding:12px 14px;
+  border:2px solid var(--border);
+  border-radius:12px;
+  font-size:16px;
+  color:var(--ink);
+  background:#fff;
+}
+#confirmModal input[disabled]{ opacity:.75; background:#f3f4f6; }
+#confirmModal .modalActions{
+  padding:14px 16px 16px;
+  display:flex; gap:10px;
+}
+#confirmModal .btnGhost{
+  flex:1;
+  border:2px solid var(--brand);
+  background:#fff;
+  color:var(--brand);
+  border-radius:999px;
+  padding:14px 14px;
+  font-weight:800;
+  cursor:pointer;
+}
+#confirmModal .btnSolid{
+  flex:1;
+  border:none;
+  background:var(--brand);
+  color:#fff;
+  border-radius:999px;
+  padding:14px 14px;
+  font-weight:800;
+  cursor:pointer;
+}
+#confirmModal .btnSolid:disabled{ opacity:.55; cursor:not-allowed; }
 </style>
 
 <!-- libs -->
@@ -159,7 +231,44 @@
 
   <!-- Toasts -->
   <div id="toasts" aria-live="polite" aria-atomic="true"></div>
+<!-- CONFIRM DETAILS MODAL -->
+<div id="confirmModal" class="modal-backdrop">
+  <div class="modal">
+    <h2>Confirm your bill details</h2>
 
+    <div class="modalBody">
+      <div class="fieldRow">
+        <label>Customer number</label>
+        <input id="cm_customerNumber" disabled>
+      </div>
+
+      <div class="fieldRow">
+        <label>Name</label>
+        <input id="cm_name">
+      </div>
+
+      <div class="fieldRow">
+        <label>Address</label>
+        <input id="cm_address">
+      </div>
+
+      <div class="fieldRow">
+        <label>ZIP</label>
+        <input id="cm_zip">
+      </div>
+
+      <div class="fieldRow">
+        <label>Bill period end</label>
+        <input id="cm_billPeriodEnd">
+      </div>
+    </div>
+
+    <div class="modalActions">
+      <button class="btnGhost" id="cm_edit">Edit</button>
+      <button class="btnSolid" id="cm_confirm">Confirm</button>
+    </div>
+  </div>
+</div>
 <script>
 /* libs are already loaded above */
 
@@ -458,16 +567,27 @@ window.addEventListener('DOMContentLoaded', function () {
         return;
       }
 
-      out.textContent = [
-        'Customer number: ' + (fields.customerNumber || '(missing)'),
-        'Name: ' + (fields.name || ''),
-        'Address: ' + (fields.address || ''),
-        'Zip: ' + (fields.zip || ''),
-        'Bill period: ' + (fields.billPeriodEnd || '')
-      ].join('\n');
+      o// store fields for confirm/edit flow
+window.__rh_fields = fields;
 
-      window.__rh_fields = fields;
-      enableContinue();
+// hide inline text output
+out.textContent = '';
+
+// populate confirm modal fields
+document.getElementById('cm_customerNumber').value = fields.customerNumber || '';
+document.getElementById('cm_name').value           = fields.name || '';
+document.getElementById('cm_address').value        = fields.address || '';
+document.getElementById('cm_zip').value            = fields.zip || '';
+document.getElementById('cm_billPeriodEnd').value  = fields.billPeriodEnd || '';
+
+// start modal in read-only mode
+setConfirmModalEditMode(false);
+
+// show modal
+openConfirmModal();
+
+// user must confirm before continuing
+disableContinue();
     } catch (err) {
       out.textContent = '❌ Could not read the bill.';
       disableContinue();
