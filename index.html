@@ -420,7 +420,7 @@ window.addEventListener('DOMContentLoaded', function () {
     } catch(e){}
   }
 
-  function createShadowAccount(){
+function createShadowAccount(){
   var user = {
     id: 'demo_' + Date.now(),
     name:  (document.getElementById('name').value || '').trim(),
@@ -432,14 +432,13 @@ window.addEventListener('DOMContentLoaded', function () {
   renderUserChip();
   return user;
 }
-    // Confirm modal button wiring
+
+// Confirm modal button wiring (run once)
 document.getElementById('cm_edit').addEventListener('click', function () {
   setConfirmModalEditMode(true);
 });
 
 document.getElementById('cm_confirm').addEventListener('click', async function () {
-  if (!window.__rh_fields) return;
-
   const fields = {
     customerNumber: document.getElementById('cm_customerNumber').value,
     name:           document.getElementById('cm_name').value,
@@ -462,7 +461,9 @@ document.getElementById('cm_confirm').addEventListener('click', async function (
       })
     });
 
-    const json = await resp.json();
+    const text = await resp.text();
+    let json;
+    try { json = JSON.parse(text); } catch(e){ throw new Error('Commit returned non-JSON: ' + text.slice(0,200)); }
     if (!json.ok) throw new Error(json.error || 'Commit failed');
 
     window.__rh_fields = fields;
