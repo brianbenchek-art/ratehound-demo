@@ -232,9 +232,11 @@
   <!-- Toasts -->
   <div id="toasts" aria-live="polite" aria-atomic="true"></div>
 <!-- CONFIRM DETAILS MODAL -->
-<div id="confirmModal" class="modal-backdrop">
-  <div class="modal">
-    <h2>Confirm your bill details</h2>
+<div id="confirmModal" hidden>
+  <div class="modalCard" role="dialog" aria-modal="true" aria-labelledby="cm_title">
+    <div class="modalTop">
+      <h2 class="modalTitle" id="cm_title">Confirm your bill details</h2>
+    </div>
 
     <div class="modalBody">
       <div class="fieldRow">
@@ -264,11 +266,12 @@
     </div>
 
     <div class="modalActions">
-      <button class="btnGhost" id="cm_edit">Edit</button>
-      <button class="btnSolid" id="cm_confirm">Confirm</button>
+      <button class="btnGhost" id="cm_edit" type="button">Edit</button>
+      <button class="btnSolid" id="cm_confirm" type="button">Confirm</button>
     </div>
   </div>
 </div>
+
 <script>
 /* libs are already loaded above */
 
@@ -363,6 +366,19 @@ async function sendToAppsScriptVision({ imageBlob, userEmail }) {
 }
 
 /* ========== app ========== */
+  /* ---------- Confirm Modal helpers ---------- */
+function openConfirmModal() {
+  document.getElementById('confirmModal').hidden = false;
+}
+function closeConfirmModal() {
+  document.getElementById('confirmModal').hidden = true;
+}
+function setConfirmModalEditMode(editable) {
+  ['cm_name','cm_address','cm_zip','cm_billPeriodEnd'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.disabled = !editable;
+  });
+}
 window.addEventListener('DOMContentLoaded', function () {
   /* splash → signup */
   var splash = document.getElementById('splash');
@@ -414,8 +430,50 @@ window.addEventListener('DOMContentLoaded', function () {
     };
     try { sessionStorage.setItem('rh_user', JSON.stringify(user)); } catch(e){}
     renderUserChip();
-    return user;
+    // Confirm modal button wiring
+document.getElementById('cm_edit').addEventListener('click', function () {
+  setConfirmModalEditMode(true);
+});
+
+document.getElementById('cm_confirm').addEventListener('click', async function () {
+  if (!window.__rh_fields) return;
+
+  const fields = {
+    customerNumber: document.getElementById('cm_customerNumber').value,
+    name:           document.getElementById('cm_name').value,
+    address:        document.getElementById('cm_address').value,
+    zip:            document.getElementById('cm_zip').value,
+    billPeriodEnd:  document.getElementById('cm_billPeriodEnd').value
+  };
+
+  try {
+    const user = JSON.parse(sessionStorage.getItem('rh_user') || '{}');
+
+    const resp = await fetch(GAS_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({
+        action: 'commit',
+        userEmail: user.email || '',
+        fields,
+        token: RH_SHARED_SECRET
+      })
+    });
+
+    const json = await resp.json();
+    if (!json.ok) throw new Error(json.error || 'Commit failed');
+
+    window.__rh_fields = fields;
+    closeConfirmModal();
+    enableContinue();
+    showToast('Bill details confirmed');
+
+  } catch (err) {
+    console.error(err);
+    showToast('Could not save bill details');
   }
+});
+   
 
   function showToast(html, ms){
     ms = ms || 4000;
