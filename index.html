@@ -421,15 +421,17 @@ window.addEventListener('DOMContentLoaded', function () {
   }
 
   function createShadowAccount(){
-    var user = {
-      id: 'demo_' + Date.now(),
-      name:  (document.getElementById('name').value || '').trim(),
-      phone: (document.getElementById('phone').value || '').trim(),
-      email: (document.getElementById('email').value || '').trim(),
-      createdAt: new Date().toISOString()
-    };
-    try { sessionStorage.setItem('rh_user', JSON.stringify(user)); } catch(e){}
-    renderUserChip();
+  var user = {
+    id: 'demo_' + Date.now(),
+    name:  (document.getElementById('name').value || '').trim(),
+    phone: (document.getElementById('phone').value || '').trim(),
+    email: (document.getElementById('email').value || '').trim(),
+    createdAt: new Date().toISOString()
+  };
+  try { sessionStorage.setItem('rh_user', JSON.stringify(user)); } catch(e){}
+  renderUserChip();
+  return user;
+}
     // Confirm modal button wiring
 document.getElementById('cm_edit').addEventListener('click', function () {
   setConfirmModalEditMode(true);
